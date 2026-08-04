@@ -1,7 +1,6 @@
 // بيكتشف تلقائي: لو شغال محلي (localhost) هيستخدم السيرفر المحلي،
-// لو شغال أونلاين (بعد الرفع) هيستخدم رابط الباك اند بتاع Render.
-// ⚠️ بعد ما ترفع الباك اند على Render، غيّر السطر ده وحط رابطك بدل الرابط التجريبي:
-const PRODUCTION_API_URL = 'https://sunbook-backend.onrender.com/api';
+// لو شغال أونلاين (بعد الرفع) هيستخدم رابط الباك اند بتاع Vercel.
+const PRODUCTION_API_URL = 'https://sunbook.vercel.app/api';
 
 const API_URL = (() => {
   const host = window.location.hostname;
