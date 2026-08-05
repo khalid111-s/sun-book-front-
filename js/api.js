@@ -33,6 +33,18 @@ const api = {
       body: JSON.stringify({ email, password }),
     }),
 
+  googleLogin: (credential) =>
+    api.request('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ credential }),
+    }),
+
+  facebookLogin: (accessToken) =>
+    api.request('/auth/facebook', {
+      method: 'POST',
+      body: JSON.stringify({ accessToken }),
+    }),
+
   register: (name, email, password, phone) =>
     api.request('/auth/register', {
       method: 'POST',
