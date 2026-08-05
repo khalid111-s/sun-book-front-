@@ -94,24 +94,11 @@
                 <div class="checkout-box">
                     <h3 class="checkout-title">Payment Method</h3>
 
-                    <div class="payment-tabs">
-                        <div class="pay-tab active" onclick="switchPayment('card')">Credit Card</div>
-                        <div class="pay-tab" onclick="switchPayment('wallet')">Mobile Wallet</div>
-                    </div>
-
-                    <!-- فورم البطاقة -->
+                    <!-- بيانات الدفع بتتاخد بأمان من صفحة Paymob الرسمية بعد الضغط على الزرار تحت -->
                     <div id="card-form" class="pay-form active">
-                        <input type="text" id="card-number" class="contact-input" placeholder="Card Number (xxxx xxxx xxxx xxxx)">
-                        <div class="input-grid">
-                            <input type="text" id="card-expiry" class="contact-input" placeholder="MM/YY">
-                            <input type="text" id="card-cvv" class="contact-input" placeholder="CVV">
-                        </div>
-                    </div>
-
-                    <!-- فورم المحافظ -->
-                    <div id="wallet-form" class="pay-form">
-                        <p style="color: var(--text-gray); margin-bottom: 15px; font-size: 0.9rem;">Pay using Vodafone Cash, Orange Cash, Etisalat Cash, or any mobile wallet.</p>
-                        <input type="text" id="wallet-number" class="contact-input" placeholder="Wallet Mobile Number">
+                        <p style="color: var(--text-gray); font-size: 0.9rem;">
+                            You'll be redirected to Paymob's secure payment page to enter your card or mobile wallet details safely.
+                        </p>
                     </div>
                 </div>
 
@@ -208,16 +195,21 @@
                 return;
             }
 
+            let paymobRedirectUrl = null;
             try {
                 for (const item of bookingItems) {
                     if (!item.bookingDetails) continue;
-                    await api.bookSession({
+                    const bookingRes = await api.bookSession({
                         dateStr: item.bookingDetails.date,
                         timeStr: item.bookingDetails.time,
                         subject: item.title,
                         price: parseFloat(String(item.price).replace('£', '')) || 199,
                         notes: `Preferred time: ${item.bookingDetails.time}`,
                     });
+                    // لو Paymob جهز رابط دفع حقيقي، نحفظه عشان نوجه المستخدم ليه
+                    if (bookingRes && bookingRes.data && bookingRes.data.paymentUrl) {
+                        paymobRedirectUrl = bookingRes.data.paymentUrl;
+                    }
                 }
             } catch (err) {
                 if (typeof showToast === 'function') {
@@ -229,6 +221,12 @@
                     confirmBtn.innerText = 'Pay & Confirm Session';
                     confirmBtn.disabled = false;
                 }
+                return;
+            }
+
+            // لو فيه رابط دفع حقيقي من Paymob، وديه هناك عشان يدخل بيانات الكارت الحقيقية
+            if (paymobRedirectUrl) {
+                window.location.href = paymobRedirectUrl;
                 return;
             }
         }
