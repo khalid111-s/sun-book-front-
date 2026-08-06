@@ -440,7 +440,25 @@ body {
         display: flex;
     }
 
+    /* بدل ما اللوجو/السيرش/الأزرار ياخدوا تلت الشاشة بالتساوي (اللي كان بيكسر اللوجو)،
+       اللوجو والأزرار ياخدوا حجمهم الطبيعي بس، والسيرش ياخد المساحة اللي فاضلة ويتقلص بمرونة */
+    .navbar {
+        justify-content: space-between;
+    }
+
+    .logo {
+        flex: none;
+        white-space: nowrap;
+    }
+
+    .search-wrapper {
+        flex: 1;
+        min-width: 0; /* عشان يقدر يتقلص جوه الفليكس من غير ما يدفع اللوجو أو الأزرار */
+        padding: 0 12px;
+    }
+
     .nav-actions {
+        flex: none;
         gap: 15px;
     }
     
@@ -454,7 +472,64 @@ body {
     }
     
     .logo-icon {
-        height: 70px;
+        height: 40px; /* كانت متسيبة 70px زي الديسكتوب بالغلط، وده اللي كان بيكسر السطر */
+    }
+}
+
+/* --- شاشات الموبايل الضيقة أكتر (تليفونات عادية) --- */
+@media (max-width: 480px) {
+    .navbar {
+        padding: 0 12px;
+    }
+
+    .logo {
+        gap: 4px;
+    }
+
+    .logo-icon {
+        height: 30px;
+    }
+
+    .logo-text {
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+    }
+
+    .search-wrapper {
+        padding: 0 8px;
+    }
+
+    .search-container {
+        padding: 4px;
+    }
+
+    .input {
+        padding: 6px 8px;
+        font-size: 13px;
+    }
+
+    .search__icon {
+        width: 26px;
+        padding-left: 6px;
+        margin-right: 2px;
+    }
+
+    .search__icon svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .nav-actions {
+        gap: 10px;
+    }
+
+    .cart-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .mobile-toggle {
+        margin-left: 0 !important;
     }
 }
 
