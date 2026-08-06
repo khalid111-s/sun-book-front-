@@ -3663,11 +3663,12 @@ html {
 
  .social-login-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 زراير جنب بعض */
+    grid-template-columns: repeat(2, 1fr); /* زرارين بس جنب بعض بنفس المقاس بالظبط */
     gap: 12px;
 }
         
         .social-btn {
+            position: relative; /* عشان الـ overlay بتاع جوجل ياخد نفس مقاس الزرار بالظبط */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -3682,6 +3683,7 @@ html {
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-sizing: border-box;
         }
         
         .social-btn:hover {
@@ -3693,7 +3695,24 @@ html {
         .social-btn svg {
             width: 18px;
             height: 18px;
+            flex-shrink: 0;
             fill: var(--gold-color); /* السطر ده اللي بيخلي أي أيقونة لونها ذهبي */
+        }
+
+        /* زرار جوجل الحقيقي بيترسم شفاف تمامًا فوق الزرار المصمم، بنفس مقاسه بالظبط،
+           عشان أي ضغطة تفتح نافذة جوجل الحقيقية بس الشكل اللي باين هو زرارنا الموحّد */
+        .google-btn-overlay {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .google-btn-overlay > div {
+            width: 100% !important;
         }
 
         /* تظبيط الزراير على الموبايل عشان تنزل تحت بعض */
