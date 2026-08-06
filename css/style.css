@@ -496,40 +496,64 @@ body {
     }
 
     .search-wrapper {
-        padding: 0 8px;
+        padding: 0 6px;
+        min-width: 0;
     }
 
     .search-container {
         padding: 4px;
+        width: 100%;
     }
 
     .input {
-        padding: 6px 8px;
-        font-size: 13px;
+        padding: 6px 6px;
+        font-size: 12.5px;
+        min-width: 0;
     }
 
     .search__icon {
-        width: 26px;
+        width: 24px;
         padding-left: 6px;
-        margin-right: 2px;
+        margin-right: 0;
+        flex-shrink: 0;
     }
 
     .search__icon svg {
-        width: 16px;
-        height: 16px;
+        width: 15px;
+        height: 15px;
     }
 
     .nav-actions {
-        gap: 10px;
+        gap: 14px;
+        align-items: center;
+    }
+
+    .cart-container {
+        align-items: center;
     }
 
     .cart-icon {
-        width: 20px;
-        height: 20px;
+        width: 21px;
+        height: 21px;
+    }
+
+    .cart-badge {
+        width: 16px;
+        height: 16px;
+        font-size: 0.65rem;
+        top: -6px;
+        right: -8px;
     }
 
     .mobile-toggle {
         margin-left: 0 !important;
+        gap: 4px;
+        align-self: center;
+    }
+
+    .mobile-toggle .bar {
+        width: 21px;
+        height: 2.5px;
     }
 }
 
