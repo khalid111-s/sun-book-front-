@@ -321,13 +321,14 @@ body {
 
     .booking-card-left {
         position: absolute;
-        top: -20px;
-        right: -20px;
-        width: 160px;
-        height: 160px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 240px;
+        height: 240px;
         padding: 0;
         border: none;
-        opacity: 0.12;
+        opacity: 0.15;
         pointer-events: none;
         z-index: 0;
     }
