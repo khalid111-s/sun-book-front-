@@ -311,36 +311,66 @@ body {
 }
 
 /* على الموبايل الكارت ده كان فيه عمود شمال ثابت العرض (320px) بياخد كل مساحة الشاشة تقريبًا،
-   فمحتوى اليمين كان بيتقصّ وبيطلع برّه الشاشة. هنا بنخلي الكارت يترتب فوق بعض (عمودي) بدل جنب بعض */
+   فمحتوى اليمين كان بيتقصّ وبيطلع برّه الشاشة. هنا بنخليه صف زي الديسكتوب برضو (عرض)
+   بس بعمود شمال ضيق وأيقونة أصغر، عشان يتناسب مع عرض الموبايل من غير ما يطلع برّه */
 @media (max-width: 700px) {
     .booking-card-shell {
-        flex-direction: column;
+        flex-direction: row;
+        align-items: stretch;
     }
 
     .booking-card-left {
-        flex: none;
-        width: 100%;
-        padding: 24px;
-        border-right: none;
-        border-bottom: 1px solid rgba(216, 176, 86, 0.08);
+        flex: 0 0 90px;
+        width: 90px;
+        padding: 10px;
+        border-right: 1px solid rgba(216, 176, 86, 0.08);
+        border-bottom: none;
     }
 
     .booking-card-icon {
-        width: 120px;
-        height: 120px;
+        width: 55px;
+        height: 55px;
     }
 
     .booking-card-right {
-        padding: 24px;
+        flex: 1;
+        min-width: 0; /* عشان المحتوى يتقلص صح ومايطلعش برّه الشاشة تاني */
+        padding: 16px;
     }
 
     .booking-card-title {
-        font-size: 1.3rem;
+        font-size: 1.05rem;
+        margin-bottom: 12px;
+    }
+
+    .booking-card-feature {
+        font-size: 0.8rem;
+    }
+
+    .booking-slot-pill {
+        padding: 5px 8px;
+        font-size: 0.7rem;
     }
 
     .booking-card-footer {
         flex-wrap: wrap;
         gap: 12px;
+    }
+
+    .booking-card-button {
+        padding: 8px 18px;
+        font-size: 0.85rem;
+    }
+
+    .booking-slot-row {
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 14px !important;
+    }
+
+    .booking-slot-label {
+        width: auto !important;
+        font-size: 0.8rem;
     }
 }
 
