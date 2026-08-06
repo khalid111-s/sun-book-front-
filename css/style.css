@@ -2735,8 +2735,8 @@ ul.social-row {
 }
 
 .time-slots-list {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
 }
 
@@ -2761,6 +2761,7 @@ ul.social-row {
 @media (max-width: 800px) {
     .booking-modal-content { flex-direction: column; height: 90vh; overflow-y: auto; }
     .modal-left { border-right: none; border-bottom: 1px solid rgba(216, 176, 86, 0.1); }
+    .time-slot-btn { font-size: 0.8rem; padding: 10px 6px; }
 }
 
 /* =========================================
