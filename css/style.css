@@ -479,20 +479,20 @@ body {
 /* --- شاشات الموبايل الضيقة أكتر (تليفونات عادية) --- */
 @media (max-width: 480px) {
     .navbar {
-        padding: 0 12px;
+        padding: 0 10px;
     }
 
     .logo {
-        gap: 3px;
+        gap: 2px;
     }
 
     .logo-icon {
-        height: 26px;
+        height: 22px;
     }
 
     .logo-text {
-        font-size: 0.82rem;
-        letter-spacing: 0.3px;
+        font-size: 0.72rem;
+        letter-spacing: 0.2px;
     }
 
     .search-wrapper {
@@ -503,6 +503,7 @@ body {
     .search-container {
         padding: 4px;
         width: 100%;
+        max-width: 190px; /* السيرش بقى مضغوط أكتر بس لسه بيبين كل محتوياته من غير ما يتلغبط */
     }
 
     .input {
@@ -524,30 +525,6 @@ body {
     .search__icon svg {
         width: 16px;
         height: 16px;
-    }
-
-    /* نتايج البحث المنبثقة: أعرض من مربع السيرش نفسه عشان اسم المنتج ميتلغبطش
-       على كذا سطر، ومتسنترة حوالين مربع السيرش */
-    .search-dropdown-results {
-        left: 50%;
-        transform: translateX(-50%);
-        width: max(85vw, 260px);
-        max-width: 340px;
-        max-height: 65vh;
-        overflow-y: auto;
-    }
-
-    .search-result-item img {
-        width: 36px;
-        height: 36px;
-    }
-
-    .search-result-title {
-        font-size: 0.85rem;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
     }
 
     .nav-actions {
@@ -4216,6 +4193,19 @@ html {
     overflow: hidden;
 }
 
+/* على الموبايل الشريط ده بيبقى أعرض من مربع السيرش الضيق نفسه ومتمركز حواليه،
+   عشان اسم المنتج ميتلغبطش على كذا سطر (ده التعريف اللي بيتحسب فعليًا، مش النسخة اللي فوق في الملف) */
+@media (max-width: 480px) {
+    .search-dropdown-results {
+        left: 50%;
+        transform: translateX(-50%);
+        width: max(85vw, 260px);
+        max-width: 340px;
+        max-height: 65vh;
+        overflow-y: auto;
+    }
+}
+
 .search-result-item {
     display: flex;
     align-items: center;
@@ -4251,6 +4241,21 @@ html {
     color: #fff;
     font-size: 0.9rem;
     font-weight: 600;
+}
+
+@media (max-width: 480px) {
+    .search-result-item img {
+        width: 36px;
+        height: 36px;
+    }
+
+    .search-result-title {
+        font-size: 0.85rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
 }
 
 .search-result-price {
