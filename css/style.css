@@ -316,20 +316,22 @@ body {
 @media (max-width: 700px) {
     .booking-card-shell {
         flex-direction: row;
-        align-items: stretch;
+        align-items: flex-start; /* العمود الشمال بقى بحجم الأيقونة بس، مش هيتمطط لطول الكارت كله فاضي */
     }
 
     .booking-card-left {
         flex: 0 0 90px;
         width: 90px;
+        height: 90px;
         padding: 10px;
         border-right: 1px solid rgba(216, 176, 86, 0.08);
-        border-bottom: none;
+        border-bottom: 1px solid rgba(216, 176, 86, 0.08);
+        border-radius: 0 0 14px 0;
     }
 
     .booking-card-icon {
-        width: 55px;
-        height: 55px;
+        width: 45px;
+        height: 45px;
     }
 
     .booking-card-right {
