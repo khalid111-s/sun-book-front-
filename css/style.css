@@ -615,20 +615,20 @@ body {
     }
 
     .search-container {
-        max-width: 135px;
+        max-width: 200px; /* السيرش بقى ممدود أكتر وباين كله */
         padding: 3px;
         border-radius: 40px;
     }
 
     .input {
         padding: 5px 8px;
-        font-size: 12.5px;
+        font-size: 13px;
         min-width: 0;
     }
 
     .search__icon {
-        width: 26px;
-        height: 26px;
+        width: 28px;
+        height: 28px;
         aspect-ratio: auto;
         padding-left: 6px;
         padding-right: 4px;
@@ -637,8 +637,8 @@ body {
     }
 
     .search__icon svg {
-        width: 14px;
-        height: 14px;
+        width: 15px;
+        height: 15px;
     }
 }
 
@@ -1513,6 +1513,35 @@ ul.social-row {
     .products-grid.three-columns { grid-template-columns: 1fr; }
     .search-filter-bar { flex-direction: column; }
     .filter-dropdown select { width: 100%; }
+
+    /* قسم "Best Offers" كان بيفضل عمودين مضغوطين جدًا في الموبايل حتى على شاشة صغيرة قوي،
+       فكان بيخلي الكروت طويلة أوي ولازقة في بعضها. عمود واحد بس أوضح وأرتب على الموبايل */
+    .products-grid.two-cards {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 0 4px; /* هامش أمان بسيط جوه القسم عشان الكروت متلزقش في حواف الشاشة */
+    }
+
+    .product-card {
+        min-height: auto; /* بلاش نجبر ارتفاع 480px ثابت على الموبايل */
+    }
+
+    .card-image-wrapper {
+        height: 190px;
+    }
+
+    .card-desc {
+        margin-bottom: 18px;
+        /* بلاش الوصف الطويل يمد الكارت لتحت أوي، نكتفي بـ3 سطور وبعدين "..." */
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .card-badges {
+        flex-wrap: wrap;
+    }
 }
 
 /* تنسيق العناوين اللي رجعناها */
@@ -4206,15 +4235,11 @@ html {
     overflow: hidden;
 }
 
-/* على الموبايل الشريط ده بيبقى أعرض من مربع السيرش الضيق نفسه ومتمركز حواليه،
-   عشان اسم المنتج ميتلغبطش على كذا سطر (ده التعريف اللي بيتحسب فعليًا، مش النسخة اللي فوق في الملف) */
+/* الشريط بيبقى بنفس عرض مربع السيرش بالظبط وتحته على طول (زي ما هو افتراضيًا فوق)،
+   بس بنحط أقصى ارتفاع مع سكرول عشان القايمة الطويلة متطلعش برّه الشاشة */
 @media (max-width: 480px) {
     .search-dropdown-results {
-        left: 50%;
-        transform: translateX(-50%);
-        width: max(85vw, 260px);
-        max-width: 340px;
-        max-height: 65vh;
+        max-height: 60vh;
         overflow-y: auto;
     }
 }
