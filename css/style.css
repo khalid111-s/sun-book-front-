@@ -492,11 +492,11 @@ body {
     }
 
     .logo-icon {
-        height: 25px;
+        height: 23px;
     }
 
     .logo-text {
-        font-size: 0.78rem;
+        font-size: 0.74rem;
         letter-spacing: 0.2px;
     }
 
@@ -616,7 +616,7 @@ body {
     }
 
     .search-container {
-        max-width: 165px;
+        max-width: 135px;
         padding: 3px;
         border-radius: 40px;
     }
