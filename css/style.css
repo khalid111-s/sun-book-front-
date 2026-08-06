@@ -500,33 +500,6 @@ body {
         min-width: 0;
     }
 
-    .search-container {
-        padding: 4px;
-        width: 100%;
-        max-width: 190px; /* السيرش بقى مضغوط أكتر بس لسه بيبين كل محتوياته من غير ما يتلغبط */
-    }
-
-    .input {
-        padding: 6px 6px;
-        font-size: 12.5px;
-        min-width: 0;
-    }
-
-    .search__icon {
-        width: 30px;
-        height: 30px;
-        aspect-ratio: auto;
-        padding-left: 8px;
-        padding-right: 4px;
-        margin-right: 0;
-        flex-shrink: 0;
-    }
-
-    .search__icon svg {
-        width: 16px;
-        height: 16px;
-    }
-
     .nav-actions {
         gap: 14px;
         align-items: center;
@@ -627,6 +600,42 @@ body {
 /* نخلي الـ stroke دهبي عشان الـ SVG بتستخدم stroke مش fill */
 .search__icon svg {
     stroke: var(--gold-color);
+}
+
+/* الأوفررايد الفعلي بتاع شريط البحث في الموبايل (بعد كل التعريفات الأساسية فوق دي
+   عشان محدش يلغيه زي ما كان بيحصل قبل كده) */
+@media (max-width: 480px) {
+    .search-wrapper {
+        padding: 0 6px;
+        min-width: 0;
+    }
+
+    .search-container {
+        max-width: 165px;
+        padding: 3px;
+        border-radius: 40px;
+    }
+
+    .input {
+        padding: 5px 8px;
+        font-size: 12.5px;
+        min-width: 0;
+    }
+
+    .search__icon {
+        width: 26px;
+        height: 26px;
+        aspect-ratio: auto;
+        padding-left: 6px;
+        padding-right: 4px;
+        margin-right: 0;
+        flex-shrink: 0;
+    }
+
+    .search__icon svg {
+        width: 14px;
+        height: 14px;
+    }
 }
 
 /* --- تنسيق القسم الأساسي الجديد --- */
