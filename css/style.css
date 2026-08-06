@@ -444,6 +444,7 @@ body {
        اللوجو والأزرار ياخدوا حجمهم الطبيعي بس، والسيرش ياخد المساحة اللي فاضلة ويتقلص بمرونة */
     .navbar {
         justify-content: space-between;
+        position: relative; /* عشان نقدر نسنتر السيرش بالظبط في نص الشاشة (مش نص المساحة الفاضلة) */
     }
 
     .logo {
@@ -451,10 +452,14 @@ body {
         white-space: nowrap;
     }
 
+    /* السيرش بقى متسنتر بالظبط في نص الناف بار، مش نص المساحة اللي فاضلة بعد اللوجو والأزرار
+       (اللي كانت بتخليه مايل شوية لإن اللوجو أعرض من زرايرالسلة/الهمبرجر) */
     .search-wrapper {
-        flex: 1;
-        min-width: 0; /* عشان يقدر يتقلص جوه الفليكس من غير ما يدفع اللوجو أو الأزرار */
-        padding: 0 12px;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        padding: 0;
     }
 
     .nav-actions {
@@ -487,11 +492,11 @@ body {
     }
 
     .logo-icon {
-        height: 22px;
+        height: 25px;
     }
 
     .logo-text {
-        font-size: 0.72rem;
+        font-size: 0.78rem;
         letter-spacing: 0.2px;
     }
 
