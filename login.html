@@ -9,6 +9,16 @@
     <!-- تسجيل الدخول بجوجل -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- تسجيل الدخول بفيسبوك -->
+    <!-- ⚠️ مهم: window.fbAsyncInit لازم يتعرّف هنا قبل تحميل سكريبت الـ SDK نفسه،
+         عشان الـ SDK شغال async وممكن يخلص تحميل وينده على fbAsyncInit قبل ما نعرّفه
+         لو كان الكود ده تحت في آخر الصفحة (ده اللي كان بيسبب إيرور "init not called with valid version") -->
+    <script>
+      const FACEBOOK_APP_ID = '1050229990822438';
+      window.fbAsyncInit = function () {
+        if (FACEBOOK_APP_ID.startsWith('YOUR_')) return;
+        FB.init({ appId: FACEBOOK_APP_ID, cookie: true, xfbml: false, version: 'v19.0' });
+      };
+    </script>
     <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
 </head>
 <body>
@@ -135,9 +145,9 @@ async function handleAuth(event, type) {
 }
 
 // ─── سوشيال لوجين حقيقي (جوجل + فيسبوك) ────────────────
-// ⚠️ حط قيمك الحقيقية هنا بعد ما تجيبها من Google Cloud Console و Facebook Developers
+// ⚠️ حط قيمك الحقيقية هنا بعد ما تجيبها من Google Cloud Console
+// (FACEBOOK_APP_ID اتعرّف فوق في الـ <head> قبل ما نحمّل سكريبت الفيسبوك)
 const GOOGLE_CLIENT_ID = '853924471375-ebuuh64e5pqh5bhhiggfsfh71k5caf1h.apps.googleusercontent.com';
-const FACEBOOK_APP_ID = '1050229990822438';
 
 // نتيجة موحدة لأي طريقة دخول (عادي / جوجل / فيسبوك)
 function handleSocialSuccess(res) {
@@ -178,10 +188,7 @@ if (GOOGLE_CLIENT_ID.includes('.apps.googleusercontent.com') && !GOOGLE_CLIENT_I
 }
 
 // ─── فيسبوك ────────────────────────────────────────────
-window.fbAsyncInit = function () {
-  if (FACEBOOK_APP_ID.startsWith('YOUR_')) return;
-  FB.init({ appId: FACEBOOK_APP_ID, cookie: true, xfbml: false, version: 'v19.0' });
-};
+// (fbAsyncInit اتعرّف فوق في الـ <head> قبل تحميل الـ SDK - راجع التعليق هناك)
 
 function facebookSignIn() {
   if (typeof FB === 'undefined' || FACEBOOK_APP_ID.startsWith('YOUR_')) {
