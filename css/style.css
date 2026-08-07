@@ -1777,6 +1777,7 @@ ul.social-row {
     
     .policy-title {
         font-size: 1.6rem;
+        text-align: center;
     }
     
     .policy-text {
@@ -1898,11 +1899,40 @@ ul.social-row {
     transform: translateY(-2px); /* نطة خفيفة لفوق */
 }
 
-/* ريسبونسف للموبايل */
+/* ريسبونسف للموبايل: الصورة بقت شمال صغيرة والتفاصيل يمين (زي الديسكتوب بالظبط بس مصغّر)
+   بدل ما الصورة تكون فوق والكلام تحت وتفضل تنزل مع السكرول عادي زي ما كانت */
 @media (max-width: 850px) {
     .single-product-container {
-        flex-direction: column;
-        gap: 30px;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .product-gallery {
+        flex: 0 0 120px;
+        padding: 10px;
+        position: sticky;
+        top: 90px; /* دلوقتي الصورة فعلاً بتفضل ثابتة وانت بتسكرول في الوصف اللي جنبها */
+    }
+
+    .product-gallery img {
+        max-height: 100px;
+    }
+
+    .product-info-details {
+        min-width: 0; /* عشان النص يتقلص صح جوه العمود الضيق ومايطلعش برّه */
+        gap: 12px;
+    }
+
+    .product-title-large {
+        font-size: 1.15rem;
+    }
+
+    .product-price-large {
+        font-size: 1.3rem;
+    }
+
+    .purchase-actions {
+        flex-wrap: wrap;
     }
 }
 
@@ -2759,10 +2789,33 @@ ul.social-row {
 
 /* ريسبونسف للموبايل */
 @media (max-width: 800px) {
-    .booking-modal-content { flex-direction: column; height: 90vh; overflow-y: auto; }
-    .modal-left { border-right: none; border-bottom: 1px solid rgba(216, 176, 86, 0.1); }
-    .time-slot-btn { font-size: 0.65rem; padding: 8px 4px; }
-    .time-slots-list { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .booking-modal-content { height: 90vh; overflow-y: auto; width: 96%; }
+
+    /* التقويم وتفاصيل الحجز بقوا جنب بعض بالعرض زي الديسكتوب، بس بمقاسات مصغّرة عشان يتناسبوا مع عرض الموبايل */
+    .modal-left, .modal-right {
+        padding: 14px;
+    }
+
+    .modal-left {
+        border-right: 1px solid rgba(216, 176, 86, 0.1);
+        border-bottom: none;
+    }
+
+    .author-mini-profile h3 { font-size: 0.85rem; }
+    .timezone-info { font-size: 0.7rem; margin-bottom: 12px; }
+
+    .calendar-header { margin-bottom: 10px; }
+    .calendar-header h4 { font-size: 0.85rem; }
+    .cal-nav-btn svg { width: 16px; height: 16px; }
+
+    .calendar-weekdays { font-size: 0.6rem; margin-bottom: 6px; }
+    .calendar-days { gap: 3px; }
+    .cal-day { font-size: 0.65rem; }
+
+    .meeting-details { margin-bottom: 16px; padding-bottom: 12px; }
+
+    .time-slots-list { grid-template-columns: 1fr; gap: 6px; }
+    .time-slot-btn { font-size: 0.75rem; padding: 8px 6px; }
 }
 
 /* =========================================
@@ -2948,6 +3001,16 @@ ul.social-row {
     gap: 15px;
     align-items: center;
 }
+.checkout-item-info {
+    flex: 1;
+    min-width: 0;
+}
+.checkout-item-price {
+    color: var(--gold-color);
+    font-weight: bold;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
 .checkout-item-mini img {
     width: 60px;
     height: 60px;
@@ -2971,7 +3034,7 @@ ul.social-row {
 
 @media (max-width: 850px) {
     .checkout-layout { flex-direction: column; }
-    .input-grid { grid-template-columns: 1fr; }
+    .input-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* =========================================
@@ -3066,11 +3129,16 @@ ul.social-row {
     transform: translateY(-50%) rotate(180deg);
 }
 
-/* 4. ريسبونسف للموبايل */
+/* 4. ريسبونسف للموبايل: خلينا الحقول (الاسم، المحافظة/الحي) تفضل جنب بعض بعمودين زي الديسكتوب،
+   ورقم الموبايل ياخد السطر كله لوحده تحتهم عشان مساحته مايتزنقش */
 @media (max-width: 768px) {
     .checkout-box .input-grid.two-cols,
     .checkout-box .input-grid.three-cols {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .checkout-box .input-grid.three-cols .phone-input-wrapper {
+        grid-column: 1 / -1;
     }
 }
 
@@ -4153,7 +4221,11 @@ html {
         .checkout-box .input-grid.three-cols,
         #card-form .input-grid,
         #wallet-form .input-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .checkout-box .input-grid.three-cols .phone-input-wrapper {
+            grid-column: 1 / -1;
         }
     }
 

@@ -790,11 +790,11 @@ function initSmartCheckout() {
             listContainer.innerHTML += `
                 <div class="checkout-item-mini">
                     <img src="${item.image}" alt="Book">
-                    <div>
+                    <div class="checkout-item-info">
                         <h4>${item.title} (x${item.qty})</h4>
                         <span class="item-type-badge" style="color: ${typeColor}; border-color: ${typeColor};">${typeLabel}</span>
-                        <p style="color: var(--text-gray); margin-top: 5px; font-weight: bold;">${item.price}</p>
                     </div>
+                    <p class="checkout-item-price">${item.price}</p>
                 </div>
             `;
         });
