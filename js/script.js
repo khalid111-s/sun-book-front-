@@ -92,10 +92,10 @@ function renderCart() {
                     <img src="${item.image}" alt="Book" class="cart-item-img">
                     <div class="cart-item-info">
                         <h3 class="cart-item-title">${item.title}</h3>
-                        <p class="cart-item-price">${item.price}</p>
                         <span style="font-size: 0.75rem; color: ${item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)'}; border: 1px solid ${item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)'}; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 5px;">${item.type === 'digital' ? 'Digital (PDF)' : item.type === 'booking' ? 'Session' : 'Physical Book'}</span>
                     </div>
                     <div class="cart-item-actions">
+                        <p class="cart-item-price">${item.price}</p>
                         ${item.type === 'booking' 
                             ? `` 
                             : `<div class="modern-qty">

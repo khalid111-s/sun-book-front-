@@ -1899,36 +1899,39 @@ ul.social-row {
     transform: translateY(-2px); /* نطة خفيفة لفوق */
 }
 
-/* ريسبونسف للموبايل: الصورة بقت شمال صغيرة والتفاصيل يمين (زي الديسكتوب بالظبط بس مصغّر)
-   بدل ما الصورة تكون فوق والكلام تحت وتفضل تنزل مع السكرول عادي زي ما كانت */
+/* ريسبونسف للموبايل: صورة كبيرة عريضة فوق، وتحتها التفاصيل بعرض كامل
+   (بدل الصورة الصغيرة الشمال اللي كانت حاسس إنها غلط) */
 @media (max-width: 850px) {
     .single-product-container {
-        align-items: flex-start;
-        gap: 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
     }
 
     .product-gallery {
-        flex: 0 0 120px;
-        padding: 10px;
-        position: sticky;
-        top: 90px; /* دلوقتي الصورة فعلاً بتفضل ثابتة وانت بتسكرول في الوصف اللي جنبها */
+        flex: none;
+        width: 100%;
+        padding: 20px;
+        position: static;
     }
 
     .product-gallery img {
-        max-height: 100px;
+        max-height: 200px;
+        margin: 0 auto;
+        display: block;
     }
 
     .product-info-details {
-        min-width: 0; /* عشان النص يتقلص صح جوه العمود الضيق ومايطلعش برّه */
+        min-width: 0;
         gap: 12px;
     }
 
     .product-title-large {
-        font-size: 1.15rem;
+        font-size: 1.4rem;
     }
 
     .product-price-large {
-        font-size: 1.3rem;
+        font-size: 1.5rem;
     }
 
     .purchase-actions {
@@ -2789,7 +2792,7 @@ ul.social-row {
 
 /* ريسبونسف للموبايل */
 @media (max-width: 800px) {
-    .booking-modal-content { height: 90vh; overflow-y: auto; width: 96%; }
+    .booking-modal-content { max-height: 90vh; overflow-y: auto; width: 96%; align-items: flex-start; }
 
     /* التقويم وتفاصيل الحجز بقوا جنب بعض بالعرض زي الديسكتوب، بس بمقاسات مصغّرة عشان يتناسبوا مع عرض الموبايل */
     .modal-left, .modal-right {
@@ -3109,6 +3112,87 @@ ul.social-row {
     opacity: 0.5;
     cursor: not-allowed;
     border-color: rgba(216, 176, 86, 0.15) !important;
+}
+
+/* ============================================
+   قايمة مخصصة (Custom Dropdown) بدل قايمة نظام التشغيل
+   الافتراضية اللي بتاخد الشاشة كلها بالأبيض في الموبايل.
+   الـ <select> الأصلي فاضل موجود مخفي عشان يحافظ على نفس منطق الفورم والفاليديشن،
+   والقايمة دي بس واجهة العرض اللي المستخدم فعليًا بيتعامل معاها.
+   ============================================ */
+.select-wrapper.has-custom-dropdown .custom-select {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 1px;
+    height: 1px;
+}
+
+.custom-select-display {
+    width: 100%;
+    padding: 14px 40px 14px 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(216, 176, 86, 0.3);
+    border-radius: 8px;
+    color: rgba(216, 176, 86, 0.4);
+    font-size: 0.95rem;
+    font-family: var(--font-main);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.custom-select-display.has-value {
+    color: #fff;
+}
+
+.custom-select-display.is-open {
+    border-color: var(--gold-color);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 12px rgba(216, 176, 86, 0.15);
+}
+
+.select-wrapper.is-disabled .custom-select-display {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.custom-select-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 100%;
+    max-height: 240px;
+    overflow-y: auto;
+    background: #131313;
+    border: 1px solid rgba(216, 176, 86, 0.3);
+    border-radius: 10px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+    z-index: 500;
+    display: none;
+}
+
+.custom-select-panel.is-open {
+    display: block;
+}
+
+.custom-select-option {
+    padding: 12px 15px;
+    color: #fff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.custom-select-option:last-child {
+    border-bottom: none;
+}
+
+.custom-select-option:hover,
+.custom-select-option.is-selected {
+    background: rgba(216, 176, 86, 0.12);
+    color: var(--gold-color);
 }
 
 /* 3. السهم الذهبي الجانبي */
@@ -4089,9 +4173,44 @@ html {
         
         @media (max-width: 768px) {
             .contact-wrapper {
-                flex-direction: column;
-                padding: 25px;
-                gap: 40px;
+                gap: 14px;
+                padding: 14px;
+                align-items: flex-start;
+            }
+
+            .contact-info {
+                flex: 0 0 40%;
+                gap: 16px;
+            }
+
+            .contact-form-container {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .contact-info-block {
+                gap: 8px;
+                align-items: flex-start;
+            }
+
+            .contact-info-icon {
+                width: 18px;
+                flex-shrink: 0;
+            }
+
+            .contact-info-title {
+                font-size: 0.8rem !important;
+            }
+
+            .contact-info-copy {
+                font-size: 0.72rem;
+                line-height: 1.4;
+            }
+
+            .contact-input {
+                padding: 10px;
+                font-size: 0.8rem;
+                margin-bottom: 10px;
             }
         }
 

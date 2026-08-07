@@ -515,8 +515,100 @@
             } else {
                 districtSelect.disabled = true;
             }
+            // القايمة المخصصة بتاعة الحي لازم تتحدث كمان بعد تغيير المحافظة
+            if (districtSelect._refreshCustomDropdown) districtSelect._refreshCustomDropdown();
         });
     }
+
+    // ============================================
+    // قايمة مخصصة (Custom Dropdown) بدل قايمة نظام التشغيل الافتراضية
+    // اللي بتاخد الشاشة كلها بالأبيض على الموبايل. بتشتغل فوق نفس الـ <select>
+    // الأصلي (بيفضل موجود مخفي) عشان أي كود تاني بيقرا قيمته يفضل شغال عادي.
+    // ============================================
+    function setupCustomDropdown(selectEl) {
+        if (!selectEl || selectEl._customDropdownReady) return;
+        const wrapper = selectEl.closest('.select-wrapper');
+        if (!wrapper) return;
+
+        wrapper.classList.add('has-custom-dropdown');
+
+        const display = document.createElement('div');
+        display.className = 'custom-select-display';
+        display.setAttribute('tabindex', '0');
+
+        const panel = document.createElement('div');
+        panel.className = 'custom-select-panel';
+
+        wrapper.appendChild(display);
+        wrapper.appendChild(panel);
+
+        function currentPlaceholder() {
+            const ph = selectEl.querySelector('option[value=""]');
+            return ph ? ph.textContent : 'Select';
+        }
+
+        function refresh() {
+            // بنبني القايمة من جديد من الـ <select> الحقيقي في كل مرة،
+            // عشان لو الخيارات اتغيرت (زي الحي بعد اختيار المحافظة) تتحدث تلقائي
+            panel.innerHTML = '';
+            const options = Array.from(selectEl.options).filter(o => o.value !== '');
+            options.forEach(opt => {
+                const item = document.createElement('div');
+                item.className = 'custom-select-option' + (opt.value === selectEl.value ? ' is-selected' : '');
+                item.textContent = opt.textContent;
+                item.addEventListener('click', () => {
+                    selectEl.value = opt.value;
+                    selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+                    closePanel();
+                });
+                panel.appendChild(item);
+            });
+
+            if (selectEl.disabled) {
+                wrapper.classList.add('is-disabled');
+            } else {
+                wrapper.classList.remove('is-disabled');
+            }
+
+            if (selectEl.value) {
+                display.textContent = selectEl.options[selectEl.selectedIndex].textContent;
+                display.classList.add('has-value');
+            } else {
+                display.textContent = currentPlaceholder();
+                display.classList.remove('has-value');
+            }
+        }
+
+        function openPanel() {
+            if (selectEl.disabled) return;
+            document.querySelectorAll('.custom-select-panel.is-open').forEach(p => { if (p !== panel) p.classList.remove('is-open'); });
+            document.querySelectorAll('.custom-select-display.is-open').forEach(d => { if (d !== display) d.classList.remove('is-open'); });
+            refresh();
+            panel.classList.add('is-open');
+            display.classList.add('is-open');
+        }
+
+        function closePanel() {
+            panel.classList.remove('is-open');
+            display.classList.remove('is-open');
+            refresh();
+        }
+
+        display.addEventListener('click', () => {
+            if (panel.classList.contains('is-open')) closePanel(); else openPanel();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!wrapper.contains(e.target)) closePanel();
+        });
+
+        selectEl._refreshCustomDropdown = refresh;
+        selectEl._customDropdownReady = true;
+        refresh();
+    }
+
+    setupCustomDropdown(govSelect);
+    setupCustomDropdown(districtSelect);
 
 function initSmartCheckout() {
     const loggedInUser = localStorage.getItem('sunbook_username');
