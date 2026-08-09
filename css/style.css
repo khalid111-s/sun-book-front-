@@ -2105,7 +2105,7 @@ ul.social-row {
     }
 
     .cart-items-wrapper {
-        flex: 1.3;
+        flex: 1.5;
         min-width: 0;
     }
 
@@ -2199,6 +2199,7 @@ ul.social-row {
     .cart-summary .apply-btn, .cart-summary button:not(.checkout-btn) {
         padding: 8px 10px;
         font-size: 0.75rem;
+        width: 100%;
     }
 
     .checkout-btn {
@@ -2249,6 +2250,22 @@ ul.social-row {
 .apply-btn:hover {
     background: var(--gold-color);
     color: var(--text-dark);
+}
+
+/* صف كود الخصم كان عرضه ثابت بيطلع برّه صندوق الملخص الضيق على الموبايل، بقى فوق بعض بدل جنب بعض
+   (الأوفررايد ده متحط بعد التعريف الأساسي فوق عشان يبقى هو الفعلي) */
+@media (max-width: 900px) {
+    .promo-code-container {
+        flex-direction: column;
+        gap: 8px;
+        margin: 14px 0;
+    }
+
+    .promo-input {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
 }
 
 /* =========================================
