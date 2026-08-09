@@ -3154,7 +3154,7 @@ ul.social-row {
     }
 
     .checkout-layout {
-        padding-top: 230px; /* مسافة فاضية فوق عشان صندوق الملخص الثابت (fixed) مايغطيش أول الفورم */
+        padding-top: calc(38vh + 110px); /* المساحة دي مربوطة رياضيًا بارتفاع صندوق الملخص الثابت تحت، عشان دايمًا تفضل كافية */
     }
 
     .checkout-summary-area {
@@ -3162,7 +3162,7 @@ ul.social-row {
         top: 82px; /* تحت الهيدر الثابت مباشرة */
         left: 12px;
         right: 12px;
-        max-height: 42vh;
+        max-height: 38vh;
         overflow-y: auto;
         z-index: 80;
         margin: 0;
