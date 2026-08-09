@@ -3153,10 +3153,20 @@ ul.social-row {
         font-size: 1.05rem;
     }
 
+    .checkout-layout {
+        padding-top: 230px; /* مسافة فاضية فوق عشان صندوق الملخص الثابت (fixed) مايغطيش أول الفورم */
+    }
+
     .checkout-summary-area {
-        margin-top: 6px;
-        order: -1; /* يظهر فوق الفورم على الموبايل، وبينزل عادي مع باقي الصفحة وانت بتسكرول */
-        margin-bottom: 10px;
+        position: fixed;
+        top: 82px; /* تحت الهيدر الثابت مباشرة */
+        left: 12px;
+        right: 12px;
+        max-height: 42vh;
+        overflow-y: auto;
+        z-index: 80;
+        margin: 0;
+        order: 0;
     }
 
     .checkout-summary-area .checkout-box {
