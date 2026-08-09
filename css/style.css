@@ -173,6 +173,14 @@ body {
     margin-left: 10px;
 }
 
+@media (max-width: 600px) {
+    .promo-banner {
+        padding: 8px 12px;
+        font-size: 0.72rem;
+        line-height: 1.4;
+    }
+}
+
 .hero-visual {
     opacity: 1;
     transform: none;
