@@ -2799,6 +2799,7 @@ ul.social-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
     background: rgba(255, 255, 255, 0.03);
     padding: 12px 15px;
     border-radius: 8px;
