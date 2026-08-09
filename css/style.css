@@ -2096,116 +2096,40 @@ ul.social-row {
     border: none;
 }
 
-/* ريسبونسف للكارت: خليناها جنب بعض زي الديسكتوب بس بمقاسات مضغوطة، بدل ما الملخص ينزل تحت المنتجات كلها */
+/* ريسبونسف للكارت: المنتجات فوق بعرض كامل، وملخص الطلب تحتها بعرض كامل برضو (كل واحد ياخد راحته) */
 @media (max-width: 900px) {
     .cart-layout {
-        flex-direction: row;
-        gap: 12px;
-        align-items: flex-start;
+        flex-direction: column;
+        gap: 20px;
     }
 
     .cart-items-wrapper {
-        flex: 1.5;
+        width: 100%;
         min-width: 0;
     }
 
-    .cart-items-container {
-        gap: 12px;
-    }
-
     .cart-item {
-        flex-wrap: wrap;
-        padding: 10px;
-        gap: 10px;
+        padding: 14px;
+        gap: 14px;
         border-radius: 10px;
     }
 
     .cart-item-img {
-        width: 55px;
-        height: 55px;
-    }
-
-    .cart-item-info {
-        min-width: 0;
-    }
-
-    .cart-item-title {
-        font-size: 0.85rem;
-        margin-bottom: 3px;
-    }
-
-    .item-type-badge {
-        font-size: 0.6rem;
-        padding: 2px 6px;
-    }
-
-    .cart-item-actions {
-        gap: 8px;
-    }
-
-    .cart-item-price {
-        font-size: 0.85rem;
-    }
-
-    .cart-qty {
-        width: 44px;
-        height: 28px;
-        font-size: 0.75rem;
-    }
-
-    .qty-btn {
-        width: 22px;
-        height: 22px;
-        font-size: 0.75rem;
-    }
-
-    .remove-btn {
-        font-size: 0.7rem;
+        width: 70px;
+        height: 70px;
     }
 
     .cart-summary {
         position: static;
-        flex: 1;
+        width: 100%;
         min-width: 0;
-        padding: 14px;
+        padding: 20px;
         border-radius: 10px;
     }
 
-    .summary-title {
-        font-size: 1rem;
-        margin-bottom: 14px;
-    }
-
-    .summary-row {
-        font-size: 0.78rem;
-        margin-bottom: 10px;
-        flex-wrap: wrap;
-        gap: 2px;
-    }
-
-    .summary-divider {
-        margin: 12px 0;
-    }
-
-    .total-row {
-        font-size: 0.9rem;
-    }
-
-    #promo-code, .cart-summary input {
-        padding: 8px;
-        font-size: 0.75rem;
-    }
-
-    .cart-summary .apply-btn, .cart-summary button:not(.checkout-btn) {
-        padding: 8px 10px;
-        font-size: 0.75rem;
-        width: 100%;
-    }
-
     .checkout-btn {
-        padding: 11px;
-        font-size: 0.85rem;
-        margin-top: 12px;
+        padding: 13px;
+        margin-top: 14px;
     }
 }
 
