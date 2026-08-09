@@ -2865,11 +2865,17 @@ ul.social-row {
     .modal-left {
         border-right: 1px solid rgba(216, 176, 86, 0.1);
         border-bottom: none;
+        flex: 1.15; /* شوية مساحة زيادة عن اليمين عشان يحس بتوازن أكتر */
     }
 
-    /* زرار "Confirm & Book" ينزل لآخر العمود، عشان العمودين (التقويم والسعر/المواعيد) يبقوا مليانين بنفس الطول بالظبط */
+    .modal-right {
+        flex: 0.95;
+        justify-content: space-between; /* المساحة الفاضية توزع بين الأقسام كلها، مش تتجمع فوق الزرار بس */
+    }
+
+    /* مسافة أمان واضحة بين آخر ميعاد والزرار، عشان مايبقاش لازق فيه */
     .confirm-booking-btn {
-        margin-top: auto !important;
+        margin-top: 20px !important;
     }
 
     .author-mini-profile h3 { font-size: 0.85rem; }
