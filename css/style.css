@@ -3140,9 +3140,45 @@ ul.social-row {
     color: var(--gold-color);
 }
 
+/* ريسبونسف للموبايل: شريط "Pay Now" بقى ثابت تحت في الشاشة طول الوقت (زي أي متجر إلكتروني كبير)،
+   بدل ما يكون زرار عادي وسط الصفحة لازم تنزل تدور عليه */
 @media (max-width: 850px) {
     .checkout-layout { flex-direction: column; }
     .input-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .checkout-page-section {
+        padding-bottom: 90px; /* مسافة أمان في آخر الصفحة عشان الشريط الثابت مايغطيش آخر حاجة */
+    }
+
+    .checkout-box {
+        padding: 18px;
+        margin-bottom: 4px;
+    }
+
+    .checkout-title {
+        font-size: 1.05rem;
+    }
+
+    #confirmPaymentBtn {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 900;
+        border-radius: 0;
+        margin: 0;
+        width: 100%;
+        height: 56px;
+        box-shadow: 0 -8px 25px rgba(0,0,0,0.6);
+    }
+
+    .checkout-summary-area {
+        margin-top: 6px;
+    }
+
+    .checkout-summary-area .checkout-box {
+        background: rgba(255, 255, 255, 0.035);
+    }
 }
 
 /* =========================================
