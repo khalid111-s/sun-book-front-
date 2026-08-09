@@ -2656,6 +2656,13 @@ ul.social-row {
     background: #1a1a1a;
     padding: 30px;
     border-right: 1px solid rgba(216, 176, 86, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-days {
+    flex: 1;
+    align-content: space-evenly; /* الأيام تتوزع على المساحة الفاضية كلها بدل ما تتكوم فوق وتسيب فراغ تحت */
 }
 
 .author-mini-profile {
@@ -2791,12 +2798,17 @@ ul.social-row {
 .quantity-price {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     background: rgba(255, 255, 255, 0.03);
     padding: 12px 15px;
     border-radius: 8px;
     color: var(--text-gray);
     font-size: 0.95rem;
     border: 1px solid rgba(216, 176, 86, 0.2);
+}
+
+.quantity-price span {
+    white-space: nowrap; /* عشان "Quantity 1" ميتلغبطش على سطرين تاني */
 }
 
 .gold-text {
