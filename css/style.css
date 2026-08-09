@@ -2765,6 +2765,8 @@ ul.social-row {
     padding: 30px;
     position: relative;
     background: #131313;
+    display: flex;
+    flex-direction: column;
 }
 
 .close-modal {
@@ -2853,7 +2855,7 @@ ul.social-row {
 
 /* ريسبونسف للموبايل */
 @media (max-width: 800px) {
-    .booking-modal-content { max-height: 90vh; overflow-y: auto; width: 96%; align-items: flex-start; }
+    .booking-modal-content { max-height: 90vh; overflow-y: auto; width: 96%; align-items: stretch; }
 
     /* التقويم وتفاصيل الحجز بقوا جنب بعض بالعرض زي الديسكتوب، بس بمقاسات مصغّرة عشان يتناسبوا مع عرض الموبايل */
     .modal-left, .modal-right {
@@ -2863,6 +2865,11 @@ ul.social-row {
     .modal-left {
         border-right: 1px solid rgba(216, 176, 86, 0.1);
         border-bottom: none;
+    }
+
+    /* زرار "Confirm & Book" ينزل لآخر العمود، عشان العمودين (التقويم والسعر/المواعيد) يبقوا مليانين بنفس الطول بالظبط */
+    .confirm-booking-btn {
+        margin-top: auto !important;
     }
 
     .author-mini-profile h3 { font-size: 0.85rem; }
