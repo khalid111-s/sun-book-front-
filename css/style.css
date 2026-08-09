@@ -2165,7 +2165,7 @@ ul.social-row {
     background: transparent;
     color: var(--gold-color);
     border: 1px solid var(--gold-color);
-    padding: 0 20px;
+    padding: 12px 20px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
