@@ -3155,11 +3155,8 @@ ul.social-row {
 
     .checkout-summary-area {
         margin-top: 6px;
-        order: -1; /* يظهر فوق الفورم على الموبايل */
+        order: -1; /* يظهر فوق الفورم على الموبايل، وبينزل عادي مع باقي الصفحة وانت بتسكرول */
         margin-bottom: 10px;
-        position: sticky;
-        top: 90px; /* تحت النافبار مباشرة، وبيفضل ثابت وانت بتسكرول لحد ما توصل لآخر الصفحة */
-        z-index: 50;
     }
 
     .checkout-summary-area .checkout-box {
