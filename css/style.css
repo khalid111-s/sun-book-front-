@@ -175,9 +175,19 @@ body {
 
 @media (max-width: 600px) {
     .promo-banner {
-        padding: 8px 12px;
-        font-size: 0.72rem;
-        line-height: 1.4;
+        padding: 6px 10px;
+        font-size: 0.58rem;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow-x: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+
+    .promo-banner-link {
+        flex-shrink: 0;
     }
 }
 
@@ -3529,14 +3539,13 @@ ul.social-row {
    تأثيرات الظهور التدريجي عند التمرير (Scroll Reveal)
    ========================================= */
 .reveal {
-    opacity: 0;
-    transform: translateY(40px); /* البداية: العنصر مخفي ونازل لتحت شوية */
-    transition: all 0.8s cubic-bezier(0.5, 0, 0, 1); /* حركة ناعمة ومريحة للعين */
+    opacity: 1;
+    transform: none; /* شيلنا تأثير الاختفاء/الظهور التدريجي، كل حاجة ظاهرة وثابتة من الأول */
 }
 
 .reveal.active {
     opacity: 1;
-    transform: translateY(0); /* النهاية: العنصر بيظهر ويرجع لمكانه الطبيعي */
+    transform: translateY(0);
 }
 
 /* عشان نضمن إن الهيدر وشريط الإعلانات ميأثروش بحاجة لو خدوا الكلاس بالغلط */
