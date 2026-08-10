@@ -1,14 +1,14 @@
 
 // 1. قاعدة البيانات المصغرة
 const productsData = [
-    { id: 1, title: "Trio Wisdom Bundle - English Paperback x3", price: "£79.99", image: "assets/book-bundle.png", description: "A powerful collection of ancient wisdom...", type: "physical" },
-    { id: 2, title: "Book of Symbolism - E-Book", price: "£34.99", image: "assets/book-symbolism.png", description: "Unlock the hidden meanings...", type: "digital" },
-    { id: 3, title: "The Golden Path - Hardcover", price: "£45.00", image: "assets/book-bundle.png", description: "Trace the steps of the ancients...", type: "physical" },
-    { id: 4, title: "Secrets of the Ancients - Digital Edition", price: "£30.00", image: "assets/book-symbolism.png", description: "A deep dive into the esoteric knowledge...", type: "digital" },
-    { id: 5, title: "Lost Rituals - Standard Edition", price: "£25.99", image: "assets/book-wisdom.png", description: "Discover the forgotten ceremonies that shaped the ancient civilizations and their connection to the cosmos.", type: "digital" },
-    { id: 6, title: "The Lunar Chronicles", price: "£22.50", image: "assets/book-prophecy.png", description: "Understand the profound influence of lunar cycles on ancient magic, prophecies, and human history.", type: "digital" },
-    { id: 7, title: "Mystic Elements Bundle", price: "£60.00", image: "assets/book-bundle.png", description: "Master the elements. This exclusive bundle brings together the core teachings of earth, water, air, and fire.", type: "physical" },
-    { id: 8, title: "The Sun Book - Exclusive", price: "£55.00", image: "assets/book-symbolism.png", description: "The masterpiece of our collection. The Sun Book holds the ultimate truth of the solar deities.", type: "physical" }
+    { id: 1, title: "Trio Wisdom Bundle - English Paperback x3", price: "E£79.99", image: "assets/book-bundle.png", description: "A powerful collection of ancient wisdom...", type: "physical" },
+    { id: 2, title: "Book of Symbolism - E-Book", price: "E£34.99", image: "assets/book-symbolism.png", description: "Unlock the hidden meanings...", type: "digital" },
+    { id: 3, title: "The Golden Path - Hardcover", price: "E£45.00", image: "assets/book-bundle.png", description: "Trace the steps of the ancients...", type: "physical" },
+    { id: 4, title: "Secrets of the Ancients - Digital Edition", price: "E£30.00", image: "assets/book-symbolism.png", description: "A deep dive into the esoteric knowledge...", type: "digital" },
+    { id: 5, title: "Lost Rituals - Standard Edition", price: "E£25.99", image: "assets/book-wisdom.png", description: "Discover the forgotten ceremonies that shaped the ancient civilizations and their connection to the cosmos.", type: "digital" },
+    { id: 6, title: "The Lunar Chronicles", price: "E£22.50", image: "assets/book-prophecy.png", description: "Understand the profound influence of lunar cycles on ancient magic, prophecies, and human history.", type: "digital" },
+    { id: 7, title: "Mystic Elements Bundle", price: "E£60.00", image: "assets/book-bundle.png", description: "Master the elements. This exclusive bundle brings together the core teachings of earth, water, air, and fire.", type: "physical" },
+    { id: 8, title: "The Sun Book - Exclusive", price: "E£55.00", image: "assets/book-symbolism.png", description: "The masterpiece of our collection. The Sun Book holds the ultimate truth of the solar deities.", type: "physical" }
 ];
 
 // 2. كود صفحة المنتج
@@ -109,7 +109,7 @@ function renderCart() {
                 </div>
             `;
             container.innerHTML += itemHTML;
-            const priceNumber = parseFloat(item.price.replace('£', ''));
+            const priceNumber = parseFloat(item.price.replace(/[^0-9.]/g, ''));
             totalPrice += (priceNumber * item.qty);
         });
 
@@ -134,7 +134,7 @@ function updateOrderSummary(total) {
         <h3 class="summary-title">Order Summary</h3>
         <div class="summary-row">
             <span>Subtotal</span>
-            <span>£${total.toFixed(2)}</span>
+            <span>E£${total.toFixed(2)}</span>
         </div>
     `;
 
@@ -142,7 +142,7 @@ function updateOrderSummary(total) {
         summaryHTML += `
         <div class="summary-row" style="color: var(--gold-color); font-weight: bold;">
             <span>Member Discount (5%)</span>
-            <span>-£${discount.toFixed(2)}</span>
+            <span>-E£${discount.toFixed(2)}</span>
         </div>
         `;
     }
@@ -155,7 +155,7 @@ function updateOrderSummary(total) {
         <hr class="summary-divider">
         <div class="summary-row total-row">
             <span>Total</span>
-            <span>£${finalTotal.toFixed(2)}</span>
+            <span>E£${finalTotal.toFixed(2)}</span>
         </div>
         <a href="checkout.html" class="btn-shop checkout-btn" style="text-align: center; text-decoration: none; display: block;" id="mainCheckoutBtn">Proceed to Checkout</a>
     `;
@@ -685,7 +685,7 @@ if (confirmBookingBtn && !document.body.classList.contains('use-api-booking')) {
         const bookingItem = {
             id: 'booking-' + Date.now(),
             title: 'Exclusive One-on-One Session',
-            price: '£199.00',
+            price: 'E£199.00',
             image: 'assets/sun-icon.png',
             description: `Session on ${selectedDateStr} at ${selectedTimeBtn.innerText.trim()}`,
             type: 'booking',
@@ -784,7 +784,7 @@ function initSmartCheckout() {
         cart.forEach(item => {
             const typeLabel = item.type === 'digital' ? 'Digital (PDF)' : item.type === 'booking' ? 'Session' : 'Physical Book';
             const typeColor = item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)';
-            const priceNum = parseFloat(item.price.replace('£', ''));
+            const priceNum = parseFloat(item.price.replace(/[^0-9.]/g, ''));
             totalPrice += (priceNum * item.qty);
 
             listContainer.innerHTML += `
@@ -806,7 +806,7 @@ function initSmartCheckout() {
         finalTotal = totalPrice - (totalPrice * 0.05);
     }
     const totalPriceEl = document.getElementById('checkout-total-price');
-    if (totalPriceEl) totalPriceEl.innerText = `£${finalTotal.toFixed(2)}`;
+    if (totalPriceEl) totalPriceEl.innerText = `E£${finalTotal.toFixed(2)}`;
 }
 
 /* =========================================

@@ -114,7 +114,7 @@
                     <hr class="summary-divider">
                     <div class="summary-row total-row">
                         <span>Total to pay</span>
-                        <span id="checkout-total-price">£0.00</span>
+                        <span id="checkout-total-price">E£0.00</span>
                     </div>
                 </div>
             </div>
@@ -203,7 +203,7 @@
                         dateStr: item.bookingDetails.date,
                         timeStr: item.bookingDetails.time,
                         subject: item.title,
-                        price: parseFloat(String(item.price).replace('£', '')) || 199,
+                        price: parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 199,
                         notes: `Preferred time: ${item.bookingDetails.time}`,
                     });
                     // لو Paymob جهز رابط دفع حقيقي، نحفظه عشان نوجه المستخدم ليه
@@ -233,7 +233,7 @@
 
         let totalPrice = 0;
         cart.forEach(item => {
-            const priceNum = parseFloat(item.price.replace('£', ''));
+            const priceNum = parseFloat(item.price.replace(/[^0-9.]/g, ''));
             totalPrice += (priceNum * item.qty);
         });
 
@@ -734,7 +734,7 @@ function initSmartCheckout() {
         cart.forEach(item => {
             const typeLabel = item.type === 'digital' ? 'Digital (PDF)' : item.type === 'booking' ? 'Session' : 'Physical Book';
             const typeColor = item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)';
-            const priceNum = parseFloat(item.price.replace('£', ''));
+            const priceNum = parseFloat(item.price.replace(/[^0-9.]/g, ''));
             totalPrice += (priceNum * item.qty);
 
                         const sessionDetails = (item.type === 'booking' && item.bookingDetails) 
@@ -773,7 +773,7 @@ function initSmartCheckout() {
         finalTotal = totalPrice - (totalPrice * 0.05);
     }
     const totalPriceEl = document.getElementById('checkout-total-price');
-    if (totalPriceEl) totalPriceEl.innerText = `£${finalTotal.toFixed(2)}`;
+    if (totalPriceEl) totalPriceEl.innerText = `E£${finalTotal.toFixed(2)}`;
 }
 
     // =========================================
