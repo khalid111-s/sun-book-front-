@@ -114,7 +114,7 @@
                     <hr class="summary-divider">
                     <div class="summary-row total-row">
                         <span>Total to pay</span>
-                        <span id="checkout-total-price">E£0.00</span>
+                        <span id="checkout-total-price">LE 0.00</span>
                     </div>
                 </div>
             </div>
@@ -773,7 +773,7 @@ function initSmartCheckout() {
         finalTotal = totalPrice - (totalPrice * 0.05);
     }
     const totalPriceEl = document.getElementById('checkout-total-price');
-    if (totalPriceEl) totalPriceEl.innerText = `E£${finalTotal.toFixed(2)}`;
+    if (totalPriceEl) totalPriceEl.innerText = `LE ${finalTotal.toFixed(2)}`;
 }
 
     // =========================================
