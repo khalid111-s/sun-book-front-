@@ -61,6 +61,27 @@ const api = {
 
   getTeachers: () => api.request('/users/teachers/list'),
 
+  getProducts: () => api.request('/products'),
+
+  getProduct: (id) => api.request(`/products/${id}`),
+
+  createProduct: (data) =>
+    api.request('/products', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateProduct: (id, data) =>
+    api.request(`/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  deleteProduct: (id) =>
+    api.request(`/products/${id}`, {
+      method: 'DELETE',
+    }),
+
   createBooking: (data) =>
     api.request('/bookings', {
       method: 'POST',

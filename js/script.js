@@ -1,36 +1,175 @@
 
-// 1. قاعدة البيانات المصغرة
-const productsData = [
-    { id: 1, title: "Trio Wisdom Bundle - English Paperback x3", price: "LE 79.99", image: "assets/book-bundle.png", description: "A powerful collection of ancient wisdom...", type: "physical" },
-    { id: 2, title: "Book of Symbolism - E-Book", price: "LE 34.99", image: "assets/book-symbolism.png", description: "Unlock the hidden meanings...", type: "digital" },
-    { id: 3, title: "The Golden Path - Hardcover", price: "LE 45.00", image: "assets/book-bundle.png", description: "Trace the steps of the ancients...", type: "physical" },
-    { id: 4, title: "Secrets of the Ancients - Digital Edition", price: "LE 30.00", image: "assets/book-symbolism.png", description: "A deep dive into the esoteric knowledge...", type: "digital" },
-    { id: 5, title: "Lost Rituals - Standard Edition", price: "LE 25.99", image: "assets/book-wisdom.png", description: "Discover the forgotten ceremonies that shaped the ancient civilizations and their connection to the cosmos.", type: "digital" },
-    { id: 6, title: "The Lunar Chronicles", price: "LE 22.50", image: "assets/book-prophecy.png", description: "Understand the profound influence of lunar cycles on ancient magic, prophecies, and human history.", type: "digital" },
-    { id: 7, title: "Mystic Elements Bundle", price: "LE 60.00", image: "assets/book-bundle.png", description: "Master the elements. This exclusive bundle brings together the core teachings of earth, water, air, and fire.", type: "physical" },
-    { id: 8, title: "The Sun Book - Exclusive", price: "LE 55.00", image: "assets/book-symbolism.png", description: "The masterpiece of our collection. The Sun Book holds the ultimate truth of the solar deities.", type: "physical" }
-];
+// =========================================
+// المنتجات: بتتحمّل من الباك اند (Mongo) بدل ما تكون ثابتة في الكود
+// =========================================
+let productsData = [];
 
-// 2. كود صفحة المنتج
+function formatPrice(n) {
+    return `LE ${Number(n).toFixed(2)}`;
+}
+
+// بيحوّل شكل المنتج الجاي من الـ API لنفس الشكل اللي باقي الكود متعود عليه
+function normalizeProduct(p) {
+    return {
+        id: p._id,
+        title: p.title,
+        price: formatPrice(p.price),
+        image: p.image,
+        description: p.description,
+        type: p.type,
+        badges: p.badges || [],
+        featured: !!p.featured,
+    };
+}
+
 const urlParams = new URLSearchParams(window.location.search);
 const productId = urlParams.get('id');
 
-if (productId) {
-    const product = productsData.find(item => item.id == productId);
-    if (product) {
-        const imgEl = document.getElementById('main-product-img');
-        const titleEl = document.getElementById('product-title');
-        const priceEl = document.getElementById('product-price');
-        const descEl = document.getElementById('product-desc');
-        if (imgEl) imgEl.src = product.image;
-        if (titleEl) titleEl.innerText = product.title;
-        if (priceEl) priceEl.innerText = product.price;
-        if (descEl) descEl.innerText = product.description;
-    } else {
-        const titleEl = document.getElementById('product-title');
-        if (titleEl) titleEl.innerText = "Product Not Found";
+function renderProductNotFound() {
+    const titleEl = document.getElementById('product-title');
+    const descEl = document.getElementById('product-desc');
+    const priceEl = document.getElementById('product-price');
+    if (titleEl) titleEl.innerText = 'Product Not Found';
+    if (descEl) descEl.innerText = 'This book is no longer available.';
+    if (priceEl) priceEl.innerText = '';
+}
+
+// كود صفحة المنتج (product.html): بيجيب المنتج الواحد مباشرة من الـ API
+async function loadSingleProductPage() {
+    if (!productId) return;
+    const titleEl = document.getElementById('product-title');
+    const priceEl = document.getElementById('product-price');
+    const descEl = document.getElementById('product-desc');
+    const imgEl = document.getElementById('main-product-img');
+
+    try {
+        const { data: product } = await api.getProduct(productId);
+        if (!product) {
+            renderProductNotFound();
+            return;
+        }
+        const normalized = normalizeProduct(product);
+        if (imgEl) imgEl.src = normalized.image;
+        if (titleEl) titleEl.innerText = normalized.title;
+        if (priceEl) priceEl.innerText = normalized.price;
+        if (descEl) descEl.innerText = normalized.description;
+
+        // نحدّث الكاش المحلي كمان عشان زرار "Add to Cart" يلاقي المنتج
+        const existingIndex = productsData.findIndex(item => item.id == normalized.id);
+        if (existingIndex >= 0) productsData[existingIndex] = normalized;
+        else productsData.push(normalized);
+    } catch (err) {
+        console.error('Failed to load product:', err);
+        renderProductNotFound();
     }
 }
+
+// عرض كارت منتج واحد (نفس الـ HTML structure المستخدم أصلاً في index.html)
+function productCardHTML(product) {
+    const badgesHTML = (product.badges || [])
+        .map(b => `<span class="badge">${b}</span>`)
+        .join('');
+    return `
+        <div class="product-card">
+            <div class="card-image-wrapper">
+                <a href="product.html?id=${product.id}">
+                    <img src="${product.image}" alt="${product.title}" class="card-img" loading="lazy">
+                </a>
+            </div>
+            <div class="card-info-wrapper">
+                <a href="product.html?id=${product.id}" style="text-decoration: none;">
+                    <h3 class="card-title">${product.title}</h3>
+                </a>
+                <div class="card-badges">${badgesHTML}</div>
+                <p class="card-desc">${product.description}</p>
+                <div class="card-bottom">
+                    <div class="price-block">
+                        <span class="price-label">PRICE</span>
+                        <span class="price-amount">${product.price}</span>
+                    </div>
+                    <button class="add-to-cart-new add-to-cart" data-id="${product.id}">Add to cart</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function cardsSkeletonHTML(count) {
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `
+            <div class="product-card">
+                <div class="skeleton skeleton-img" style="height: 220px;"></div>
+                <div class="card-info-wrapper">
+                    <div class="skeleton skeleton-title"></div>
+                    <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                    <div class="skeleton skeleton-text" style="width: 30%;"></div>
+                </div>
+            </div>
+        `;
+    }
+    return html;
+}
+
+// نربط زراير "Add to cart" جوه grid معين باستخدام event delegation
+// (أسهل وأضمن من ما نلف على كل كارت لوحده، خصوصًا إن الكروت بتتحقن ديناميكيًا)
+function bindAddToCartDelegation(container) {
+    if (!container || container.dataset.cartBound === 'true') return;
+    container.dataset.cartBound = 'true';
+    container.addEventListener('click', (e) => {
+        const btn = e.target.closest('.add-to-cart');
+        if (!btn || !container.contains(btn)) return;
+        const id = btn.dataset.id;
+        if (id) addToCart(id, 1);
+    });
+}
+
+// كود الصفحة الرئيسية (index.html): بيرندر Best Offers و All Products من الـ API
+async function loadHomepageProducts() {
+    const bestOffersGrid = document.getElementById('best-offers-grid');
+    const allProductsGrid = document.getElementById('all-products-grid');
+    if (!bestOffersGrid && !allProductsGrid) return;
+
+    if (bestOffersGrid) bestOffersGrid.innerHTML = cardsSkeletonHTML(2);
+    if (allProductsGrid) allProductsGrid.innerHTML = cardsSkeletonHTML(6);
+
+    try {
+        const { data } = await api.getProducts();
+        productsData = data.map(normalizeProduct);
+
+        const featured = productsData.filter(p => p.featured);
+        if (bestOffersGrid) {
+            bestOffersGrid.innerHTML = featured.length ? featured.map(productCardHTML).join('') : '<p>No offers right now.</p>';
+            bindAddToCartDelegation(bestOffersGrid);
+        }
+        if (allProductsGrid) {
+            allProductsGrid.innerHTML = productsData.length ? productsData.map(productCardHTML).join('') : '<p>No products yet.</p>';
+            bindAddToCartDelegation(allProductsGrid);
+        }
+    } catch (err) {
+        console.error('Failed to load products:', err);
+        const errorMsg = '<p>Could not load products. Please refresh the page.</p>';
+        if (bestOffersGrid) bestOffersGrid.innerHTML = errorMsg;
+        if (allProductsGrid) allProductsGrid.innerHTML = errorMsg;
+    }
+}
+
+// كل الصفحات (بما فيها product.html) محتاجة تعرف قائمة المنتجات كاملة عشان السيرش شغال
+async function ensureProductsLoaded() {
+    if (productsData.length) return;
+    try {
+        const { data } = await api.getProducts();
+        productsData = data.map(normalizeProduct);
+    } catch (err) {
+        console.error('Failed to preload products for search:', err);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadHomepageProducts();
+    await loadSingleProductPage();
+    await ensureProductsLoaded();
+});
 
 // =========================================
 // نظام سلة المشتريات
@@ -250,26 +389,18 @@ if (productPageQty) {
 }
 
 // تفعيل زرار Add to Cart الكبير في صفحة المنتج
+// (الـ id بقى ObjectId من MongoDB مش رقم، فمفيش داعي لـ parseInt)
 const addToCartLargeBtn = document.querySelector('.add-to-cart-large');
 if (addToCartLargeBtn && typeof productId !== 'undefined' && productId) {
     addToCartLargeBtn.addEventListener('click', () => {
         const qtyVal = parseInt(document.querySelector('.single-product-section .qty-input-val').value) || 1;
-        addToCart(parseInt(productId), qtyVal);
+        addToCart(productId, qtyVal);
     });
 }
 
-// تفعيل زراير Add to Cart في الصفحة الرئيسية
-document.querySelectorAll('.product-card').forEach(card => {
-    const btn = card.querySelector('.add-to-cart');
-    const link = card.querySelector('a');
-    if (btn && link) {
-        btn.addEventListener('click', () => {
-            const url = new URL(link.href, document.baseURI);
-            const id = url.searchParams.get('id');
-            if (id) addToCart(parseInt(id), 1);
-        });
-    }
-});
+// ملحوظة: زراير "Add to Cart" في الصفحة الرئيسية (Best Offers / All Products)
+// بقت بتتربط تلقائيًا في bindAddToCartDelegation() جوه loadHomepageProducts()
+// لأن الكروت دلوقتي بتتحقن ديناميكيًا من الـ API بعد ما الصفحة تحمّل.
 
 renderCart();
 updateCartBadge();
