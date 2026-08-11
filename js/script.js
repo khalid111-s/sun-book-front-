@@ -12,10 +12,31 @@ function getOrCreateVisitorId() {
     return id;
 }
 
+function classifyReferrer() {
+    const ref = document.referrer;
+    if (!ref) return 'direct';
+    try {
+        const host = new URL(ref).hostname.replace('www.', '');
+        if (host.includes('google.')) return 'google';
+        if (host.includes('facebook.') || host.includes('fb.com')) return 'facebook';
+        if (host.includes('instagram.')) return 'instagram';
+        if (host.includes('tiktok.')) return 'tiktok';
+        if (host.includes('twitter.') || host.includes('x.com')) return 'twitter/x';
+        if (host.includes(window.location.hostname)) return 'direct'; // تنقل داخل الموقع نفسه
+        return host;
+    } catch (e) {
+        return 'direct';
+    }
+}
+
 function logPageVisit() {
     if (typeof api === 'undefined') return; // الصفحة دي مش محملة فيها api.js
     const visitorId = getOrCreateVisitorId();
-    api.logVisit({ path: window.location.pathname, visitorId }).catch(() => {
+    api.logVisit({
+        path: window.location.pathname,
+        visitorId,
+        referrer: classifyReferrer(),
+    }).catch(() => {
         // مش مشكلة لو فشل - التسجيل مش لازم يعطل أي حاجة في الموقع
     });
 }

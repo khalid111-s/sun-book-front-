@@ -129,6 +129,8 @@ function readFormData() {
     };
 }
 
+let revenueChartInstance = null;
+
 // ---------- 3. لوحة الإحصائيات (Dashboard) ----------
 async function loadDashboardStats() {
     try {
@@ -144,31 +146,120 @@ async function loadDashboardStats() {
         document.getElementById('statTotalRevenue').innerText = `LE ${Number(orderStats.totalRevenue).toFixed(2)}`;
         document.getElementById('statUniqueVisitors').innerText = visitStats.totalUniqueVisitors;
         document.getElementById('statPageViews').innerText = visitStats.totalPageViews;
+        document.getElementById('statReturningVisitors').innerText = visitStats.returningVisitors;
+        document.getElementById('statNewVisitors').innerText = visitStats.newVisitors;
 
+        const avgOrderValue = orderStats.totalOrders > 0 ? orderStats.totalRevenue / orderStats.totalOrders : 0;
+        document.getElementById('statAvgOrderValue').innerText = `LE ${avgOrderValue.toFixed(2)}`;
+
+        // نسبة السلة المتروكة: من كل الزوار اللي وصلوا لصفحة الـ checkout، كام واحد فعلاً خلّص طلب
+        const cartAbandonmentEl = document.getElementById('statCartAbandonment');
+        if (visitStats.checkoutVisitors > 0) {
+            const abandonRate = Math.max(0, 1 - orderStats.totalOrders / visitStats.checkoutVisitors) * 100;
+            cartAbandonmentEl.innerText = `${abandonRate.toFixed(0)}%`;
+        } else {
+            cartAbandonmentEl.innerText = '—';
+        }
+
+        // ---- أكتر المنتجات مبيعًا ----
         const topProductsBody = document.getElementById('topProductsBody');
-        if (orderStats.topProducts.length) {
-            topProductsBody.innerHTML = orderStats.topProducts.map(p => `
+        topProductsBody.innerHTML = orderStats.topProducts.length
+            ? orderStats.topProducts.map(p => `
                 <tr>
                     <td>${p.title}</td>
                     <td>${p.quantitySold}</td>
                     <td>LE ${Number(p.revenue).toFixed(2)}</td>
                 </tr>
-            `).join('');
-        } else {
-            topProductsBody.innerHTML = '<tr><td colspan="3">No orders yet.</td></tr>';
-        }
+            `).join('')
+            : '<tr><td colspan="3">No orders yet.</td></tr>';
 
+        // ---- الزوار حسب الدولة ----
         const topCountriesBody = document.getElementById('topCountriesBody');
-        if (visitStats.topCountries.length) {
-            topCountriesBody.innerHTML = visitStats.topCountries.map(c => `
-                <tr><td>${c.country}</td><td>${c.visitors}</td></tr>
-            `).join('');
-        } else {
-            topCountriesBody.innerHTML = '<tr><td colspan="2">No visits recorded yet.</td></tr>';
-        }
+        topCountriesBody.innerHTML = visitStats.topCountries.length
+            ? visitStats.topCountries.map(c => `<tr><td>${c.country}</td><td>${c.visitors}</td></tr>`).join('')
+            : '<tr><td colspan="2">No visits recorded yet.</td></tr>';
+
+        // ---- مصادر الزيارات ----
+        const topReferrersBody = document.getElementById('topReferrersBody');
+        topReferrersBody.innerHTML = visitStats.topReferrers.length
+            ? visitStats.topReferrers.map(r => `<tr><td>${r.referrer}</td><td>${r.visitors}</td></tr>`).join('')
+            : '<tr><td colspan="2">No visits recorded yet.</td></tr>';
+
+        // ---- الإيرادات حسب النوع ----
+        const revenueByTypeBody = document.getElementById('revenueByTypeBody');
+        const typeLabels = { physical: 'Physical Books', digital: 'Digital Books', booking: 'Sessions' };
+        revenueByTypeBody.innerHTML = orderStats.revenueByType.length
+            ? orderStats.revenueByType.map(t => `
+                <tr><td>${typeLabels[t.type] || t.type}</td><td>LE ${Number(t.revenue).toFixed(2)}</td></tr>
+            `).join('')
+            : '<tr><td colspan="2">No revenue yet.</td></tr>';
+
+        // ---- رسم بياني: الإيرادات آخر 30 يوم ----
+        renderRevenueChart(orderStats.dailyRevenue);
     } catch (err) {
         console.error('Failed to load dashboard stats:', err);
     }
+}
+
+function renderRevenueChart(dailyRevenue) {
+    const canvas = document.getElementById('revenueChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const labels = dailyRevenue.map(d => d.date.slice(5)); // MM-DD
+    const data = dailyRevenue.map(d => d.revenue);
+
+    if (revenueChartInstance) revenueChartInstance.destroy();
+
+    revenueChartInstance = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Revenue (LE)',
+                data,
+                borderColor: '#d8b056',
+                backgroundColor: 'rgba(216,176,86,0.15)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 2,
+            }],
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { color: '#c4c4c4', maxTicksLimit: 10 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                y: { ticks: { color: '#c4c4c4' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
+            },
+        },
+    });
+}
+
+// ---------- Export orders to CSV ----------
+function downloadOrdersCSV(orders) {
+    const headers = ['Date', 'Customer', 'Phone', 'Items', 'Total (LE)', 'Status'];
+    const rows = orders.map(o => [
+        new Date(o.createdAt).toLocaleString(),
+        o.customerName,
+        o.phone || '',
+        o.items.map(i => `${i.title} x${i.qty}`).join(' | '),
+        o.totalAmount,
+        o.status,
+    ]);
+
+    const csvContent = [headers, ...rows]
+        .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sunbook-orders-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 // ---------- 4. الأحداث ----------
@@ -244,6 +335,26 @@ function initAdminPanel() {
         localStorage.removeItem('sunbook_username');
         localStorage.removeItem('sunbook_user_id');
         window.location.href = 'index.html';
+    });
+
+    document.getElementById('exportOrdersBtn').addEventListener('click', async (e) => {
+        const btn = e.target;
+        const originalText = btn.innerText;
+        btn.innerText = 'Preparing...';
+        btn.disabled = true;
+        try {
+            const { data: orders } = await api.getOrders();
+            if (!orders.length) {
+                alert('No orders to export yet.');
+            } else {
+                downloadOrdersCSV(orders);
+            }
+        } catch (err) {
+            alert('Failed to export orders: ' + err.message);
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
     });
 }
 
