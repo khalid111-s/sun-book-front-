@@ -200,6 +200,12 @@
             font-size: 0.8rem;
             color: var(--text-gray);
         }
+        .stat-card-live {
+            border-color: rgba(52,168,83,0.4);
+        }
+        .stat-card-live .stat-value {
+            color: #34A853;
+        }
         .dashboard-tables {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -263,6 +269,10 @@
     <!-- ====== تاب الداشبورد: زوار، طلبات، أرباح ====== -->
     <div id="tabDashboard" class="admin-tab-panel" style="display:none;">
         <div class="stats-grid">
+            <div class="stat-card stat-card-live">
+                <span class="stat-value" id="statOnlineNow">—</span>
+                <span class="stat-label">🟢 Online Right Now</span>
+            </div>
             <div class="stat-card">
                 <span class="stat-value" id="statUniqueVisitors">—</span>
                 <span class="stat-label">Unique Visitors</span>
@@ -277,7 +287,7 @@
             </div>
             <div class="stat-card">
                 <span class="stat-value" id="statTotalRevenue">—</span>
-                <span class="stat-label">Revenue (LE)</span>
+                <span class="stat-label">Total Revenue (LE)</span>
             </div>
             <div class="stat-card">
                 <span class="stat-value" id="statReturningVisitors">—</span>
@@ -293,7 +303,11 @@
             </div>
             <div class="stat-card">
                 <span class="stat-value" id="statCartAbandonment">—</span>
-                <span class="stat-label">Cart Abandonment</span>
+                <span class="stat-label">Cart Abandonment %</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="statAbandonedCount">—</span>
+                <span class="stat-label">Didn't Complete Purchase</span>
             </div>
         </div>
 
@@ -305,6 +319,22 @@
             <canvas id="revenueChart" height="90"></canvas>
         </div>
 
+        <div class="dashboard-box" style="margin-bottom: 20px;">
+            <h3>
+                <svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                Visits — Last 30 Days
+            </h3>
+            <canvas id="visitsChart" height="90"></canvas>
+        </div>
+
+        <div class="dashboard-box" style="margin-bottom: 20px;">
+            <h3>
+                <svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="12" y2="17"></line></svg>
+                Orders — Last 30 Days
+            </h3>
+            <canvas id="ordersChart" height="90"></canvas>
+        </div>
+
         <div class="dashboard-tables">
             <div class="dashboard-box">
                 <h3><svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg> Top Selling Products</h3>
@@ -312,6 +342,14 @@
                     <thead><tr><th>Product</th><th>Qty Sold</th><th>Revenue</th></tr></thead>
                     <tbody id="topProductsBody"><tr><td colspan="3">Loading...</td></tr></tbody>
                 </table>
+            </div>
+            <div class="dashboard-box">
+                <h3><svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11.24V7.5a2.5 2.5 0 0 1 5 0v3.74"></path><path d="M18 15V9a6 6 0 0 0-12 0v6"></path><rect x="6" y="15" width="12" height="6" rx="2"></rect></svg> Most Clicked Products (Add to Cart)</h3>
+                <table class="mini-table">
+                    <thead><tr><th>Product</th><th>Clicks</th></tr></thead>
+                    <tbody id="topClickedBody"><tr><td colspan="2">Loading...</td></tr></tbody>
+                </table>
+                <p class="dashboard-note">Shows interest even from people who clicked but didn't complete the purchase.</p>
             </div>
             <div class="dashboard-box">
                 <h3><svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> Visitors by Country</h3>
@@ -340,6 +378,29 @@
                 <h3><svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Export Orders</h3>
                 <p class="dashboard-note" style="margin-top:0;">Download every order (customer, items, total, status) as a spreadsheet-ready CSV file.</p>
                 <button id="exportOrdersBtn" class="admin-logout-btn" style="width: 100%; margin-top: 10px;">Download Orders CSV</button>
+            </div>
+        </div>
+
+        <!-- ====== جدول الطلبات المفصّل ====== -->
+        <div class="dashboard-box" style="margin-bottom: 40px;">
+            <h3><svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> Recent Orders (Detailed)</h3>
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Account Name</th>
+                            <th>Buyer Name</th>
+                            <th>Items / Qty</th>
+                            <th>Total</th>
+                            <th>Country</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailedOrdersBody">
+                        <tr><td colspan="7">Loading...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

@@ -149,5 +149,21 @@ const api = {
       body: JSON.stringify(data),
     }),
 
+  sendHeartbeat: (data) =>
+    api.request('/visits/heartbeat', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  getOnlineCount: () => api.request('/visits/online'),
+
   getVisitStats: () => api.request('/visits/stats'),
+
+  logEvent: (data) =>
+    api.request('/events', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  getClickStats: (label = 'add_to_cart') => api.request(`/events/stats/clicks?label=${encodeURIComponent(label)}`),
 };

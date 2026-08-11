@@ -130,17 +130,24 @@ function readFormData() {
 }
 
 let revenueChartInstance = null;
+let visitsChartInstance = null;
+let ordersChartInstance = null;
+let onlinePollInterval = null;
 
 // ---------- 3. لوحة الإحصائيات (Dashboard) ----------
 async function loadDashboardStats() {
     try {
-        const [orderStatsRes, visitStatsRes] = await Promise.all([
+        const [orderStatsRes, visitStatsRes, clickStatsRes, ordersListRes] = await Promise.all([
             api.getOrderStats(),
             api.getVisitStats(),
+            api.getClickStats('add_to_cart'),
+            api.getOrders(),
         ]);
 
         const orderStats = orderStatsRes.data;
         const visitStats = visitStatsRes.data;
+        const clickStats = clickStatsRes.data;
+        const orders = ordersListRes.data;
 
         document.getElementById('statTotalOrders').innerText = orderStats.totalOrders;
         document.getElementById('statTotalRevenue').innerText = `LE ${Number(orderStats.totalRevenue).toFixed(2)}`;
@@ -152,13 +159,17 @@ async function loadDashboardStats() {
         const avgOrderValue = orderStats.totalOrders > 0 ? orderStats.totalRevenue / orderStats.totalOrders : 0;
         document.getElementById('statAvgOrderValue').innerText = `LE ${avgOrderValue.toFixed(2)}`;
 
-        // نسبة السلة المتروكة: من كل الزوار اللي وصلوا لصفحة الـ checkout، كام واحد فعلاً خلّص طلب
+        // نسبة وعدد السلة المتروكة: من كل الزوار اللي وصلوا لصفحة الـ checkout، كام واحد فعلاً خلّص طلب
         const cartAbandonmentEl = document.getElementById('statCartAbandonment');
+        const abandonedCountEl = document.getElementById('statAbandonedCount');
         if (visitStats.checkoutVisitors > 0) {
-            const abandonRate = Math.max(0, 1 - orderStats.totalOrders / visitStats.checkoutVisitors) * 100;
+            const abandonedCount = Math.max(0, visitStats.checkoutVisitors - orderStats.totalOrders);
+            const abandonRate = (abandonedCount / visitStats.checkoutVisitors) * 100;
             cartAbandonmentEl.innerText = `${abandonRate.toFixed(0)}%`;
+            abandonedCountEl.innerText = abandonedCount;
         } else {
             cartAbandonmentEl.innerText = '—';
+            abandonedCountEl.innerText = '—';
         }
 
         // ---- أكتر المنتجات مبيعًا ----
@@ -172,6 +183,12 @@ async function loadDashboardStats() {
                 </tr>
             `).join('')
             : '<tr><td colspan="3">No orders yet.</td></tr>';
+
+        // ---- أكتر المنتجات نقرًا على "Add to Cart" ----
+        const topClickedBody = document.getElementById('topClickedBody');
+        topClickedBody.innerHTML = clickStats.topClicked.length
+            ? clickStats.topClicked.map(c => `<tr><td>${c.title}</td><td>${c.clicks}</td></tr>`).join('')
+            : '<tr><td colspan="2">No clicks recorded yet.</td></tr>';
 
         // ---- الزوار حسب الدولة ----
         const topCountriesBody = document.getElementById('topCountriesBody');
@@ -194,11 +211,50 @@ async function loadDashboardStats() {
             `).join('')
             : '<tr><td colspan="2">No revenue yet.</td></tr>';
 
-        // ---- رسم بياني: الإيرادات آخر 30 يوم ----
+        // ---- جدول الطلبات المفصّل ----
+        const detailedOrdersBody = document.getElementById('detailedOrdersBody');
+        detailedOrdersBody.innerHTML = orders.length
+            ? orders.slice(0, 50).map(o => {
+                const itemsSummary = o.items.map(i => `${i.title} ×${i.qty}`).join(', ');
+                const accountName = o.user && o.user.name ? o.user.name : '—';
+                return `
+                    <tr>
+                        <td>${new Date(o.createdAt).toLocaleDateString()}</td>
+                        <td>${accountName}</td>
+                        <td>${o.customerName}</td>
+                        <td>${itemsSummary}</td>
+                        <td>LE ${Number(o.totalAmount).toFixed(2)}</td>
+                        <td>${o.country || 'Unknown'}</td>
+                        <td>${o.status === 'paid' ? '<span class="admin-badge-yes">Paid</span>' : o.status}</td>
+                    </tr>
+                `;
+            }).join('')
+            : '<tr><td colspan="7">No orders yet.</td></tr>';
+
+        // ---- رسوم بيانية ----
         renderRevenueChart(orderStats.dailyRevenue);
+        renderVisitsChart(visitStats.dailyVisits);
+        renderOrdersChart(orderStats.dailyRevenue); // نفس مصفوفة الإيرادات فيها عدد الطلبات لكل يوم كمان
     } catch (err) {
         console.error('Failed to load dashboard stats:', err);
     }
+}
+
+// ---------- عداد "الموجودين حاليًا" - بيتحدث لوحده كل 20 ثانية ----------
+async function refreshOnlineCount() {
+    try {
+        const { data } = await api.getOnlineCount();
+        const el = document.getElementById('statOnlineNow');
+        if (el) el.innerText = data.online;
+    } catch (err) {
+        console.error('Failed to load online count:', err);
+    }
+}
+
+function startOnlinePolling() {
+    refreshOnlineCount();
+    if (onlinePollInterval) clearInterval(onlinePollInterval);
+    onlinePollInterval = setInterval(refreshOnlineCount, 20000);
 }
 
 function renderRevenueChart(dailyRevenue) {
@@ -230,6 +286,77 @@ function renderRevenueChart(dailyRevenue) {
             scales: {
                 x: { ticks: { color: '#c4c4c4', maxTicksLimit: 10 }, grid: { color: 'rgba(255,255,255,0.05)' } },
                 y: { ticks: { color: '#c4c4c4' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
+            },
+        },
+    });
+}
+
+function renderVisitsChart(dailyVisits) {
+    const canvas = document.getElementById('visitsChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const labels = dailyVisits.map(d => d.date.slice(5));
+
+    if (visitsChartInstance) visitsChartInstance.destroy();
+
+    visitsChartInstance = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Page Views',
+                    data: dailyVisits.map(d => d.pageViews),
+                    borderColor: '#6ea8fe',
+                    backgroundColor: 'rgba(110,168,254,0.1)',
+                    tension: 0.3,
+                    pointRadius: 2,
+                },
+                {
+                    label: 'Unique Visitors',
+                    data: dailyVisits.map(d => d.visitors),
+                    borderColor: '#d8b056',
+                    backgroundColor: 'rgba(216,176,86,0.1)',
+                    tension: 0.3,
+                    pointRadius: 2,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { labels: { color: '#c4c4c4' } } },
+            scales: {
+                x: { ticks: { color: '#c4c4c4', maxTicksLimit: 10 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                y: { ticks: { color: '#c4c4c4' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
+            },
+        },
+    });
+}
+
+function renderOrdersChart(dailyRevenue) {
+    const canvas = document.getElementById('ordersChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const labels = dailyRevenue.map(d => d.date.slice(5));
+
+    if (ordersChartInstance) ordersChartInstance.destroy();
+
+    ordersChartInstance = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Orders',
+                data: dailyRevenue.map(d => d.orders),
+                backgroundColor: 'rgba(216,176,86,0.5)',
+            }],
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { color: '#c4c4c4', maxTicksLimit: 10 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                y: { ticks: { color: '#c4c4c4', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
             },
         },
     });
@@ -280,6 +407,7 @@ function initAdminPanel() {
     initTabs();
     loadProductsTable();
     loadDashboardStats();
+    startOnlinePolling();
 
     document.getElementById('productForm').addEventListener('submit', async (e) => {
         e.preventDefault();

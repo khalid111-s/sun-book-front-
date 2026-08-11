@@ -43,6 +43,20 @@ function logPageVisit() {
 
 document.addEventListener('DOMContentLoaded', logPageVisit);
 
+// نبضة كل 25 ثانية عشان لوحة تحكم الأدمن تعرف مين موجود فعليًا على الموقع دلوقتي
+function startHeartbeat() {
+    if (typeof api === 'undefined') return;
+    const send = () => {
+        api.sendHeartbeat({
+            visitorId: getOrCreateVisitorId(),
+            path: window.location.pathname,
+        }).catch(() => {});
+    };
+    send();
+    setInterval(send, 25000);
+}
+document.addEventListener('DOMContentLoaded', startHeartbeat);
+
 // =========================================
 // المنتجات: بتتحمّل من الباك اند (Mongo) بدل ما تكون ثابتة في الكود
 // =========================================
@@ -131,7 +145,7 @@ function productCardHTML(product) {
                         <span class="price-label">PRICE</span>
                         <span class="price-amount">${product.price}</span>
                     </div>
-                    <button class="add-to-cart-new add-to-cart" data-id="${product.id}">Add to cart</button>
+                    <button class="add-to-cart-new add-to-cart" data-id="${product.id}" data-title="${product.title.replace(/"/g, '&quot;')}">Add to cart</button>
                 </div>
             </div>
         </div>
@@ -165,6 +179,15 @@ function bindAddToCartDelegation(container) {
         if (!btn || !container.contains(btn)) return;
         const id = btn.dataset.id;
         if (id) addToCart(id, 1);
+
+        // تسجيل النقرة عشان "تحليل النقرات" في لوحة الأدمن
+        if (typeof api !== 'undefined') {
+            api.logEvent({
+                label: 'add_to_cart',
+                targetTitle: btn.dataset.title || '',
+                visitorId: getOrCreateVisitorId(),
+            }).catch(() => {});
+        }
     });
 }
 
@@ -439,6 +462,15 @@ if (addToCartLargeBtn && typeof productId !== 'undefined' && productId) {
     addToCartLargeBtn.addEventListener('click', () => {
         const qtyVal = parseInt(document.querySelector('.single-product-section .qty-input-val').value) || 1;
         addToCart(productId, qtyVal);
+
+        if (typeof api !== 'undefined') {
+            const titleEl = document.getElementById('product-title');
+            api.logEvent({
+                label: 'add_to_cart',
+                targetTitle: titleEl ? titleEl.innerText : '',
+                visitorId: getOrCreateVisitorId(),
+            }).catch(() => {});
+        }
     });
 }
 
