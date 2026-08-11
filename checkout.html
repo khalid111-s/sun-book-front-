@@ -248,11 +248,7 @@
             localStorage.setItem('sunbook_library', JSON.stringify(userLibrary));
         }
 
-        if (bookingItems.length > 0) {
-            // Session bookings are saved via api.bookSession above.
-        }
-
-        // ─── تسجيل طلب الكتب (فيزيكال/ديجيتال) في الباك اند عشان يظهر في لوحة تحكم الأدمن ───
+        // ─── تسجيل طلب الكتب (فيزيكال/ديجيتال) في الباك اند + الدفع عبر Paymob ───
         const bookItems = [...digitalBooks, ...physicalBooks];
         if (bookItems.length > 0) {
             try {
@@ -260,7 +256,7 @@
                 const lName = document.getElementById('ship-lastname')?.value || '';
                 const fullName = (fName + ' ' + lName).trim() || localStorage.getItem('sunbook_username') || 'Guest';
 
-                await api.createOrder({
+                const orderRes = await api.createOrder({
                     customerName: fullName,
                     phone: document.getElementById('phoneNumber')?.value || '',
                     address: document.getElementById('ship-address')?.value || '',
@@ -277,9 +273,24 @@
                         return sum + price * (item.qty || 1);
                     }, 0),
                 });
+
+                // لو Paymob جهز رابط دفع حقيقي (مفاتيح Test أو Live)، نوجّه العميل لصفحة الدفع فعليًا
+                const bookPaymentUrl = orderRes?.data?.paymentUrl;
+                if (bookPaymentUrl) {
+                    window.location.href = bookPaymentUrl;
+                    return;
+                }
             } catch (err) {
-                console.error('Failed to record order for admin stats:', err);
-                // مش هنوقف عملية الشراء بتاعة العميل لو تسجيل الإحصائية فشل
+                if (typeof showToast === 'function') {
+                    showToast(err.message || 'Order failed', 'error');
+                } else {
+                    alert(err.message || 'Order failed');
+                }
+                if (confirmBtn) {
+                    confirmBtn.innerText = 'Pay Now & Complete Order';
+                    confirmBtn.disabled = false;
+                }
+                return;
             }
         }
 

@@ -29,6 +29,53 @@
             color: var(--gold-color);
             font-family: var(--font-logo);
             font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .icon-gold {
+            width: 24px;
+            height: 24px;
+            color: var(--gold-color);
+            flex-shrink: 0;
+        }
+        .icon-gold-sm {
+            width: 16px;
+            height: 16px;
+            color: var(--gold-color);
+            flex-shrink: 0;
+            vertical-align: -3px;
+            margin-right: 4px;
+        }
+
+        /* ---- Tabs ---- */
+        .admin-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 26px;
+            border-bottom: 1px solid rgba(216,176,86,0.2);
+        }
+        .admin-tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-gray);
+            padding: 10px 18px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+        .admin-tab-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        .admin-tab-btn:hover { color: #fff; }
+        .admin-tab-btn.active {
+            color: var(--gold-color);
+            border-bottom-color: var(--gold-color);
         }
         .admin-logout-btn {
             background: transparent;
@@ -197,48 +244,64 @@
 <!-- ====== 3. لوحة التحكم نفسها (بتظهر بس بعد التأكد إن المستخدم admin) ====== -->
 <div id="adminPanel" class="admin-wrap" style="display:none;">
     <div class="admin-header">
-        <h1>📚 Products Admin</h1>
+        <h1><svg class="icon-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg> Products Admin</h1>
         <button class="admin-logout-btn" id="adminLogoutBtn">Logout</button>
     </div>
 
-    <!-- ====== Dashboard: زوار، طلبات، أرباح ====== -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <span class="stat-value" id="statUniqueVisitors">—</span>
-            <span class="stat-label">Unique Visitors</span>
+    <!-- ====== تابات: منتجات / داشبورد ====== -->
+    <div class="admin-tabs">
+        <button class="admin-tab-btn active" data-tab="products">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+            Products
+        </button>
+        <button class="admin-tab-btn" data-tab="dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            Visitors &amp; Stats
+        </button>
+    </div>
+
+    <!-- ====== تاب الداشبورد: زوار، طلبات، أرباح ====== -->
+    <div id="tabDashboard" class="admin-tab-panel" style="display:none;">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-value" id="statUniqueVisitors">—</span>
+                <span class="stat-label">Unique Visitors</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="statPageViews">—</span>
+                <span class="stat-label">Page Views</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="statTotalOrders">—</span>
+                <span class="stat-label">Orders</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="statTotalRevenue">—</span>
+                <span class="stat-label">Revenue (LE)</span>
+            </div>
         </div>
-        <div class="stat-card">
-            <span class="stat-value" id="statPageViews">—</span>
-            <span class="stat-label">Page Views</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-value" id="statTotalOrders">—</span>
-            <span class="stat-label">Orders</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-value" id="statTotalRevenue">—</span>
-            <span class="stat-label">Revenue (LE)</span>
+
+        <div class="dashboard-tables">
+            <div class="dashboard-box">
+                <h3><svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg> Top Selling Products</h3>
+                <table class="mini-table">
+                    <thead><tr><th>Product</th><th>Qty Sold</th><th>Revenue</th></tr></thead>
+                    <tbody id="topProductsBody"><tr><td colspan="3">Loading...</td></tr></tbody>
+                </table>
+            </div>
+            <div class="dashboard-box">
+                <h3><svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> Visitors by Country</h3>
+                <table class="mini-table">
+                    <thead><tr><th>Country</th><th>Visitors</th></tr></thead>
+                    <tbody id="topCountriesBody"><tr><td colspan="2">Loading...</td></tr></tbody>
+                </table>
+                <p class="dashboard-note">Country is detected automatically by Vercel — no external service used. Values may show "Unknown" while testing locally.</p>
+            </div>
         </div>
     </div>
 
-    <div class="dashboard-tables">
-        <div class="dashboard-box">
-            <h3>🏆 Top Selling Products</h3>
-            <table class="mini-table">
-                <thead><tr><th>Product</th><th>Qty Sold</th><th>Revenue</th></tr></thead>
-                <tbody id="topProductsBody"><tr><td colspan="3">Loading...</td></tr></tbody>
-            </table>
-        </div>
-        <div class="dashboard-box">
-            <h3>🌍 Visitors by Country</h3>
-            <table class="mini-table">
-                <thead><tr><th>Country</th><th>Visitors</th></tr></thead>
-                <tbody id="topCountriesBody"><tr><td colspan="2">Loading...</td></tr></tbody>
-            </table>
-            <p class="dashboard-note">Country is detected automatically by Vercel — no external service used. Values may show "Unknown" while testing locally.</p>
-        </div>
-    </div>
-
+    <!-- ====== تاب المنتجات: الفورم + الجدول ====== -->
+    <div id="tabProducts" class="admin-tab-panel">
     <div class="admin-form">
         <h2 id="formTitle">Add New Product</h2>
         <form id="productForm">
@@ -309,6 +372,7 @@
                 <tr><td colspan="7">Loading...</td></tr>
             </tbody>
         </table>
+    </div>
     </div>
 </div>
 

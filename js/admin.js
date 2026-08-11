@@ -172,7 +172,21 @@ async function loadDashboardStats() {
 }
 
 // ---------- 4. الأحداث ----------
+function initTabs() {
+    const buttons = document.querySelectorAll('.admin-tab-btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const target = btn.dataset.tab;
+            document.getElementById('tabProducts').style.display = target === 'products' ? 'block' : 'none';
+            document.getElementById('tabDashboard').style.display = target === 'dashboard' ? 'block' : 'none';
+        });
+    });
+}
+
 function initAdminPanel() {
+    initTabs();
     loadProductsTable();
     loadDashboardStats();
 
