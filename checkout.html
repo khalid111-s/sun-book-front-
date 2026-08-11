@@ -252,6 +252,37 @@
             // Session bookings are saved via api.bookSession above.
         }
 
+        // ─── تسجيل طلب الكتب (فيزيكال/ديجيتال) في الباك اند عشان يظهر في لوحة تحكم الأدمن ───
+        const bookItems = [...digitalBooks, ...physicalBooks];
+        if (bookItems.length > 0) {
+            try {
+                const fName = document.getElementById('ship-firstname')?.value || '';
+                const lName = document.getElementById('ship-lastname')?.value || '';
+                const fullName = (fName + ' ' + lName).trim() || localStorage.getItem('sunbook_username') || 'Guest';
+
+                await api.createOrder({
+                    customerName: fullName,
+                    phone: document.getElementById('phoneNumber')?.value || '',
+                    address: document.getElementById('ship-address')?.value || '',
+                    governorate: document.getElementById('governorate')?.value || '',
+                    items: bookItems.map(item => ({
+                        product: (item.id && item.id.length === 24) ? item.id : undefined,
+                        title: item.title,
+                        price: parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0,
+                        qty: item.qty || 1,
+                        type: item.type,
+                    })),
+                    totalAmount: bookItems.reduce((sum, item) => {
+                        const price = parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0;
+                        return sum + price * (item.qty || 1);
+                    }, 0),
+                });
+            } catch (err) {
+                console.error('Failed to record order for admin stats:', err);
+                // مش هنوقف عملية الشراء بتاعة العميل لو تسجيل الإحصائية فشل
+            }
+        }
+
         const newOrder = {
             id: Math.floor(Math.random() * 9000) + 1000,
             itemsCount: cart.reduce((sum, item) => sum + item.qty, 0),

@@ -129,9 +129,52 @@ function readFormData() {
     };
 }
 
+// ---------- 3. لوحة الإحصائيات (Dashboard) ----------
+async function loadDashboardStats() {
+    try {
+        const [orderStatsRes, visitStatsRes] = await Promise.all([
+            api.getOrderStats(),
+            api.getVisitStats(),
+        ]);
+
+        const orderStats = orderStatsRes.data;
+        const visitStats = visitStatsRes.data;
+
+        document.getElementById('statTotalOrders').innerText = orderStats.totalOrders;
+        document.getElementById('statTotalRevenue').innerText = `LE ${Number(orderStats.totalRevenue).toFixed(2)}`;
+        document.getElementById('statUniqueVisitors').innerText = visitStats.totalUniqueVisitors;
+        document.getElementById('statPageViews').innerText = visitStats.totalPageViews;
+
+        const topProductsBody = document.getElementById('topProductsBody');
+        if (orderStats.topProducts.length) {
+            topProductsBody.innerHTML = orderStats.topProducts.map(p => `
+                <tr>
+                    <td>${p.title}</td>
+                    <td>${p.quantitySold}</td>
+                    <td>LE ${Number(p.revenue).toFixed(2)}</td>
+                </tr>
+            `).join('');
+        } else {
+            topProductsBody.innerHTML = '<tr><td colspan="3">No orders yet.</td></tr>';
+        }
+
+        const topCountriesBody = document.getElementById('topCountriesBody');
+        if (visitStats.topCountries.length) {
+            topCountriesBody.innerHTML = visitStats.topCountries.map(c => `
+                <tr><td>${c.country}</td><td>${c.visitors}</td></tr>
+            `).join('');
+        } else {
+            topCountriesBody.innerHTML = '<tr><td colspan="2">No visits recorded yet.</td></tr>';
+        }
+    } catch (err) {
+        console.error('Failed to load dashboard stats:', err);
+    }
+}
+
 // ---------- 4. الأحداث ----------
 function initAdminPanel() {
     loadProductsTable();
+    loadDashboardStats();
 
     document.getElementById('productForm').addEventListener('submit', async (e) => {
         e.preventDefault();

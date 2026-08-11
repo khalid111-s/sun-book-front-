@@ -1,5 +1,28 @@
 
 // =========================================
+// تسجيل الزيارات: بيشتغل على كل صفحة، وبيبعت "نبضة" صغيرة للباك اند
+// عشان نعرف عدد الزوار وبلادهم في لوحة تحكم الأدمن
+// =========================================
+function getOrCreateVisitorId() {
+    let id = localStorage.getItem('sunbook_visitor_id');
+    if (!id) {
+        id = 'v_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem('sunbook_visitor_id', id);
+    }
+    return id;
+}
+
+function logPageVisit() {
+    if (typeof api === 'undefined') return; // الصفحة دي مش محملة فيها api.js
+    const visitorId = getOrCreateVisitorId();
+    api.logVisit({ path: window.location.pathname, visitorId }).catch(() => {
+        // مش مشكلة لو فشل - التسجيل مش لازم يعطل أي حاجة في الموقع
+    });
+}
+
+document.addEventListener('DOMContentLoaded', logPageVisit);
+
+// =========================================
 // المنتجات: بتتحمّل من الباك اند (Mongo) بدل ما تكون ثابتة في الكود
 // =========================================
 let productsData = [];

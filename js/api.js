@@ -132,4 +132,22 @@ const api = {
       notes: notes || `Preferred time: ${timeStr}`,
     });
   },
+
+  createOrder: (data) =>
+    api.request('/orders', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  getOrders: () => api.request('/orders'),
+
+  getOrderStats: () => api.request('/orders/stats/summary'),
+
+  logVisit: (data) =>
+    api.request('/visits', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  getVisitStats: () => api.request('/visits/stats'),
 };
