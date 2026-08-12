@@ -236,8 +236,8 @@ async function loadDashboardStats() {
 }
 
 // ---------- التحكم في فترة الرسومات البيانية (يوم / أسبوع / شهر / سنة) ----------
-let currentGranularity = 'month';
-let currentRangeDate = null; // null = النهاردة
+// كل رسم بياني ليه شريط تحكم مستقل تمامًا عن التانيين - ممكن رسم يعرض يوم معين
+// والتاني يعرض شهر مختلف والتالت سنة مختلفة، من غير ما يأثروا على بعض.
 
 function formatRangeLabel(granularity, rangeStart, rangeEnd) {
     const start = new Date(rangeStart);
@@ -254,65 +254,113 @@ function formatRangeLabel(granularity, rangeStart, rangeEnd) {
 
 function formatChartLabel(dateStr, unit) {
     const d = new Date(dateStr);
-    if (unit === 'hour') return `${String(d.getUTCHours()).padStart(2, '0')}:00`;
+    if (unit === 'hour') {
+        // نظام 12 ساعة (AM/PM) بدل الـ24 ساعة
+        let hours = d.getUTCHours();
+        const period = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        if (hours === 0) hours = 12;
+        return `${hours} ${period}`;
+    }
     if (unit === 'month') return d.toLocaleDateString('en-GB', { month: 'short' });
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); // day
 }
 
-async function loadChartsForRange() {
-    try {
-        const dateParam = currentRangeDate || undefined;
-        const [orderStatsRes, visitStatsRes] = await Promise.all([
-            api.getOrderStats(currentGranularity, dateParam),
-            api.getVisitStats(currentGranularity, dateParam),
-        ]);
+// factory بيبني شريط تحكم مستقل (Day/Week/Month/Year + تاريخ + Today) لأي رسم بياني
+function createRangeController({ toolbarId, dateInputId, todayBtnId, labelId, onLoad }) {
+    let granularity = 'month';
+    let rangeDate = null; // null = النهاردة
 
-        const orderStats = orderStatsRes.data;
-        const visitStats = visitStatsRes.data;
+    async function load() {
+        try {
+            await onLoad(granularity, rangeDate || undefined, (rangeStart, rangeEnd) => {
+                const labelEl = document.getElementById(labelId);
+                if (labelEl) labelEl.innerText = formatRangeLabel(granularity, rangeStart, rangeEnd);
+            });
+        } catch (err) {
+            console.error(`Failed to load range for ${toolbarId}:`, err);
+        }
+    }
 
-        const rangeLabelEl = document.getElementById('rangeLabel');
-        if (rangeLabelEl) {
-            rangeLabelEl.innerText = formatRangeLabel(currentGranularity, orderStats.rangeStart, orderStats.rangeEnd);
+    function init() {
+        const toolbar = document.getElementById(toolbarId);
+        if (!toolbar) return;
+        const buttons = toolbar.querySelectorAll('.range-btn');
+        const dateInput = document.getElementById(dateInputId);
+        const todayBtn = document.getElementById(todayBtnId);
+
+        if (dateInput) dateInput.value = new Date().toISOString().slice(0, 10);
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                buttons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                granularity = btn.dataset.granularity;
+                load();
+            });
+        });
+
+        if (dateInput) {
+            dateInput.addEventListener('change', () => {
+                rangeDate = dateInput.value || null;
+                load();
+            });
         }
 
-        renderRevenueChart(orderStats.dailyRevenue, orderStats.seriesUnit);
-        renderVisitsChart(visitStats.dailyVisits, visitStats.seriesUnit);
-        renderOrdersChart(orderStats.dailyRevenue, orderStats.seriesUnit);
-    } catch (err) {
-        console.error('Failed to load chart range:', err);
+        if (todayBtn) {
+            todayBtn.addEventListener('click', () => {
+                rangeDate = null;
+                if (dateInput) dateInput.value = new Date().toISOString().slice(0, 10);
+                load();
+            });
+        }
+
+        load();
     }
+
+    return { init };
 }
 
-function initRangeToolbar() {
-    const rangeButtons = document.querySelectorAll('.range-btn');
-    const dateInput = document.getElementById('rangeDateInput');
-    const todayBtn = document.getElementById('rangeTodayBtn');
+const revenueRangeController = createRangeController({
+    toolbarId: 'revenueRangeToolbar',
+    dateInputId: 'revenueRangeDate',
+    todayBtnId: 'revenueRangeToday',
+    labelId: 'revenueRangeLabel',
+    onLoad: async (granularity, date, setLabel) => {
+        const { data } = await api.getOrderStats(granularity, date);
+        setLabel(data.rangeStart, data.rangeEnd);
+        renderRevenueChart(data.dailyRevenue, data.seriesUnit);
+    },
+});
 
-    if (dateInput) dateInput.value = new Date().toISOString().slice(0, 10);
+const visitsRangeController = createRangeController({
+    toolbarId: 'visitsRangeToolbar',
+    dateInputId: 'visitsRangeDate',
+    todayBtnId: 'visitsRangeToday',
+    labelId: 'visitsRangeLabel',
+    onLoad: async (granularity, date, setLabel) => {
+        const { data } = await api.getVisitStats(granularity, date);
+        setLabel(data.rangeStart, data.rangeEnd);
+        renderVisitsChart(data.dailyVisits, data.seriesUnit);
+    },
+});
 
-    rangeButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            rangeButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentGranularity = btn.dataset.granularity;
-            loadChartsForRange();
-        });
-    });
+const ordersRangeController = createRangeController({
+    toolbarId: 'ordersRangeToolbar',
+    dateInputId: 'ordersRangeDate',
+    todayBtnId: 'ordersRangeToday',
+    labelId: 'ordersRangeLabel',
+    onLoad: async (granularity, date, setLabel) => {
+        const { data } = await api.getOrderStats(granularity, date);
+        setLabel(data.rangeStart, data.rangeEnd);
+        renderOrdersChart(data.dailyRevenue, data.seriesUnit);
+    },
+});
 
-    if (dateInput) {
-        dateInput.addEventListener('change', () => {
-            currentRangeDate = dateInput.value || null;
-            loadChartsForRange();
-        });
-    }
-
-    if (todayBtn) {
-        todayBtn.addEventListener('click', () => {
-            currentRangeDate = null;
-            if (dateInput) dateInput.value = new Date().toISOString().slice(0, 10);
-            loadChartsForRange();
-        });
-    }
+function initAllRangeControllers() {
+    revenueRangeController.init();
+    visitsRangeController.init();
+    ordersRangeController.init();
 }
 
 // ---------- عداد "الموجودين حاليًا" - بيتحدث لوحده كل 20 ثانية ----------
@@ -480,10 +528,9 @@ function initTabs() {
 
 function initAdminPanel() {
     initTabs();
-    initRangeToolbar();
+    initAllRangeControllers();
     loadProductsTable();
     loadDashboardStats();
-    loadChartsForRange();
     startOnlinePolling();
 
     document.getElementById('productForm').addEventListener('submit', async (e) => {
