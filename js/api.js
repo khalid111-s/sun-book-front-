@@ -149,6 +149,8 @@ const api = {
     return api.request(`/orders/stats/summary${qs ? `?${qs}` : ''}`);
   },
 
+  getMyCountry: () => api.request('/visits/my-country'),
+
   logVisit: (data) =>
     api.request('/visits', {
       method: 'POST',

@@ -256,11 +256,16 @@
                 const lName = document.getElementById('ship-lastname')?.value || '';
                 const fullName = (fName + ' ' + lName).trim() || localStorage.getItem('sunbook_username') || 'Guest';
 
+                // العملة بتتحدد من شكل السعر المخزّن في السلة نفسها (€ = يورو، غير كده جنيه)
+                // ده أضمن من الاعتماد على متغير عام ممكن لسه بيتحمّل وقت الضغط على الزرار
+                const orderCurrency = bookItems.some(item => String(item.price).includes('€')) ? 'EUR' : 'EGP';
+
                 const orderRes = await api.createOrder({
                     customerName: fullName,
                     phone: document.getElementById('phoneNumber')?.value || '',
                     address: document.getElementById('ship-address')?.value || '',
                     governorate: document.getElementById('governorate')?.value || '',
+                    currency: orderCurrency,
                     items: bookItems.map(item => ({
                         product: (item.id && item.id.length === 24) ? item.id : undefined,
                         title: item.title,

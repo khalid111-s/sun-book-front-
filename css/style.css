@@ -513,6 +513,11 @@ body {
     cursor: pointer;
 }
 
+/* --- عدسة البحث بتاعة الموبايل (مخفية في الشاشات الكبيرة، شريط البحث العادي هو اللي بيظهر) --- */
+.mobile-search-toggle {
+    display: none;
+}
+
 .mobile-toggle .bar {
     width: 25px;
     height: 3px;
@@ -534,6 +539,7 @@ body {
        اللوجو والأزرار ياخدوا حجمهم الطبيعي بس، والسيرش ياخد المساحة اللي فاضلة ويتقلص بمرونة */
     .navbar {
         justify-content: space-between;
+        position: relative; /* عشان لوحة البحث المنسدلة تتمركز تحت الناف بار بالظبط */
     }
 
     .logo {
@@ -541,14 +547,39 @@ body {
         white-space: nowrap;
     }
 
-    /* السيرش بيتمركز في نص المساحة الفاضية بين اللوجو والأزرار، مش نص الشاشة بالظبط،
-       عشان المسافة تبقى متساوية من الجهتين حتى لو اللوجو أعرض من زرايرالسلة/الهمبرجر */
+    /* في الموبايل، شريط البحث مبيبانش جوه الناف بار نفسه من الأول -
+       بيتفعل كـ لوحة منسدلة لما تدوس على أيقونة العدسة (mobile-search-toggle) */
     .search-wrapper {
-        flex: 1;
+        display: none;
+    }
+
+    .search-wrapper.mobile-search-active {
         display: flex;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bg-dark);
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(216, 176, 86, 0.25);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+        z-index: 999;
+    }
+
+    .search-wrapper.mobile-search-active .search-container {
+        width: 100%;
+    }
+
+    .mobile-search-toggle {
+        display: flex;
+        align-items: center;
         justify-content: center;
-        min-width: 0;
-        padding: 0 10px;
+        cursor: pointer;
+        color: #fff;
+    }
+
+    .mobile-search-toggle:hover {
+        color: var(--gold-color);
     }
 
     .nav-actions {
@@ -729,6 +760,19 @@ body {
     .search__icon svg {
         width: 15px;
         height: 15px;
+    }
+}
+
+/* --- الحسم النهائي لسلوك شريط البحث في الموبايل ---
+   لازم يكون آخر تعريف في الكاسكيد عشان يغلب أي تعريف قديم لـ .search-wrapper
+   جاي بعد الـ media query الأساسي بتاعنا فوق (خصوصية متساوية = الترتيب في الملف هو اللي بيحسم) */
+@media (max-width: 850px) {
+    .search-wrapper {
+        display: none;
+    }
+
+    .search-wrapper.mobile-search-active {
+        display: flex;
     }
 }
 

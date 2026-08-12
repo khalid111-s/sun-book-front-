@@ -45,14 +45,14 @@ async function checkAdminAccess() {
 // ---------- 2. تحميل جدول المنتجات ----------
 async function loadProductsTable() {
     const tbody = document.getElementById('productsTableBody');
-    tbody.innerHTML = '<tr><td colspan="7">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8">Loading...</td></tr>';
 
     try {
         const { data } = await api.getProducts();
         currentProducts = data;
 
         if (!data.length) {
-            tbody.innerHTML = '<tr><td colspan="7">No products yet. Add your first one above.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8">No products yet. Add your first one above.</td></tr>';
             return;
         }
 
@@ -61,6 +61,7 @@ async function loadProductsTable() {
                 <td><img src="${p.image}" alt="${p.title}" onerror="this.src='assets/sun-icon.png'"></td>
                 <td>${p.title}</td>
                 <td>LE ${Number(p.price).toFixed(2)}</td>
+                <td>${p.priceEUR ? `€${Number(p.priceEUR).toFixed(2)}` : '—'}</td>
                 <td>${p.type}</td>
                 <td>${p.featured ? '<span class="admin-badge-yes">Yes</span>' : '—'}</td>
                 <td>${p.order ?? 0}</td>
@@ -73,7 +74,7 @@ async function loadProductsTable() {
             </tr>
         `).join('');
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="7" style="color:#e05252;">Failed to load products: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="color:#e05252;">Failed to load products: ${err.message}</td></tr>`;
     }
 }
 
@@ -83,6 +84,7 @@ function resetForm() {
     document.getElementById('productIdField').value = '';
     document.getElementById('fieldTitle').value = '';
     document.getElementById('fieldPrice').value = '';
+    document.getElementById('fieldPriceEUR').value = '';
     document.getElementById('fieldImage').value = '';
     document.getElementById('fieldType').value = 'physical';
     document.getElementById('fieldBadges').value = '';
@@ -101,6 +103,7 @@ function fillFormForEdit(product) {
     document.getElementById('productIdField').value = product._id;
     document.getElementById('fieldTitle').value = product.title;
     document.getElementById('fieldPrice').value = product.price;
+    document.getElementById('fieldPriceEUR').value = product.priceEUR ?? '';
     document.getElementById('fieldImage').value = product.image;
     document.getElementById('fieldType').value = product.type;
     document.getElementById('fieldBadges').value = (product.badges || []).join(', ');
@@ -119,6 +122,9 @@ function readFormData() {
     return {
         title: document.getElementById('fieldTitle').value.trim(),
         price: parseFloat(document.getElementById('fieldPrice').value),
+        priceEUR: document.getElementById('fieldPriceEUR').value
+            ? parseFloat(document.getElementById('fieldPriceEUR').value)
+            : null,
         image: document.getElementById('fieldImage').value.trim(),
         type: document.getElementById('fieldType').value,
         badges: badgesRaw ? badgesRaw.split(',').map(b => b.trim()).filter(Boolean) : [],
@@ -171,6 +177,15 @@ async function loadDashboardStats() {
             cartAbandonmentEl.innerText = '—';
             abandonedCountEl.innerText = '—';
         }
+
+        // ---- كام طلب دفع بالجنيه مقابل باليورو ----
+        const ordersByCurrency = orderStats.ordersByCurrency || { EGP: { orders: 0 }, EUR: { orders: 0 } };
+        document.getElementById('statOrdersEGP').innerText = ordersByCurrency.EGP.orders;
+        document.getElementById('statOrdersEUR').innerText = ordersByCurrency.EUR.orders;
+
+        // ---- كام زائر من مصر مقابل من برة مصر ----
+        document.getElementById('statVisitorsEgypt').innerText = visitStats.egyptVisitors ?? '—';
+        document.getElementById('statVisitorsAbroad').innerText = visitStats.abroadVisitors ?? '—';
 
         // ---- أكتر المنتجات مبيعًا ----
         const topProductsBody = document.getElementById('topProductsBody');

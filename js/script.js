@@ -62,8 +62,41 @@ document.addEventListener('DOMContentLoaded', startHeartbeat);
 // =========================================
 let productsData = [];
 
+// العملة اللي هتتعرض للزائر: EGP لو من مصر، EUR لو من أي بلد تاني
+// (بتتحدد مرة واحدة وقت تحميل الصفحة، وبتتخزن لباقي الصفحات في نفس الجلسة)
+let visitorCurrency = 'EGP';
+
+async function detectVisitorCurrency() {
+    const cached = sessionStorage.getItem('sunbook_currency');
+    if (cached === 'EGP' || cached === 'EUR') {
+        visitorCurrency = cached;
+        return visitorCurrency;
+    }
+    if (typeof api === 'undefined') return visitorCurrency;
+    try {
+        const { data } = await api.getMyCountry();
+        visitorCurrency = data.country === 'EG' ? 'EGP' : 'EUR';
+    } catch (e) {
+        visitorCurrency = 'EGP'; // افتراضي آمن لو فشل الكشف (زي وقت التطوير المحلي)
+    }
+    sessionStorage.setItem('sunbook_currency', visitorCurrency);
+    return visitorCurrency;
+}
+
 function formatPrice(n) {
     return `LE ${Number(n).toFixed(2)}`;
+}
+
+function formatPriceEUR(n) {
+    return `€${Number(n).toFixed(2)}`;
+}
+
+// بيختار السعر المناسب حسب عملة الزائر - لو مفيش سعر يورو متسجل، بيرجع للجنيه كافتراضي آمن
+function displayPriceFor(priceEGP, priceEUR) {
+    if (visitorCurrency === 'EUR' && priceEUR != null && priceEUR > 0) {
+        return formatPriceEUR(priceEUR);
+    }
+    return formatPrice(priceEGP);
 }
 
 // بيحوّل شكل المنتج الجاي من الـ API لنفس الشكل اللي باقي الكود متعود عليه
@@ -71,7 +104,7 @@ function normalizeProduct(p) {
     return {
         id: p._id,
         title: p.title,
-        price: formatPrice(p.price),
+        price: displayPriceFor(p.price, p.priceEUR),
         image: p.image,
         description: p.description,
         type: p.type,
@@ -233,6 +266,7 @@ async function ensureProductsLoaded() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    await detectVisitorCurrency();
     await loadHomepageProducts();
     await loadSingleProductPage();
     await ensureProductsLoaded();
@@ -1154,6 +1188,34 @@ document.addEventListener('DOMContentLoaded', () => {
             mobileToggle.addEventListener('click', openMenu);
             sidebarClose.addEventListener('click', closeMenu);
             sidebarOverlay.addEventListener('click', closeMenu);
+        }
+
+        // ---- عدسة البحث بتاعة الموبايل: بتفتح وتقفل نفس شريط البحث كـ dropdown ----
+        // (نفس عنصر #searchInput الأصلي، مش نسخة تانية، عشان نظام السيرش الموجود يفضل شغال زي ما هو)
+        const mobileSearchToggle = document.getElementById('mobileSearchToggle');
+        const searchWrapperEl = document.querySelector('.search-wrapper');
+
+        if (mobileSearchToggle && searchWrapperEl) {
+            mobileSearchToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const willOpen = !searchWrapperEl.classList.contains('mobile-search-active');
+                searchWrapperEl.classList.toggle('mobile-search-active', willOpen);
+                if (willOpen) {
+                    const input = document.getElementById('searchInput');
+                    if (input) setTimeout(() => input.focus(), 50);
+                }
+            });
+
+            // قفل لوحة البحث لو دوس بره منها
+            document.addEventListener('click', (e) => {
+                if (
+                    searchWrapperEl.classList.contains('mobile-search-active') &&
+                    !searchWrapperEl.contains(e.target) &&
+                    !mobileSearchToggle.contains(e.target)
+                ) {
+                    searchWrapperEl.classList.remove('mobile-search-active');
+                }
+            });
         }
     }, 500); 
 });

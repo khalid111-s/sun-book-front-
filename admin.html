@@ -370,6 +370,22 @@
                 <span class="stat-value" id="statAbandonedCount">—</span>
                 <span class="stat-label">Didn't Complete Purchase</span>
             </div>
+            <div class="stat-card">
+                <span class="stat-value" id="statOrdersEGP">—</span>
+                <span class="stat-label">Paid in EGP</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="statOrdersEUR">—</span>
+                <span class="stat-label">Paid in EUR</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="statVisitorsEgypt">—</span>
+                <span class="stat-label">Visitors from Egypt</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="statVisitorsAbroad">—</span>
+                <span class="stat-label">Visitors from Abroad</span>
+            </div>
         </div>
 
         <div class="dashboard-box" style="margin-bottom: 20px;">
@@ -515,6 +531,10 @@
                     <input type="number" id="fieldPrice" step="0.01" min="0" required>
                 </div>
                 <div class="admin-field">
+                    <label>Price (EUR) — optional, shown to visitors outside Egypt</label>
+                    <input type="number" id="fieldPriceEUR" step="0.01" min="0" placeholder="leave empty to show LE everywhere">
+                </div>
+                <div class="admin-field">
                     <label>Image path (in /assets)</label>
                     <input type="text" id="fieldImage" placeholder="assets/your-real-photo.jpg" required>
                 </div>
@@ -561,6 +581,7 @@
                     <th>Image</th>
                     <th>Title</th>
                     <th>Price</th>
+                    <th>Price (EUR)</th>
                     <th>Type</th>
                     <th>Featured</th>
                     <th>Order</th>
@@ -568,7 +589,7 @@
                 </tr>
             </thead>
             <tbody id="productsTableBody">
-                <tr><td colspan="7">Loading...</td></tr>
+                <tr><td colspan="8">Loading...</td></tr>
             </tbody>
         </table>
     </div>
