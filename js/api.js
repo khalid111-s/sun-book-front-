@@ -141,6 +141,8 @@ const api = {
 
   getOrders: () => api.request('/orders'),
 
+  getOrder: (id) => api.request(`/orders/${id}`),
+
   getOrderStats: (granularity, date) => {
     const params = new URLSearchParams();
     if (granularity) params.set('granularity', granularity);
@@ -148,6 +150,14 @@ const api = {
     const qs = params.toString();
     return api.request(`/orders/stats/summary${qs ? `?${qs}` : ''}`);
   },
+
+  getSettings: () => api.request('/settings'),
+
+  updateSettings: (data) =>
+    api.request('/settings', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
 
   getMyCountry: () => api.request('/visits/my-country'),
 

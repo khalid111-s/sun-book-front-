@@ -159,6 +159,43 @@
             window.location.href = 'login.html';
         }
     })();
+
+    // ====== لو العميل راجع من صفحة دفع PayTabs، نتأكد فعليًا من حالة الطلب من السيرفر ======
+    // (مش بنثق في رجوع المتصفح لوحده كدليل إن الدفع نجح - بنسأل الباك اند صراحة)
+    async function checkPaytabsReturn() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('paytabs_return') !== '1') return;
+
+        const orderId = params.get('order');
+        if (!orderId || typeof api === 'undefined') return;
+
+        try {
+            const { data: order } = await api.getOrder(orderId);
+            const modal = document.getElementById('successModal');
+            const titleEl = modal ? modal.querySelector('h2') : null;
+            const msgEl = document.getElementById('success-message');
+            const iconEl = modal ? modal.querySelector('svg') : null;
+
+            if (order.status === 'paid') {
+                if (msgEl) msgEl.innerText = `Payment confirmed — order #${order._id.slice(-6).toUpperCase()} is on its way.`;
+                localStorage.removeItem('sunbook_cart');
+                if (typeof updateCartCount === 'function') updateCartCount();
+            } else {
+                // الدفع فشل أو اتلغى
+                if (titleEl) titleEl.innerText = 'Payment Not Completed';
+                if (msgEl) msgEl.innerText = "We couldn't confirm your payment. Your cart is still saved — please try again.";
+                if (iconEl) {
+                    iconEl.style.stroke = '#e05252';
+                    iconEl.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>';
+                }
+            }
+
+            if (modal) modal.classList.add('active');
+        } catch (err) {
+            console.error('Failed to confirm PayTabs return status:', err);
+        }
+    }
+    document.addEventListener('DOMContentLoaded', checkPaytabsReturn);
 </script>
 <script>
     async function processPayment() {

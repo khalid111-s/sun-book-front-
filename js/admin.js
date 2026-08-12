@@ -623,6 +623,34 @@ function initAdminPanel() {
             btn.disabled = false;
         }
     });
+
+    // ---- سعر الصرف الاحتياطي (fallback) ----
+    api.getSettings().then(({ data }) => {
+        const input = document.getElementById('eurToEgpRateInput');
+        if (input) input.value = data.eurToEgpRate;
+    }).catch((err) => console.error('Failed to load settings:', err));
+
+    document.getElementById('saveRateBtn').addEventListener('click', async (e) => {
+        const btn = e.target;
+        const msg = document.getElementById('rateSaveMsg');
+        const rateVal = parseFloat(document.getElementById('eurToEgpRateInput').value);
+        if (!rateVal || rateVal <= 0) {
+            msg.innerText = 'Enter a valid rate.';
+            return;
+        }
+        btn.disabled = true;
+        try {
+            await api.updateSettings({ eurToEgpRate: rateVal });
+            msg.style.color = '#34A853';
+            msg.innerText = 'Saved.';
+            setTimeout(() => { msg.innerText = ''; }, 2500);
+        } catch (err) {
+            msg.style.color = '#e05252';
+            msg.innerText = err.message || 'Failed to save.';
+        } finally {
+            btn.disabled = false;
+        }
+    });
 }
 
 document.addEventListener('DOMContentLoaded', checkAdminAccess);

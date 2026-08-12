@@ -489,6 +489,17 @@
                 <p class="dashboard-note" style="margin-top:0;">Download every order (customer, items, total, status) as a spreadsheet-ready CSV file.</p>
                 <button id="exportOrdersBtn" class="admin-logout-btn" style="width: 100%; margin-top: 10px;">Download Orders CSV</button>
             </div>
+            <div class="dashboard-box">
+                <h3><svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Fallback Exchange Rate</h3>
+                <p class="dashboard-note" style="margin-top:0;">Only used if PayTabs isn't active and the site has to fall back to charging in EGP for EUR orders. Doesn't affect PayTabs payments (they convert automatically).</p>
+                <div style="display:flex; gap:8px; align-items:center; margin-top:10px;">
+                    <span style="color:var(--text-gray); font-size:0.85rem;">1 EUR =</span>
+                    <input type="number" id="eurToEgpRateInput" step="0.01" min="1" style="flex:1; padding:8px; border-radius:4px; border:1px solid #444; background:#1a1b1d; color:#fff;">
+                    <span style="color:var(--text-gray); font-size:0.85rem;">EGP</span>
+                </div>
+                <button id="saveRateBtn" class="admin-logout-btn" style="width: 100%; margin-top: 10px;">Save Rate</button>
+                <p class="admin-error" id="rateSaveMsg" style="margin-top:6px;"></p>
+            </div>
         </div>
 
         <!-- ====== جدول الطلبات المفصّل ====== -->
