@@ -230,13 +230,88 @@ async function loadDashboardStats() {
                 `;
             }).join('')
             : '<tr><td colspan="7">No orders yet.</td></tr>';
-
-        // ---- رسوم بيانية ----
-        renderRevenueChart(orderStats.dailyRevenue);
-        renderVisitsChart(visitStats.dailyVisits);
-        renderOrdersChart(orderStats.dailyRevenue); // نفس مصفوفة الإيرادات فيها عدد الطلبات لكل يوم كمان
     } catch (err) {
         console.error('Failed to load dashboard stats:', err);
+    }
+}
+
+// ---------- التحكم في فترة الرسومات البيانية (يوم / أسبوع / شهر / سنة) ----------
+let currentGranularity = 'month';
+let currentRangeDate = null; // null = النهاردة
+
+function formatRangeLabel(granularity, rangeStart, rangeEnd) {
+    const start = new Date(rangeStart);
+    const endInclusive = new Date(new Date(rangeEnd).getTime() - 1);
+    const opts = { day: 'numeric', month: 'short', year: 'numeric' };
+
+    if (granularity === 'day') return start.toLocaleDateString('en-GB', opts);
+    if (granularity === 'week') {
+        return `${start.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${endInclusive.toLocaleDateString('en-GB', opts)}`;
+    }
+    if (granularity === 'year') return `${start.getUTCFullYear()}`;
+    return start.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }); // month
+}
+
+function formatChartLabel(dateStr, unit) {
+    const d = new Date(dateStr);
+    if (unit === 'hour') return `${String(d.getUTCHours()).padStart(2, '0')}:00`;
+    if (unit === 'month') return d.toLocaleDateString('en-GB', { month: 'short' });
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); // day
+}
+
+async function loadChartsForRange() {
+    try {
+        const dateParam = currentRangeDate || undefined;
+        const [orderStatsRes, visitStatsRes] = await Promise.all([
+            api.getOrderStats(currentGranularity, dateParam),
+            api.getVisitStats(currentGranularity, dateParam),
+        ]);
+
+        const orderStats = orderStatsRes.data;
+        const visitStats = visitStatsRes.data;
+
+        const rangeLabelEl = document.getElementById('rangeLabel');
+        if (rangeLabelEl) {
+            rangeLabelEl.innerText = formatRangeLabel(currentGranularity, orderStats.rangeStart, orderStats.rangeEnd);
+        }
+
+        renderRevenueChart(orderStats.dailyRevenue, orderStats.seriesUnit);
+        renderVisitsChart(visitStats.dailyVisits, visitStats.seriesUnit);
+        renderOrdersChart(orderStats.dailyRevenue, orderStats.seriesUnit);
+    } catch (err) {
+        console.error('Failed to load chart range:', err);
+    }
+}
+
+function initRangeToolbar() {
+    const rangeButtons = document.querySelectorAll('.range-btn');
+    const dateInput = document.getElementById('rangeDateInput');
+    const todayBtn = document.getElementById('rangeTodayBtn');
+
+    if (dateInput) dateInput.value = new Date().toISOString().slice(0, 10);
+
+    rangeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            rangeButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentGranularity = btn.dataset.granularity;
+            loadChartsForRange();
+        });
+    });
+
+    if (dateInput) {
+        dateInput.addEventListener('change', () => {
+            currentRangeDate = dateInput.value || null;
+            loadChartsForRange();
+        });
+    }
+
+    if (todayBtn) {
+        todayBtn.addEventListener('click', () => {
+            currentRangeDate = null;
+            if (dateInput) dateInput.value = new Date().toISOString().slice(0, 10);
+            loadChartsForRange();
+        });
     }
 }
 
@@ -257,11 +332,11 @@ function startOnlinePolling() {
     onlinePollInterval = setInterval(refreshOnlineCount, 20000);
 }
 
-function renderRevenueChart(dailyRevenue) {
+function renderRevenueChart(dailyRevenue, unit) {
     const canvas = document.getElementById('revenueChart');
     if (!canvas || typeof Chart === 'undefined') return;
 
-    const labels = dailyRevenue.map(d => d.date.slice(5)); // MM-DD
+    const labels = dailyRevenue.map(d => formatChartLabel(d.date, unit));
     const data = dailyRevenue.map(d => d.revenue);
 
     if (revenueChartInstance) revenueChartInstance.destroy();
@@ -291,11 +366,11 @@ function renderRevenueChart(dailyRevenue) {
     });
 }
 
-function renderVisitsChart(dailyVisits) {
+function renderVisitsChart(dailyVisits, unit) {
     const canvas = document.getElementById('visitsChart');
     if (!canvas || typeof Chart === 'undefined') return;
 
-    const labels = dailyVisits.map(d => d.date.slice(5));
+    const labels = dailyVisits.map(d => formatChartLabel(d.date, unit));
 
     if (visitsChartInstance) visitsChartInstance.destroy();
 
@@ -333,11 +408,11 @@ function renderVisitsChart(dailyVisits) {
     });
 }
 
-function renderOrdersChart(dailyRevenue) {
+function renderOrdersChart(dailyRevenue, unit) {
     const canvas = document.getElementById('ordersChart');
     if (!canvas || typeof Chart === 'undefined') return;
 
-    const labels = dailyRevenue.map(d => d.date.slice(5));
+    const labels = dailyRevenue.map(d => formatChartLabel(d.date, unit));
 
     if (ordersChartInstance) ordersChartInstance.destroy();
 
@@ -405,8 +480,10 @@ function initTabs() {
 
 function initAdminPanel() {
     initTabs();
+    initRangeToolbar();
     loadProductsTable();
     loadDashboardStats();
+    loadChartsForRange();
     startOnlinePolling();
 
     document.getElementById('productForm').addEventListener('submit', async (e) => {

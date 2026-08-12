@@ -141,7 +141,13 @@ const api = {
 
   getOrders: () => api.request('/orders'),
 
-  getOrderStats: () => api.request('/orders/stats/summary'),
+  getOrderStats: (granularity, date) => {
+    const params = new URLSearchParams();
+    if (granularity) params.set('granularity', granularity);
+    if (date) params.set('date', date);
+    const qs = params.toString();
+    return api.request(`/orders/stats/summary${qs ? `?${qs}` : ''}`);
+  },
 
   logVisit: (data) =>
     api.request('/visits', {
@@ -157,7 +163,13 @@ const api = {
 
   getOnlineCount: () => api.request('/visits/online'),
 
-  getVisitStats: () => api.request('/visits/stats'),
+  getVisitStats: (granularity, date) => {
+    const params = new URLSearchParams();
+    if (granularity) params.set('granularity', granularity);
+    if (date) params.set('date', date);
+    const qs = params.toString();
+    return api.request(`/visits/stats${qs ? `?${qs}` : ''}`);
+  },
 
   logEvent: (data) =>
     api.request('/events', {
