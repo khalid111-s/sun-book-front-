@@ -161,7 +161,10 @@
     })();
 
     // ====== لو العميل راجع من صفحة دفع PayTabs، نتأكد فعليًا من حالة الطلب من السيرفر ======
-    // (مش بنثق في رجوع المتصفح لوحده كدليل إن الدفع نجح - بنسأل الباك اند صراحة)
+    // (مش بنثق في رجوع المتصفح لوحده كدليل إن الدفع نجح - بنسأل الباك اند صراحة،
+    // وهو بدوره بيسأل PayTabs مباشرة لو الحالة لسه معلّقة)
+    function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
     async function checkPaytabsReturn() {
         const params = new URLSearchParams(window.location.search);
         if (params.get('paytabs_return') !== '1') return;
@@ -170,7 +173,16 @@
         if (!orderId || typeof api === 'undefined') return;
 
         try {
-            const { data: order } = await api.getOrder(orderId);
+            let order = (await api.getOrder(orderId)).data;
+
+            // لو لسه "pending"، نجرب تاني كام مرة بفاصل بسيط - ممكن التأكيد يكون في طريقه
+            let attempts = 0;
+            while (order.status === 'pending' && attempts < 3) {
+                await sleep(1500);
+                order = (await api.getOrder(orderId)).data;
+                attempts++;
+            }
+
             const modal = document.getElementById('successModal');
             const titleEl = modal ? modal.querySelector('h2') : null;
             const msgEl = document.getElementById('success-message');
@@ -181,7 +193,7 @@
                 localStorage.removeItem('sunbook_cart');
                 if (typeof updateCartCount === 'function') updateCartCount();
             } else {
-                // الدفع فشل أو اتلغى
+                // الدفع فشل أو اتلغى (أو لسه معلّق بعد كل المحاولات)
                 if (titleEl) titleEl.innerText = 'Payment Not Completed';
                 if (msgEl) msgEl.innerText = "We couldn't confirm your payment. Your cart is still saved — please try again.";
                 if (iconEl) {
