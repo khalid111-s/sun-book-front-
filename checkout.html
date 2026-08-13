@@ -309,6 +309,15 @@
                 // ده أضمن من الاعتماد على متغير عام ممكن لسه بيتحمّل وقت الضغط على الزرار
                 const orderCurrency = bookItems.some(item => String(item.price).includes('€')) ? 'EUR' : 'EGP';
 
+                // إجمالي الكتب فقط (من غير خصم)، بمعزل عن أي عناصر حجز جلسات في نفس السلة
+                const bookItemsRawTotal = bookItems.reduce((sum, item) => {
+                    const price = parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0;
+                    return sum + price * (item.qty || 1);
+                }, 0);
+                // نفس خصم الـ 5% بتاع الأعضاء المسجّلين - لازم يتطبّق هنا كمان قبل ما نبعت المبلغ لبوابة الدفع
+                const isLoggedInMember = !!localStorage.getItem('sunbook_username');
+                const bookItemsFinalTotal = isLoggedInMember ? bookItemsRawTotal * 0.95 : bookItemsRawTotal;
+
                 const orderRes = await api.createOrder({
                     customerName: fullName,
                     phone: document.getElementById('phoneNumber')?.value || '',
@@ -322,10 +331,7 @@
                         qty: item.qty || 1,
                         type: item.type,
                     })),
-                    totalAmount: bookItems.reduce((sum, item) => {
-                        const price = parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0;
-                        return sum + price * (item.qty || 1);
-                    }, 0),
+                    totalAmount: Number(bookItemsFinalTotal.toFixed(2)),
                 });
 
                 // لو Paymob جهز رابط دفع حقيقي (مفاتيح Test أو Live)، نوجّه العميل لصفحة الدفع فعليًا

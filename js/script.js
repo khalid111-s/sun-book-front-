@@ -279,10 +279,9 @@ let cartItems = JSON.parse(localStorage.getItem('sunbook_cart')) || [];
 
 function renderCart() {
     const container = document.getElementById('cart-container');
-    const summaryBox = document.querySelector('.cart-summary');
     if (!container) return;
 
-    // 1. إظهار تأثير التحميل الوهمي (Skeleton) الأول
+    // تأثير التحميل الوهمي (Skeleton) - بيظهر مرة واحدة بس أول ما الصفحة تفتح
     container.innerHTML = `
         <div class="cart-item" style="border-color: transparent;">
             <div class="skeleton skeleton-img"></div>
@@ -302,59 +301,69 @@ function renderCart() {
         </div>
     `;
 
-    // 2. بعد 600 ملي ثانية (تأخير وهمي كأننا بنجيب البيانات من السيرفر)، نعرض المنتجات الحقيقية
+    // بعد شوية وهمية بسيطة (مظهر بس)، نعرض محتوى السلة الحقيقي
     setTimeout(() => {
-        container.innerHTML = ''; // نفضي التحميل
+        renderCartItemsNow();
+    }, 600);
+}
 
-        if (cartItems.length === 0) {
-            if (summaryBox) summaryBox.style.display = 'none';
-            container.innerHTML = `
-                <div style="width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 40vh; text-align: center;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold-color)" stroke-width="2" style="width: 60px; height: 60px; margin-bottom: 20px;">
-                        <circle cx="9" cy="21" r="1"></circle>
-                        <circle cx="20" cy="21" r="1"></circle>
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                    </svg>
-                    <p style="color: var(--gold-color); font-size: 1.8rem; font-weight: bold; letter-spacing: 1px; font-family: var(--font-logo);">Your cart is currently empty.</p>
-                    <a href="index.html" class="btn-shop" style="margin-top: 25px; padding: 12px 30px; font-size: 1.1rem; text-decoration: none;">Return to Shop</a>
+// العرض الفعلي لمحتوى السلة - فوري من غير أي تأخير ولا Skeleton،
+// بيتنادى بعد كل تعديل (زيادة/تقليل كمية أو حذف منتج) عشان يبقى سلس
+function renderCartItemsNow() {
+    const container = document.getElementById('cart-container');
+    const summaryBox = document.querySelector('.cart-summary');
+    if (!container) return;
+
+    container.innerHTML = ''; // نفضي أي محتوى قديم
+
+    if (cartItems.length === 0) {
+        if (summaryBox) summaryBox.style.display = 'none';
+        container.innerHTML = `
+            <div style="width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 40vh; text-align: center;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold-color)" stroke-width="2" style="width: 60px; height: 60px; margin-bottom: 20px;">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                <p style="color: var(--gold-color); font-size: 1.8rem; font-weight: bold; letter-spacing: 1px; font-family: var(--font-logo);">Your cart is currently empty.</p>
+                <a href="index.html" class="btn-shop" style="margin-top: 25px; padding: 12px 30px; font-size: 1.1rem; text-decoration: none;">Return to Shop</a>
+            </div>
+        `;
+        updateOrderSummary(0);
+        return;
+    }
+
+    if (summaryBox) summaryBox.style.display = 'block';
+
+    let totalPrice = 0;
+    cartItems.forEach((item, index) => {
+        const itemHTML = `
+            <div class="cart-item reveal active">
+                <img src="${item.image}" alt="Book" class="cart-item-img">
+                <div class="cart-item-info">
+                    <h3 class="cart-item-title">${item.title}</h3>
+                    <span style="font-size: 0.75rem; color: ${item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)'}; border: 1px solid ${item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)'}; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 5px;">${item.type === 'digital' ? 'Digital (PDF)' : item.type === 'booking' ? 'Session' : 'Physical Book'}</span>
                 </div>
-            `;
-            updateOrderSummary(0);
-            return;
-        }
-
-        if (summaryBox) summaryBox.style.display = 'block';
-
-        let totalPrice = 0;
-        cartItems.forEach((item, index) => {
-            const itemHTML = `
-                <div class="cart-item reveal active">
-                    <img src="${item.image}" alt="Book" class="cart-item-img">
-                    <div class="cart-item-info">
-                        <h3 class="cart-item-title">${item.title}</h3>
-                        <span style="font-size: 0.75rem; color: ${item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)'}; border: 1px solid ${item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)'}; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 5px;">${item.type === 'digital' ? 'Digital (PDF)' : item.type === 'booking' ? 'Session' : 'Physical Book'}</span>
-                    </div>
-                    <div class="cart-item-actions">
-                        <p class="cart-item-price">${item.price}</p>
-                        ${item.type === 'booking' 
-                            ? `` 
-                            : `<div class="modern-qty">
-                                <button class="qty-btn minus-btn" onclick="updateQty(${index}, -1)">−</button>
-                                <input type="number" value="${item.qty}" class="qty-input-val" readonly>
-                                <button class="qty-btn plus-btn" onclick="updateQty(${index}, 1)">+</button>
-                               </div>`
-                        }
-                        <button class="remove-btn" onclick="removeItem(${index})">🗑️ Remove</button>
-                    </div>
+                <div class="cart-item-actions">
+                    <p class="cart-item-price">${item.price}</p>
+                    ${item.type === 'booking' 
+                        ? `` 
+                        : `<div class="modern-qty">
+                            <button class="qty-btn minus-btn" onclick="updateQty(${index}, -1)">−</button>
+                            <input type="number" value="${item.qty}" class="qty-input-val" readonly>
+                            <button class="qty-btn plus-btn" onclick="updateQty(${index}, 1)">+</button>
+                           </div>`
+                    }
+                    <button class="remove-btn" onclick="removeItem(${index})">🗑️ Remove</button>
                 </div>
-            `;
-            container.innerHTML += itemHTML;
-            const priceNumber = parseFloat(item.price.replace(/[^0-9.]/g, ''));
-            totalPrice += (priceNumber * item.qty);
-        });
+            </div>
+        `;
+        container.innerHTML += itemHTML;
+        const priceNumber = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+        totalPrice += (priceNumber * item.qty);
+    });
 
-        updateOrderSummary(totalPrice);
-    }, 600); // مدة التحميل (600 ملي ثانية)
+    updateOrderSummary(totalPrice);
 }
 
 function updateOrderSummary(total) {
@@ -408,7 +417,7 @@ function updateQty(index, change) {
     if (cartItems[index].qty + change > 0) {
         cartItems[index].qty += change;
         localStorage.setItem('sunbook_cart', JSON.stringify(cartItems));
-        renderCart();
+        renderCartItemsNow();
         updateCartBadge();
     }
 }
@@ -416,7 +425,7 @@ function updateQty(index, change) {
 function removeItem(index) {
     cartItems.splice(index, 1);
     localStorage.setItem('sunbook_cart', JSON.stringify(cartItems));
-    renderCart();
+    renderCartItemsNow();
     updateCartBadge();
 }
 
