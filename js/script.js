@@ -101,6 +101,8 @@ function displayPriceFor(priceEGP, priceEUR) {
 
 // بيحوّل شكل المنتج الجاي من الـ API لنفس الشكل اللي باقي الكود متعود عليه
 function normalizeProduct(p) {
+    // لو trackStock مفعّل، التوفر بيتحدد فعليًا بعدد النسخ المتبقية؛ غير كده بنعتمد على inStock اليدوي
+    const available = p.trackStock ? (p.stockCount > 0) : (p.inStock !== false);
     return {
         id: p._id,
         title: p.title,
@@ -111,6 +113,7 @@ function normalizeProduct(p) {
         badges: p.badges || [],
         featured: !!p.featured,
         egyptOnly: !!p.egyptOnly,
+        available,
     };
 }
 
@@ -163,6 +166,27 @@ async function loadSingleProductPage() {
                 strip.innerText = 'Egypt Only';
                 galleryEl.prepend(strip);
             }
+
+            const existingOverlay = galleryEl.querySelector('.out-of-stock-overlay');
+            if (existingOverlay) existingOverlay.remove();
+            if (normalized.available === false) {
+                const overlay = document.createElement('div');
+                overlay.className = 'out-of-stock-overlay';
+                overlay.innerText = 'Out of Stock';
+                galleryEl.prepend(overlay);
+            }
+        }
+
+        const addToCartLargeEl = document.querySelector('.add-to-cart-large');
+        if (addToCartLargeEl) {
+            if (normalized.available === false) {
+                addToCartLargeEl.disabled = true;
+                addToCartLargeEl.innerText = 'Out of Stock';
+                addToCartLargeEl.style.opacity = '0.5';
+                addToCartLargeEl.style.cursor = 'not-allowed';
+            } else {
+                addToCartLargeEl.disabled = false;
+            }
         }
 
         // نحدّث الكاش المحلي كمان عشان زرار "Add to Cart" يلاقي المنتج
@@ -183,10 +207,16 @@ function productCardHTML(product) {
     const egyptStripHTML = product.egyptOnly
         ? `<div class="egypt-only-strip">Egypt Only</div>`
         : '';
+    const outOfStock = product.available === false;
+    const outOfStockOverlay = outOfStock ? `<div class="out-of-stock-overlay">Out of Stock</div>` : '';
+    const addToCartBtn = outOfStock
+        ? `<button class="add-to-cart-new add-to-cart" disabled style="opacity:0.5; cursor:not-allowed;">Out of Stock</button>`
+        : `<button class="add-to-cart-new add-to-cart" data-id="${product.id}" data-title="${product.title.replace(/"/g, '&quot;')}">Add to cart</button>`;
     return `
         <div class="product-card">
             <div class="card-image-wrapper">
                 ${egyptStripHTML}
+                ${outOfStockOverlay}
                 <a href="product.html?id=${product.id}">
                     <img src="${product.image}" alt="${product.title}" class="card-img" loading="lazy">
                 </a>
@@ -202,7 +232,7 @@ function productCardHTML(product) {
                         <span class="price-label">PRICE</span>
                         <span class="price-amount">${product.price}</span>
                     </div>
-                    <button class="add-to-cart-new add-to-cart" data-id="${product.id}" data-title="${product.title.replace(/"/g, '&quot;')}">Add to cart</button>
+                    ${addToCartBtn}
                 </div>
             </div>
         </div>

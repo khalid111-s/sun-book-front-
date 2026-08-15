@@ -210,35 +210,45 @@
         // نستمر في تحميل باقي البيانات حتى لو فشل جلب بيانات المستخدم
     }
 
-    // ─── 1. طلبات الشحن (زي ما هي من localStorage) ─────────
-    const orders = JSON.parse(localStorage.getItem('sunbook_orders')) || [];
+    // ─── 1. طلبات الشحن (من الباك اند الحقيقي، مش localStorage) ─────
     const ordersList = document.getElementById('ordersList');
-    
-    const physicalOrders = orders.filter(order => order.types && order.types.physical > 0);
+    try {
+        const { data: myOrders } = await api.getMyOrders();
+        // بس الطلبات اللي فيها عناصر فيزيكال (كتب مطبوعة) بتتابع شحنها هنا
+        const physicalOrders = (myOrders || []).filter(order => order.items.some(i => i.type === 'physical'));
 
-    if(physicalOrders.length === 0) {
-        ordersList.innerHTML = '<p style="color: var(--text-gray); text-align: center; padding: 20px 0;">No physical orders to track.</p>';
-    } else {
-        let ordersHTML = '';
-        physicalOrders.slice().reverse().forEach(order => {
-            ordersHTML += `
-            <div class="history-card" style="flex-direction: column; align-items: stretch;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div class="history-info">
-                        <h4>Order #${order.id}</h4>
-                        <p>Total: LE ${order.total} • Date: ${order.date}</p>
+        if (physicalOrders.length === 0) {
+            ordersList.innerHTML = '<p style="color: var(--text-gray); text-align: center; padding: 20px 0;">No physical orders to track.</p>';
+        } else {
+            const statusSteps = ['processing', 'shipped', 'delivered'];
+            const statusLabels = { processing: 'Processing', shipped: 'Shipped', delivered: 'Delivered' };
+
+            ordersList.innerHTML = physicalOrders.map(order => {
+                const currentStep = statusSteps.indexOf(order.fulfillmentStatus || 'processing');
+                const orderDate = new Date(order.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                const shortId = order._id.slice(-6).toUpperCase();
+
+                return `
+                <div class="history-card" style="flex-direction: column; align-items: stretch;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="history-info">
+                            <h4>Order #${shortId}</h4>
+                            <p>Total: LE ${Number(order.totalAmount).toFixed(2)} • Date: ${orderDate}</p>
+                        </div>
+                        <div class="history-status">${statusLabels[order.fulfillmentStatus] || 'Processing'}</div>
                     </div>
-                    <div class="history-status">Processing</div>
-                </div>
-                <div class="tracking-timeline">
-                    <div class="track-step active"><div class="track-icon"></div><span>Placed</span></div>
-                    <div class="track-step active"><div class="track-icon"></div><span>Processing</span></div>
-                    <div class="track-step"><div class="track-icon"></div><span>Shipped</span></div>
-                    <div class="track-step"><div class="track-icon"></div><span>Delivered</span></div>
-                </div>
-            </div>`;
-        });
-        ordersList.innerHTML = ordersHTML;
+                    <div class="tracking-timeline">
+                        <div class="track-step active"><div class="track-icon"></div><span>Placed</span></div>
+                        <div class="track-step ${currentStep >= 0 ? 'active' : ''}"><div class="track-icon"></div><span>Processing</span></div>
+                        <div class="track-step ${currentStep >= 1 ? 'active' : ''}"><div class="track-icon"></div><span>Shipped</span></div>
+                        <div class="track-step ${currentStep >= 2 ? 'active' : ''}"><div class="track-icon"></div><span>Delivered</span></div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+    } catch (err) {
+        console.error('Failed to load orders:', err);
+        ordersList.innerHTML = '<p style="color: var(--text-gray); text-align: center; padding: 20px 0;">Could not load your orders right now.</p>';
     }
 
     // ─── 2. المكتبة الرقمية (زي ما هي من localStorage) ─────

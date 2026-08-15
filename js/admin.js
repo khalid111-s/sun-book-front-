@@ -45,18 +45,25 @@ async function checkAdminAccess() {
 // ---------- 2. تحميل جدول المنتجات ----------
 async function loadProductsTable() {
     const tbody = document.getElementById('productsTableBody');
-    tbody.innerHTML = '<tr><td colspan="9">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10">Loading...</td></tr>';
 
     try {
         const { data } = await api.getProducts();
         currentProducts = data;
 
         if (!data.length) {
-            tbody.innerHTML = '<tr><td colspan="9">No products yet. Add your first one above.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10">No products yet. Add your first one above.</td></tr>';
             return;
         }
 
-        tbody.innerHTML = data.map(p => `
+        tbody.innerHTML = data.map(p => {
+            let stockCell = '<span style="color:var(--text-gray);">Not tracked</span>';
+            if (p.trackStock) {
+                const low = p.stockCount <= 3;
+                const out = p.stockCount <= 0;
+                stockCell = `<span style="color:${out ? '#e05252' : low ? '#e0a552' : 'inherit'};">${p.stockCount} ${out ? '(Out)' : low ? '(Low)' : ''}</span>`;
+            }
+            return `
             <tr>
                 <td><img src="${p.image}" alt="${p.title}" onerror="this.src='assets/sun-icon.png'"></td>
                 <td>${p.title}</td>
@@ -65,6 +72,7 @@ async function loadProductsTable() {
                 <td>${p.type}</td>
                 <td>${p.featured ? '<span class="admin-badge-yes">Yes</span>' : '—'}</td>
                 <td>${p.egyptOnly ? '<span class="admin-badge-yes">🇪🇬 Yes</span>' : '—'}</td>
+                <td>${stockCell}</td>
                 <td>${p.order ?? 0}</td>
                 <td>
                     <div class="admin-row-actions">
@@ -73,9 +81,10 @@ async function loadProductsTable() {
                     </div>
                 </td>
             </tr>
-        `).join('');
+        `;
+        }).join('');
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="9" style="color:#e05252;">Failed to load products: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="color:#e05252;">Failed to load products: ${err.message}</td></tr>`;
     }
 }
 
@@ -94,6 +103,9 @@ function resetForm() {
     document.getElementById('fieldFeatured').checked = false;
     document.getElementById('fieldInStock').checked = true;
     document.getElementById('fieldEgyptOnly').checked = false;
+    document.getElementById('fieldTrackStock').checked = false;
+    document.getElementById('fieldStockCount').value = 0;
+    document.getElementById('stockCountWrap').style.display = 'none';
     document.getElementById('formTitle').innerText = 'Add New Product';
     document.getElementById('submitBtn').innerText = 'Add Product';
     document.getElementById('cancelEditBtn').style.display = 'none';
@@ -114,6 +126,9 @@ function fillFormForEdit(product) {
     document.getElementById('fieldFeatured').checked = !!product.featured;
     document.getElementById('fieldInStock').checked = product.inStock !== false;
     document.getElementById('fieldEgyptOnly').checked = !!product.egyptOnly;
+    document.getElementById('fieldTrackStock').checked = !!product.trackStock;
+    document.getElementById('fieldStockCount').value = product.stockCount ?? 0;
+    document.getElementById('stockCountWrap').style.display = product.trackStock ? 'block' : 'none';
     document.getElementById('formTitle').innerText = `Edit: ${product.title}`;
     document.getElementById('submitBtn').innerText = 'Save Changes';
     document.getElementById('cancelEditBtn').style.display = 'inline-block';
@@ -136,6 +151,8 @@ function readFormData() {
         featured: document.getElementById('fieldFeatured').checked,
         inStock: document.getElementById('fieldInStock').checked,
         egyptOnly: document.getElementById('fieldEgyptOnly').checked,
+        trackStock: document.getElementById('fieldTrackStock').checked,
+        stockCount: parseInt(document.getElementById('fieldStockCount').value) || 0,
     };
 }
 
@@ -244,6 +261,14 @@ async function loadDashboardStats() {
             ? orders.slice(0, 50).map(o => {
                 const itemsSummary = o.items.map(i => `${i.title} ×${i.qty}`).join(', ');
                 const accountName = o.user && o.user.name ? o.user.name : '—';
+                const hasPhysical = o.items.some(i => i.type === 'physical');
+                const fulfillmentCell = hasPhysical
+                    ? `<select class="fulfillment-select" data-id="${o._id}" style="background:#1a1b1d;color:#fff;border:1px solid #444;border-radius:4px;padding:4px 6px;font-size:0.8rem;">
+                        <option value="processing" ${o.fulfillmentStatus === 'processing' || !o.fulfillmentStatus ? 'selected' : ''}>Processing</option>
+                        <option value="shipped" ${o.fulfillmentStatus === 'shipped' ? 'selected' : ''}>Shipped</option>
+                        <option value="delivered" ${o.fulfillmentStatus === 'delivered' ? 'selected' : ''}>Delivered</option>
+                       </select>`
+                    : '—';
                 return `
                     <tr>
                         <td>${new Date(o.createdAt).toLocaleDateString()}</td>
@@ -253,10 +278,11 @@ async function loadDashboardStats() {
                         <td>LE ${Number(o.totalAmount).toFixed(2)}</td>
                         <td>${o.country || 'Unknown'}</td>
                         <td>${o.status === 'paid' ? '<span class="admin-badge-yes">Paid</span>' : o.status}</td>
+                        <td>${fulfillmentCell}</td>
                     </tr>
                 `;
             }).join('')
-            : '<tr><td colspan="7">No orders yet.</td></tr>';
+            : '<tr><td colspan="8">No orders yet.</td></tr>';
     } catch (err) {
         console.error('Failed to load dashboard stats:', err);
     }
@@ -680,6 +706,10 @@ function initAdminPanel() {
     loadDashboardStats();
     startOnlinePolling();
 
+    document.getElementById('fieldTrackStock').addEventListener('change', (e) => {
+        document.getElementById('stockCountWrap').style.display = e.target.checked ? 'block' : 'none';
+    });
+
     document.getElementById('productForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const errorEl = document.getElementById('formError');
@@ -726,6 +756,22 @@ function initAdminPanel() {
             } catch (err) {
                 alert('Failed to delete: ' + err.message);
             }
+        }
+    });
+
+    // ---- تحديث حالة الشحن (Fulfillment) من جدول الطلبات المفصّل ----
+    document.getElementById('detailedOrdersBody').addEventListener('change', async (e) => {
+        const select = e.target.closest('.fulfillment-select');
+        if (!select) return;
+        const orderId = select.dataset.id;
+        const newStatus = select.value;
+        select.disabled = true;
+        try {
+            await api.updateOrderFulfillment(orderId, newStatus);
+        } catch (err) {
+            alert('Failed to update fulfillment status: ' + err.message);
+        } finally {
+            select.disabled = false;
         }
     });
 

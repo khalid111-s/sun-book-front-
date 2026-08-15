@@ -45,6 +45,18 @@ const api = {
       body: JSON.stringify({ accessToken }),
     }),
 
+  forgotPassword: (email) =>
+    api.request('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+
+  resetPassword: (token, password) =>
+    api.request('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, password }),
+    }),
+
   register: (name, email, password, phone) =>
     api.request('/auth/register', {
       method: 'POST',
@@ -140,6 +152,14 @@ const api = {
     }),
 
   getOrders: () => api.request('/orders'),
+
+  getMyOrders: () => api.request('/orders/my-orders'),
+
+  updateOrderFulfillment: (id, fulfillmentStatus) =>
+    api.request(`/orders/${id}/fulfillment`, {
+      method: 'PATCH',
+      body: JSON.stringify({ fulfillmentStatus }),
+    }),
 
   getOrder: (id) => api.request(`/orders/${id}`),
 
