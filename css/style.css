@@ -1231,7 +1231,7 @@ body {
     top: 0;
     left: 0;
     bottom: 0;
-    width: 28px;
+    width: 34px;
     background: var(--gold-color);
     color: #111;
     display: flex;
@@ -1239,11 +1239,12 @@ body {
     justify-content: center;
     text-align: center;
     padding: 10px 0;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
     writing-mode: vertical-rl;
+    transform: rotate(180deg);
     z-index: 3;
     box-shadow: 2px 0 10px rgba(0,0,0,0.35);
 }

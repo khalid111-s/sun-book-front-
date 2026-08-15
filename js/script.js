@@ -160,7 +160,7 @@ async function loadSingleProductPage() {
             if (normalized.egyptOnly) {
                 const strip = document.createElement('div');
                 strip.className = 'egypt-only-strip';
-                strip.innerText = '🇪🇬 Egypt Only';
+                strip.innerText = 'Egypt Only';
                 galleryEl.prepend(strip);
             }
         }
@@ -181,7 +181,7 @@ function productCardHTML(product) {
         .map(b => `<span class="badge">${b}</span>`)
         .join('');
     const egyptStripHTML = product.egyptOnly
-        ? `<div class="egypt-only-strip">🇪🇬 Egypt Only</div>`
+        ? `<div class="egypt-only-strip">Egypt Only</div>`
         : '';
     return `
         <div class="product-card">

@@ -651,7 +651,10 @@ async function loadPromoCodesTable() {
             else statusLabel = '<span class="admin-badge-yes">Active</span>';
             return `
                 <tr>
-                    <td><strong style="color:var(--gold-color);">${p.code}</strong></td>
+                    <td>
+                        <strong style="color:var(--gold-color);">${p.code}</strong>
+                        <button class="copy-promo-btn" data-code="${p.code}" title="Copy code" style="background:transparent;border:1px solid rgba(216,176,86,0.4);color:var(--gold-color);border-radius:4px;padding:2px 7px;font-size:0.75rem;cursor:pointer;margin-left:6px;">Copy</button>
+                    </td>
                     <td>${discountLabel}</td>
                     <td>${usageLabel}</td>
                     <td>${new Date(p.expiresAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
@@ -825,6 +828,26 @@ function initAdminPanel() {
     document.getElementById('promoCodesTableBody').addEventListener('click', async (e) => {
         const deactivateBtn = e.target.closest('.deactivate-promo-btn');
         const deleteBtn = e.target.closest('.delete-promo-btn');
+        const copyBtn = e.target.closest('.copy-promo-btn');
+
+        if (copyBtn) {
+            const code = copyBtn.dataset.code;
+            try {
+                await navigator.clipboard.writeText(code);
+            } catch (err) {
+                // fallback لو clipboard API متاحش (مثلاً http بدل https)
+                const tmp = document.createElement('textarea');
+                tmp.value = code;
+                document.body.appendChild(tmp);
+                tmp.select();
+                document.execCommand('copy');
+                document.body.removeChild(tmp);
+            }
+            const originalText = copyBtn.innerText;
+            copyBtn.innerText = 'Copied!';
+            setTimeout(() => { copyBtn.innerText = originalText; }, 1500);
+            return;
+        }
 
         if (deactivateBtn) {
             try {
