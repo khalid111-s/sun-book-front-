@@ -45,14 +45,14 @@ async function checkAdminAccess() {
 // ---------- 2. تحميل جدول المنتجات ----------
 async function loadProductsTable() {
     const tbody = document.getElementById('productsTableBody');
-    tbody.innerHTML = '<tr><td colspan="8">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9">Loading...</td></tr>';
 
     try {
         const { data } = await api.getProducts();
         currentProducts = data;
 
         if (!data.length) {
-            tbody.innerHTML = '<tr><td colspan="8">No products yet. Add your first one above.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9">No products yet. Add your first one above.</td></tr>';
             return;
         }
 
@@ -64,6 +64,7 @@ async function loadProductsTable() {
                 <td>${p.priceEUR ? `€${Number(p.priceEUR).toFixed(2)}` : '—'}</td>
                 <td>${p.type}</td>
                 <td>${p.featured ? '<span class="admin-badge-yes">Yes</span>' : '—'}</td>
+                <td>${p.egyptOnly ? '<span class="admin-badge-yes">🇪🇬 Yes</span>' : '—'}</td>
                 <td>${p.order ?? 0}</td>
                 <td>
                     <div class="admin-row-actions">
@@ -74,7 +75,7 @@ async function loadProductsTable() {
             </tr>
         `).join('');
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="8" style="color:#e05252;">Failed to load products: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="color:#e05252;">Failed to load products: ${err.message}</td></tr>`;
     }
 }
 
@@ -92,6 +93,7 @@ function resetForm() {
     document.getElementById('fieldDescription').value = '';
     document.getElementById('fieldFeatured').checked = false;
     document.getElementById('fieldInStock').checked = true;
+    document.getElementById('fieldEgyptOnly').checked = false;
     document.getElementById('formTitle').innerText = 'Add New Product';
     document.getElementById('submitBtn').innerText = 'Add Product';
     document.getElementById('cancelEditBtn').style.display = 'none';
@@ -111,6 +113,7 @@ function fillFormForEdit(product) {
     document.getElementById('fieldDescription').value = product.description || '';
     document.getElementById('fieldFeatured').checked = !!product.featured;
     document.getElementById('fieldInStock').checked = product.inStock !== false;
+    document.getElementById('fieldEgyptOnly').checked = !!product.egyptOnly;
     document.getElementById('formTitle').innerText = `Edit: ${product.title}`;
     document.getElementById('submitBtn').innerText = 'Save Changes';
     document.getElementById('cancelEditBtn').style.display = 'inline-block';
@@ -132,6 +135,7 @@ function readFormData() {
         description: document.getElementById('fieldDescription').value.trim(),
         featured: document.getElementById('fieldFeatured').checked,
         inStock: document.getElementById('fieldInStock').checked,
+        egyptOnly: document.getElementById('fieldEgyptOnly').checked,
     };
 }
 
@@ -204,6 +208,14 @@ async function loadDashboardStats() {
         topClickedBody.innerHTML = clickStats.topClicked.length
             ? clickStats.topClicked.map(c => `<tr><td>${c.title}</td><td>${c.clicks}</td></tr>`).join('')
             : '<tr><td colspan="2">No clicks recorded yet.</td></tr>';
+
+        // ---- أكتر الصفحات زيارة ----
+        const topPagesBody = document.getElementById('topPagesBody');
+        if (topPagesBody) {
+            topPagesBody.innerHTML = (visitStats.topPages || []).length
+                ? visitStats.topPages.map(p => `<tr><td>${p.path || '/'}</td><td>${p.pageViews}</td><td>${p.visitors}</td></tr>`).join('')
+                : '<tr><td colspan="3">No visits recorded yet.</td></tr>';
+        }
 
         // ---- الزوار حسب الدولة ----
         const topCountriesBody = document.getElementById('topCountriesBody');
@@ -528,6 +540,22 @@ function downloadOrdersCSV(orders) {
 }
 
 // ---------- 4. الأحداث ----------
+const tabPanelIds = {
+    products: 'tabProducts',
+    dashboard: 'tabDashboard',
+    sessions: 'tabSessions',
+    users: 'tabUsers',
+    promocodes: 'tabPromoCodes',
+};
+
+// كل تاب من التابات دي بيتحمّل أول مرة بس تفتحه، مش من أول ما الصفحة تفتح
+const tabLoaders = {
+    sessions: () => loadSessionsTable(),
+    users: () => loadUsersTable(),
+    promocodes: () => loadPromoCodesTable(),
+};
+const loadedTabs = new Set();
+
 function initTabs() {
     const buttons = document.querySelectorAll('.admin-tab-btn');
     buttons.forEach(btn => {
@@ -535,10 +563,111 @@ function initTabs() {
             buttons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             const target = btn.dataset.tab;
-            document.getElementById('tabProducts').style.display = target === 'products' ? 'block' : 'none';
-            document.getElementById('tabDashboard').style.display = target === 'dashboard' ? 'block' : 'none';
+            Object.entries(tabPanelIds).forEach(([key, id]) => {
+                document.getElementById(id).style.display = key === target ? 'block' : 'none';
+            });
+            if (tabLoaders[target] && !loadedTabs.has(target)) {
+                loadedTabs.add(target);
+                tabLoaders[target]();
+            }
         });
     });
+}
+
+// ---------- تاب الجلسات ----------
+async function loadSessionsTable() {
+    const tbody = document.getElementById('sessionsTableBody');
+    tbody.innerHTML = '<tr><td colspan="7">Loading...</td></tr>';
+    try {
+        const { data } = await api.getAllBookings();
+        if (!data.length) {
+            tbody.innerHTML = '<tr><td colspan="7">No sessions booked yet.</td></tr>';
+            return;
+        }
+        const statusBadge = (status) => {
+            if (status === 'paid' || status === 'confirmed' || status === 'completed') {
+                return `<span class="admin-badge-yes">${status}</span>`;
+            }
+            if (status === 'cancelled') return `<span style="color:#e05252;">${status}</span>`;
+            return status; // pending
+        };
+        tbody.innerHTML = data.map(b => `
+            <tr>
+                <td>${new Date(b.date).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+                <td>${b.student?.name || '—'}</td>
+                <td>${b.student?.email || '—'}</td>
+                <td>${b.student?.phone || '—'}</td>
+                <td>${b.subject || '—'}</td>
+                <td>LE ${Number(b.price).toFixed(2)}</td>
+                <td>${statusBadge(b.status)}</td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" style="color:#e05252;">Failed to load sessions: ${err.message}</td></tr>`;
+    }
+}
+
+// ---------- تاب المستخدمين ----------
+async function loadUsersTable() {
+    const tbody = document.getElementById('usersTableBody');
+    tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+    try {
+        const { data } = await api.getUsers();
+        if (!data.length) {
+            tbody.innerHTML = '<tr><td colspan="4">No registered users yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.map(u => `
+            <tr>
+                <td>${u.name}</td>
+                <td>${u.email}</td>
+                <td>${new Date(u.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                <td>${u.orderCount ?? 0}</td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="4" style="color:#e05252;">Failed to load users: ${err.message}</td></tr>`;
+    }
+}
+
+// ---------- تاب أكواد الخصم ----------
+async function loadPromoCodesTable() {
+    const tbody = document.getElementById('promoCodesTableBody');
+    tbody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+    try {
+        const { data } = await api.getPromoCodes();
+        if (!data.length) {
+            tbody.innerHTML = '<tr><td colspan="6">No promo codes yet. Generate one above.</td></tr>';
+            return;
+        }
+        const now = Date.now();
+        tbody.innerHTML = data.map(p => {
+            const expired = new Date(p.expiresAt).getTime() < now;
+            const discountLabel = p.discountType === 'percentage' ? `${p.discountValue}%` : `LE ${p.discountValue}`;
+            const usageLabel = p.usageLimit ? `${p.timesUsed} / ${p.usageLimit}` : `${p.timesUsed} / ∞`;
+            let statusLabel;
+            if (!p.active) statusLabel = '<span style="color:#e05252;">Deactivated</span>';
+            else if (expired) statusLabel = '<span style="color:#e05252;">Expired</span>';
+            else statusLabel = '<span class="admin-badge-yes">Active</span>';
+            return `
+                <tr>
+                    <td><strong style="color:var(--gold-color);">${p.code}</strong></td>
+                    <td>${discountLabel}</td>
+                    <td>${usageLabel}</td>
+                    <td>${new Date(p.expiresAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+                    <td>${statusLabel}</td>
+                    <td>
+                        <div class="admin-row-actions">
+                            ${p.active ? `<button class="edit-btn deactivate-promo-btn" data-id="${p._id}">Deactivate</button>` : ''}
+                            <button class="delete-btn delete-promo-btn" data-id="${p._id}">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" style="color:#e05252;">Failed to load promo codes: ${err.message}</td></tr>`;
+    }
 }
 
 function initAdminPanel() {
@@ -649,6 +778,72 @@ function initAdminPanel() {
             msg.innerText = err.message || 'Failed to save.';
         } finally {
             btn.disabled = false;
+        }
+    });
+    // ---- أكواد الخصم ----
+    document.getElementById('promoCodeForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errorEl = document.getElementById('promoFormError');
+        errorEl.innerText = '';
+        const submitBtn = document.getElementById('promoSubmitBtn');
+
+        const payload = {
+            code: document.getElementById('promoFieldCode').value.trim(),
+            discountType: document.getElementById('promoFieldDiscountType').value,
+            discountValue: parseFloat(document.getElementById('promoFieldDiscountValue').value),
+            usageLimit: document.getElementById('promoFieldUsageLimit').value
+                ? parseInt(document.getElementById('promoFieldUsageLimit').value, 10)
+                : null,
+            durationAmount: parseInt(document.getElementById('promoFieldDurationAmount').value, 10),
+            durationUnit: document.getElementById('promoFieldDurationUnit').value,
+        };
+
+        if (!payload.discountValue || payload.discountValue <= 0) {
+            errorEl.innerText = 'Please enter a valid discount value.';
+            return;
+        }
+        if (!payload.durationAmount || payload.durationAmount <= 0) {
+            errorEl.innerText = 'Please enter a valid duration.';
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Generating...';
+        try {
+            await api.createPromoCode(payload);
+            document.getElementById('promoCodeForm').reset();
+            document.getElementById('promoFieldDurationAmount').value = 1;
+            loadPromoCodesTable();
+        } catch (err) {
+            errorEl.innerText = err.message || 'Something went wrong.';
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Generate Code';
+        }
+    });
+
+    document.getElementById('promoCodesTableBody').addEventListener('click', async (e) => {
+        const deactivateBtn = e.target.closest('.deactivate-promo-btn');
+        const deleteBtn = e.target.closest('.delete-promo-btn');
+
+        if (deactivateBtn) {
+            try {
+                await api.deactivatePromoCode(deactivateBtn.dataset.id);
+                loadPromoCodesTable();
+            } catch (err) {
+                alert('Failed to deactivate: ' + err.message);
+            }
+        }
+
+        if (deleteBtn) {
+            const confirmed = confirm('Delete this promo code? This can\'t be undone.');
+            if (!confirmed) return;
+            try {
+                await api.deletePromoCode(deleteBtn.dataset.id);
+                loadPromoCodesTable();
+            } catch (err) {
+                alert('Failed to delete: ' + err.message);
+            }
         }
     });
 }

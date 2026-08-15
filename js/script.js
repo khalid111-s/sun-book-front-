@@ -110,6 +110,7 @@ function normalizeProduct(p) {
         type: p.type,
         badges: p.badges || [],
         featured: !!p.featured,
+        egyptOnly: !!p.egyptOnly,
     };
 }
 
@@ -145,6 +146,14 @@ async function loadSingleProductPage() {
         if (priceEl) priceEl.innerText = normalized.price;
         if (descEl) descEl.innerText = normalized.description;
 
+        const badgesEl = document.getElementById('product-badges');
+        if (badgesEl) {
+            const badgesHTML = (normalized.badges || [])
+                .map(b => `<span class="badge">${b}</span>`)
+                .join('') + (normalized.egyptOnly ? `<span class="badge badge-egypt">🇪🇬 Available in Egypt only</span>` : '');
+            badgesEl.innerHTML = badgesHTML;
+        }
+
         // نحدّث الكاش المحلي كمان عشان زرار "Add to Cart" يلاقي المنتج
         const existingIndex = productsData.findIndex(item => item.id == normalized.id);
         if (existingIndex >= 0) productsData[existingIndex] = normalized;
@@ -159,7 +168,7 @@ async function loadSingleProductPage() {
 function productCardHTML(product) {
     const badgesHTML = (product.badges || [])
         .map(b => `<span class="badge">${b}</span>`)
-        .join('');
+        .join('') + (product.egyptOnly ? `<span class="badge badge-egypt">🇪🇬 Available in Egypt only</span>` : '');
     return `
         <div class="product-card">
             <div class="card-image-wrapper">

@@ -190,4 +190,31 @@ const api = {
     }),
 
   getClickStats: (label = 'add_to_cart') => api.request(`/events/stats/clicks?label=${encodeURIComponent(label)}`),
+
+  // ---- Admin: Sessions (bookings) tab ----
+  getAllBookings: () => api.request('/bookings'),
+
+  // ---- Admin: Users tab ----
+  getUsers: () => api.request('/users'),
+
+  // ---- Promo codes ----
+  getPromoCodes: () => api.request('/promocodes'),
+
+  createPromoCode: (data) =>
+    api.request('/promocodes', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  deactivatePromoCode: (id) =>
+    api.request(`/promocodes/${id}/deactivate`, { method: 'PATCH' }),
+
+  deletePromoCode: (id) =>
+    api.request(`/promocodes/${id}`, { method: 'DELETE' }),
+
+  validatePromoCode: (code) =>
+    api.request('/promocodes/validate', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    }),
 };

@@ -1212,6 +1212,7 @@ body {
     display: flex;
     gap: 8px;
     margin-bottom: 15px;
+    flex-wrap: wrap;
 }
 
 .badge {
@@ -1222,6 +1223,16 @@ body {
     border-radius: 6px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
+}
+
+/* بادج "متاح في مصر بس" - شكل مميز شوية عن باقي البادجات */
+.badge-egypt {
+    color: #111;
+    background: var(--gold-color);
+    border-color: var(--gold-color);
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
 }
 
 .card-desc {

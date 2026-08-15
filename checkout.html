@@ -112,6 +112,20 @@
                     <h3 class="checkout-title">Order Summary</h3>
                     <div id="checkout-items-list" class="checkout-items-list"></div>
                     <hr class="summary-divider">
+
+                    <!-- كود الخصم -->
+                    <div class="promo-code-box">
+                        <div class="promo-code-row">
+                            <input type="text" id="promoCodeInput" placeholder="Promo code" autocomplete="off">
+                            <button type="button" id="applyPromoBtn">Apply</button>
+                        </div>
+                        <p id="promoCodeMsg" class="promo-code-msg"></p>
+                    </div>
+
+                    <div class="summary-row" id="promoDiscountRow" style="display:none; color:#34A853;">
+                        <span>Discount</span>
+                        <span id="promoDiscountAmount">- LE 0.00</span>
+                    </div>
                     <div class="summary-row total-row">
                         <span>Total to pay</span>
                         <span id="checkout-total-price">LE 0.00</span>
@@ -123,6 +137,36 @@
 
     </div>
 </section>
+
+<style>
+    .promo-code-box { margin: 14px 0; }
+    .promo-code-row { display: flex; gap: 8px; }
+    .promo-code-row input {
+        flex: 1;
+        padding: 10px 12px;
+        border-radius: 4px;
+        border: 1px solid #444;
+        background: #1a1b1d;
+        color: #fff;
+        font-family: var(--font-main);
+        text-transform: uppercase;
+    }
+    .promo-code-row button {
+        background: transparent;
+        border: 1px solid var(--gold-color);
+        color: var(--gold-color);
+        padding: 0 18px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+    .promo-code-row button:hover { background: var(--gold-color); color: #111; }
+    .promo-code-row button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .promo-code-msg { font-size: 0.8rem; margin-top: 6px; min-height: 16px; }
+    .promo-code-msg.success { color: #34A853; }
+    .promo-code-msg.error { color: #e05252; }
+</style>
 
 <!-- نافذة النجاح والتحميل المباشر -->
 <div id="successModal" class="booking-modal-overlay">
@@ -332,6 +376,7 @@
                         type: item.type,
                     })),
                     totalAmount: Number(bookItemsFinalTotal.toFixed(2)),
+                    promoCode: window.appliedPromo ? window.appliedPromo.code : undefined,
                 });
 
                 // لو Paymob جهز رابط دفع حقيقي (مفاتيح Test أو Live)، نوجّه العميل لصفحة الدفع فعليًا
@@ -874,9 +919,61 @@ function initSmartCheckout() {
     if (loggedInUser) {
         finalTotal = totalPrice - (totalPrice * 0.05);
     }
+
+    // ---- تطبيق خصم البروموكود (لو اتفعّل) على الإجمالي المعروض ----
+    const promoDiscountRow = document.getElementById('promoDiscountRow');
+    const promoDiscountAmountEl = document.getElementById('promoDiscountAmount');
+    if (window.appliedPromo) {
+        const promo = window.appliedPromo;
+        const discount = promo.discountType === 'percentage'
+            ? finalTotal * (promo.discountValue / 100)
+            : Math.min(promo.discountValue, finalTotal);
+        finalTotal = Math.max(0, finalTotal - discount);
+        if (promoDiscountRow) promoDiscountRow.style.display = 'flex';
+        if (promoDiscountAmountEl) promoDiscountAmountEl.innerText = `- LE ${discount.toFixed(2)}`;
+    } else if (promoDiscountRow) {
+        promoDiscountRow.style.display = 'none';
+    }
+
     const totalPriceEl = document.getElementById('checkout-total-price');
     if (totalPriceEl) totalPriceEl.innerText = `LE ${finalTotal.toFixed(2)}`;
 }
+
+// ====== كود الخصم: تفعيل الزرار ======
+window.appliedPromo = null;
+document.addEventListener('DOMContentLoaded', () => {
+    const applyBtn = document.getElementById('applyPromoBtn');
+    const promoInput = document.getElementById('promoCodeInput');
+    const promoMsg = document.getElementById('promoCodeMsg');
+    if (!applyBtn || !promoInput) return;
+
+    applyBtn.addEventListener('click', async () => {
+        const code = promoInput.value.trim();
+        promoMsg.className = 'promo-code-msg';
+        if (!code) {
+            promoMsg.innerText = 'Please enter a code.';
+            promoMsg.classList.add('error');
+            return;
+        }
+        applyBtn.disabled = true;
+        applyBtn.innerText = 'Checking...';
+        try {
+            const { data } = await api.validatePromoCode(code);
+            window.appliedPromo = data;
+            promoMsg.innerText = `"${data.code}" applied successfully!`;
+            promoMsg.classList.add('success');
+            promoInput.disabled = true;
+            applyBtn.innerText = 'Applied';
+            if (typeof initSmartCheckout === 'function') initSmartCheckout();
+        } catch (err) {
+            window.appliedPromo = null;
+            promoMsg.innerText = err.message || 'Invalid promo code.';
+            promoMsg.classList.add('error');
+            applyBtn.disabled = false;
+            applyBtn.innerText = 'Apply';
+        }
+    });
+});
 
     // =========================================
     // التعبئة التلقائية لبيانات العميل (Auto-fill)
