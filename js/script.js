@@ -148,10 +148,21 @@ async function loadSingleProductPage() {
 
         const badgesEl = document.getElementById('product-badges');
         if (badgesEl) {
-            const badgesHTML = (normalized.badges || [])
+            badgesEl.innerHTML = (normalized.badges || [])
                 .map(b => `<span class="badge">${b}</span>`)
-                .join('') + (normalized.egyptOnly ? `<span class="badge badge-egypt">🇪🇬 Available in Egypt only</span>` : '');
-            badgesEl.innerHTML = badgesHTML;
+                .join('');
+        }
+
+        const galleryEl = document.querySelector('.product-gallery');
+        if (galleryEl) {
+            const existingStrip = galleryEl.querySelector('.egypt-only-strip');
+            if (existingStrip) existingStrip.remove();
+            if (normalized.egyptOnly) {
+                const strip = document.createElement('div');
+                strip.className = 'egypt-only-strip';
+                strip.innerText = '🇪🇬 Egypt Only';
+                galleryEl.prepend(strip);
+            }
         }
 
         // نحدّث الكاش المحلي كمان عشان زرار "Add to Cart" يلاقي المنتج
@@ -168,10 +179,14 @@ async function loadSingleProductPage() {
 function productCardHTML(product) {
     const badgesHTML = (product.badges || [])
         .map(b => `<span class="badge">${b}</span>`)
-        .join('') + (product.egyptOnly ? `<span class="badge badge-egypt">🇪🇬 Available in Egypt only</span>` : '');
+        .join('');
+    const egyptStripHTML = product.egyptOnly
+        ? `<div class="egypt-only-strip">🇪🇬 Egypt Only</div>`
+        : '';
     return `
         <div class="product-card">
             <div class="card-image-wrapper">
+                ${egyptStripHTML}
                 <a href="product.html?id=${product.id}">
                     <img src="${product.image}" alt="${product.title}" class="card-img" loading="lazy">
                 </a>
@@ -286,6 +301,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 // =========================================
 let cartItems = JSON.parse(localStorage.getItem('sunbook_cart')) || [];
 
+// ====== كود الخصم: تخزين محلي بسيط عشان يفضل متطبق من السلة لحد صفحة الدفع ======
+const PROMO_STORAGE_KEY = 'sunbook_promo';
+
+function getStoredPromo() {
+    try {
+        const raw = localStorage.getItem(PROMO_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function setStoredPromo(promo) {
+    if (promo) localStorage.setItem(PROMO_STORAGE_KEY, JSON.stringify(promo));
+    else localStorage.removeItem(PROMO_STORAGE_KEY);
+}
+
 function renderCart() {
     const container = document.getElementById('cart-container');
     if (!container) return;
@@ -388,6 +420,16 @@ function updateOrderSummary(total) {
         finalTotal = total - discount;
     }
 
+    // ---- كود الخصم (لو المستخدم طبّق واحد قبل كده) ----
+    const storedPromo = getStoredPromo();
+    let promoDiscount = 0;
+    if (storedPromo && total > 0) {
+        promoDiscount = storedPromo.discountType === 'percentage'
+            ? finalTotal * (storedPromo.discountValue / 100)
+            : Math.min(storedPromo.discountValue, finalTotal);
+        finalTotal = Math.max(0, finalTotal - promoDiscount);
+    }
+
     let summaryHTML = `
         <h3 class="summary-title">Order Summary</h3>
         <div class="summary-row">
@@ -405,11 +447,21 @@ function updateOrderSummary(total) {
         `;
     }
 
+    if (storedPromo && promoDiscount > 0) {
+        summaryHTML += `
+        <div class="summary-row" style="color: #34A853; font-weight: bold;">
+            <span>Promo "${storedPromo.code}" <a href="#" id="removePromoLink" style="color: var(--text-gray); font-weight: normal; text-decoration: underline; font-size: 0.75rem;">(remove)</a></span>
+            <span>-LE ${promoDiscount.toFixed(2)}</span>
+        </div>
+        `;
+    }
+
     summaryHTML += `
         <div class="promo-code-container">
-            <input type="text" placeholder="Enter code" class="promo-input">
-            <button class="apply-btn">Apply</button>
+            <input type="text" placeholder="Enter code" class="promo-input" id="cartPromoInput" ${storedPromo ? 'disabled' : ''} value="${storedPromo ? storedPromo.code : ''}">
+            <button class="apply-btn" id="cartApplyPromoBtn" ${storedPromo ? 'disabled' : ''}>${storedPromo ? 'Applied' : 'Apply'}</button>
         </div>
+        <p id="cartPromoMsg" style="font-size: 0.8rem; margin: -8px 0 12px; min-height: 14px;"></p>
         <hr class="summary-divider">
         <div class="summary-row total-row">
             <span>Total</span>
@@ -420,6 +472,44 @@ function updateOrderSummary(total) {
 
     summaryBox.innerHTML = summaryHTML;
     attachCheckoutEvent(finalTotal);
+    attachPromoEvents(total);
+}
+
+// بيربط زرار "Apply" ولينك "remove" في صفحة السلة بمنطق التحقق من كود الخصم
+function attachPromoEvents(rawTotal) {
+    const applyBtn = document.getElementById('cartApplyPromoBtn');
+    const promoInput = document.getElementById('cartPromoInput');
+    const promoMsg = document.getElementById('cartPromoMsg');
+    const removeLink = document.getElementById('removePromoLink');
+
+    if (applyBtn && promoInput && !getStoredPromo()) {
+        applyBtn.addEventListener('click', async () => {
+            const code = promoInput.value.trim();
+            if (!code) {
+                if (promoMsg) { promoMsg.style.color = '#e05252'; promoMsg.innerText = 'Please enter a code.'; }
+                return;
+            }
+            applyBtn.disabled = true;
+            applyBtn.innerText = 'Checking...';
+            try {
+                const { data } = await api.validatePromoCode(code);
+                setStoredPromo(data);
+                renderCartItemsNow();
+            } catch (err) {
+                if (promoMsg) { promoMsg.style.color = '#e05252'; promoMsg.innerText = err.message || 'Invalid promo code.'; }
+                applyBtn.disabled = false;
+                applyBtn.innerText = 'Apply';
+            }
+        });
+    }
+
+    if (removeLink) {
+        removeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            setStoredPromo(null);
+            renderCartItemsNow();
+        });
+    }
 }
 
 function updateQty(index, change) {

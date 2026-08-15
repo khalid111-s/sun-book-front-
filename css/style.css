@@ -1225,14 +1225,27 @@ body {
     text-transform: uppercase;
 }
 
-/* بادج "متاح في مصر بس" - شكل مميز شوية عن باقي البادجات */
-.badge-egypt {
-    color: #111;
+/* شريط جانبي واضح على صورة المنتج بيقول إن الكتاب ده متاح في مصر بس */
+.egypt-only-strip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 28px;
     background: var(--gold-color);
-    border-color: var(--gold-color);
-    font-weight: 600;
-    text-transform: none;
-    letter-spacing: 0;
+    color: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    z-index: 3;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.35);
 }
 
 .card-desc {
@@ -1897,6 +1910,8 @@ ul.social-row {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
+    overflow: hidden;
 }
 
 .product-gallery img {
