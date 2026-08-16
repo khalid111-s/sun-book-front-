@@ -28,7 +28,15 @@
   <button class="btn-end" onclick="endCall()">End Call</button>
 </div>
 
-<div id="jitsi-container"></div>
+<div id="waitingScreen" style="display:none; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding: 20px; color:#e8e8e8; font-family: Georgia, serif;">
+  <div style="font-size: 2.5rem; margin-bottom: 12px;">🌞</div>
+  <h2 id="waitingTitle" style="color: var(--gold-color); margin-bottom: 10px;"></h2>
+  <p id="waitingMessage" style="color:#aaa; max-width: 420px; line-height: 1.6;"></p>
+  <p id="waitingCountdown" style="color: var(--gold-color); font-size: 1.3rem; margin-top: 20px; font-weight: bold;"></p>
+  <a href="profile.html" style="margin-top: 24px; color: var(--gold-color); text-decoration: underline;">Back to Profile</a>
+</div>
+
+<div id="jitsi-container" style="display:none;"></div>
 
 <script src="https://meet.jit.si/external_api.js"></script>
 <script src="js/api.js"></script>
@@ -37,6 +45,33 @@
 const urlParams = new URLSearchParams(window.location.search);
 const sessionId = urlParams.get('id');
 let jitsiApi = null;
+
+let countdownInterval = null;
+
+function showWaitingScreen(title, message) {
+  document.getElementById('jitsi-container').style.display = 'none';
+  document.getElementById('waitingScreen').style.display = 'flex';
+  document.getElementById('waitingTitle').innerText = title;
+  document.getElementById('waitingMessage').innerText = message;
+}
+
+// بيعرض عدّاد تنازلي لحد ما وقت الدخول يفتح، وبعدين يعمل reload تلقائي عشان يبدأ الاجتماع فورًا
+function startCountdown(targetDate) {
+  const countdownEl = document.getElementById('waitingCountdown');
+  if (countdownInterval) clearInterval(countdownInterval);
+
+  countdownInterval = setInterval(() => {
+    const diff = targetDate.getTime() - Date.now();
+    if (diff <= 0) {
+      clearInterval(countdownInterval);
+      window.location.reload();
+      return;
+    }
+    const mins = Math.floor(diff / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+    countdownEl.innerText = `Starts in ${mins}m ${secs.toString().padStart(2, '0')}s`;
+  }, 1000);
+}
 
 async function initMeeting() {
   const token = localStorage.getItem('sunbook_token');
@@ -50,9 +85,33 @@ async function initMeeting() {
     const { data } = await api.getSession(sessionId);
     const session = data.session || data;
     const cfg = data.meetingConfig;
+    const joinWindow = data.joinWindow;
     const userName = localStorage.getItem('sunbook_username') || 'Sunbook User';
 
     document.getElementById('sessionTitle').innerText = session.subject || 'Live Session';
+
+    // --- الجلسة فاتت ومحدش دخل ---
+    if (joinWindow && joinWindow.isMissed) {
+      showWaitingScreen(
+        'Session Missed',
+        "This session's time has passed and nobody joined. Please contact support to reschedule, or book a new session from your profile."
+      );
+      return;
+    }
+
+    // --- لسه بدري، الدخول هيفتح لاحقًا ---
+    if (joinWindow && joinWindow.isTooEarly) {
+      const opensAt = new Date(joinWindow.joinOpensAt);
+      showWaitingScreen(
+        'Not Started Yet',
+        'You can join this session starting 10 minutes before its scheduled time.'
+      );
+      startCountdown(opensAt);
+      return;
+    }
+
+    document.getElementById('waitingScreen').style.display = 'none';
+    document.getElementById('jitsi-container').style.display = 'block';
 
     const domain = cfg?.domain || 'meet.jit.si';
     const roomName = cfg?.roomName || session.jitsiRoomName;
@@ -63,8 +122,9 @@ async function initMeeting() {
       width: '100%',
       height: '100%',
       configOverwrite: cfg?.configOverwrite || {
+        startAudioOnly: true,
         startWithAudioMuted: false,
-        startWithVideoMuted: false,
+        startWithVideoMuted: true,
         prejoinPageEnabled: false,
       },
       interfaceConfigOverwrite: cfg?.interfaceConfigOverwrite || {
