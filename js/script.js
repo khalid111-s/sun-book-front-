@@ -657,25 +657,38 @@ updateCartBadge();
    نظام الحجز والتقويم (محدث بحجز المواعيد)
    ========================================= */
 
-// Helper: جلب كل الحجوزات لتاريخ معين
-function getBookingsForDate(dateStr) {
-    const bookings = JSON.parse(localStorage.getItem('sunbook_bookings')) || [];
-    return bookings.filter(b => b.date === dateStr);
+// المواعيد الثابتة الثلاثة المتاحة كل يوم - لازم تكون مطابقة لنفس القيم في الباك اند (DAILY_SLOTS)
+const DAILY_SLOTS = ['4:00 PM', '6:00 PM', '8:00 PM'];
+
+// Helper: بيجيب حالة المواعيد الحقيقية ليوم معين من السيرفر (مش وهمية من localStorage)
+async function getAvailabilityForDate(dateStr) {
+    try {
+        const isoDate = new Date(dateStr).toISOString().split('T')[0];
+        const { data } = await api.getBookingAvailability(isoDate);
+        return data;
+    } catch (err) {
+        console.error('Failed to load availability:', err);
+        // لو السيرفر فشل، نفترض كل المواعيد متاحة بدل ما نمنع الحجز خالص
+        return { slots: DAILY_SLOTS.map(time => ({ time, booked: false })), isFullyBooked: false };
+    }
 }
 
-// Helper: تحديث زراير الوقت حسب التاريخ المختار
-function updateTimeSlotsForDate(dateStr) {
-    const bookings = getBookingsForDate(dateStr);
-    const bookedTimes = bookings.map(b => b.time);
+// Helper: تحديث زراير الوقت حسب التاريخ المختار (بيانات حقيقية من السيرفر)
+async function updateTimeSlotsForDate(dateStr) {
     const allSlots = document.querySelectorAll('.time-slot-btn');
-    
+    allSlots.forEach(btn => { btn.disabled = true; btn.classList.add('loading'); });
+
+    const availability = await getAvailabilityForDate(dateStr);
+    const bookedTimes = new Set(availability.slots.filter(s => s.booked).map(s => s.time));
+
     allSlots.forEach(btn => {
-        btn.classList.remove('selected', 'booked');
-        btn.disabled = false;
-        
-        if (bookedTimes.includes(btn.innerText.trim())) {
+        btn.classList.remove('selected', 'booked', 'loading');
+        const time = btn.innerText.trim();
+        if (bookedTimes.has(time)) {
             btn.classList.add('booked');
             btn.disabled = true;
+        } else {
+            btn.disabled = false;
         }
     });
 }
@@ -717,7 +730,11 @@ if (modal) {
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const startDayIndex = firstDay === 0 ? 6 : firstDay - 1;
-        const today = new Date();
+
+        // أقل يوم يقدر يحجزه: بكرة (مش النهارده) - يعني بينا وبين الحجز يوم كامل على الأقل
+        const earliestBookable = new Date();
+        earliestBookable.setHours(0, 0, 0, 0);
+        earliestBookable.setDate(earliestBookable.getDate() + 1);
 
         for (let i = 0; i < startDayIndex; i++) {
             const emptyDiv = document.createElement('div');
@@ -725,48 +742,49 @@ if (modal) {
             calendarDays.appendChild(emptyDiv);
         }
 
+        const dayDivs = [];
         for (let i = 1; i <= daysInMonth; i++) {
             const dayDiv = document.createElement('div');
             dayDiv.classList.add('cal-day');
             dayDiv.innerText = i;
-            
-            const thisDate = new Date(year, month, i);
-            const dateStr = `${i} ${monthNames[month]} ${year}`;
-            const dayBookings = getBookingsForDate(dateStr);
-            const isFullyBooked = dayBookings.length >= 3; // عندنا 3 مواعيد في اليوم
+            dayDiv.dataset.day = i;
 
-            if (thisDate < new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
+            const thisDate = new Date(year, month, i);
+
+            if (thisDate < earliestBookable) {
                 dayDiv.classList.add('disabled');
-            } else if (isFullyBooked) {
-                dayDiv.classList.add('fully-booked');
-                dayDiv.title = "Fully booked";
             } else {
                 dayDiv.addEventListener('click', function() {
+                    if (this.classList.contains('fully-booked') || this.classList.contains('disabled')) return;
                     document.querySelectorAll('.cal-day').forEach(d => d.classList.remove('selected'));
                     this.classList.add('selected');
+                    const dateStr = `${i} ${monthNames[month]} ${year}`;
                     updateTimeSlotsForDate(dateStr);
                 });
-                
-                // لو اليوم ده هو اليوم الحالي ونفس الشهر، نحدده تلقائي
-                if (thisDate.getTime() === new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()) {
-                    dayDiv.classList.add('selected');
-                }
             }
+            dayDivs.push(dayDiv);
             calendarDays.appendChild(dayDiv);
         }
 
-        // بعد الرسم: لو فيه يوم محدد نحدث زراير الوقت، لو مفيش نمسح الحالة القديمة
-        const selectedDay = document.querySelector('.cal-day.selected');
-        if (selectedDay) {
-            const selectedDateStr = `${selectedDay.innerText} ${monthNames[month]} ${year}`;
-            updateTimeSlotsForDate(selectedDateStr);
-        } else {
-            // لو بنعرض شهر تاني مفيش يوم محدد، نفضي زراير الوقت
-            document.querySelectorAll('.time-slot-btn').forEach(btn => {
-                btn.classList.remove('selected', 'booked');
-                btn.disabled = false;
+        // نمسح زراير الوقت لحد ما نختار يوم من جديد
+        document.querySelectorAll('.time-slot-btn').forEach(btn => {
+            btn.classList.remove('selected', 'booked');
+            btn.disabled = false;
+        });
+
+        // نجيب الأيام المكتملة كلها في الشهر ده بضربة واحدة، ونلوّنها
+        api.getMonthAvailability(year, month + 1).then(({ data }) => {
+            const fullyBookedSet = new Set(data.fullyBookedDates || []);
+            dayDivs.forEach(dayDiv => {
+                if (dayDiv.classList.contains('disabled')) return;
+                const i = Number(dayDiv.dataset.day);
+                const isoKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                if (fullyBookedSet.has(isoKey)) {
+                    dayDiv.classList.add('fully-booked');
+                    dayDiv.title = 'Fully booked';
+                }
             });
-        }
+        }).catch(err => console.error('Failed to load month availability:', err));
     }
 
     const prevMonthBtn = document.getElementById('prevMonth');

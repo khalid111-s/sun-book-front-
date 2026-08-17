@@ -145,11 +145,26 @@ const api = {
     });
   },
 
+  /** بيرجع المواعيد المحجوزة فعليًا (من السيرفر) ليوم معين، عشان نعرف نقفل الأيام المكتملة */
+  getBookingAvailability: (dateStr) => api.request(`/bookings/availability?date=${encodeURIComponent(dateStr)}`),
+
+  /** بيرجع كل الأيام المكتملة (كل المواعيد محجوزة) في شهر معين دفعة واحدة، عشان نلوّن التقويم بسرعة */
+  getMonthAvailability: (year, month) => api.request(`/bookings/availability-month?year=${year}&month=${month}`),
+
+  cancelBooking: (id, reason) =>
+    api.request(`/bookings/${id}/cancel`, {
+      method: 'PATCH',
+      body: JSON.stringify({ reason }),
+    }),
+
   createOrder: (data) =>
     api.request('/orders', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+
+  cancelOrder: (id) =>
+    api.request(`/orders/${id}/cancel`, { method: 'PATCH' }),
 
   getOrders: () => api.request('/orders'),
 

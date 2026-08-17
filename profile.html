@@ -227,6 +227,7 @@
                 const currentStep = statusSteps.indexOf(order.fulfillmentStatus || 'processing');
                 const orderDate = new Date(order.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
                 const shortId = order._id.slice(-6).toUpperCase();
+                const canCancel = order.status !== 'cancelled' && (order.fulfillmentStatus || 'processing') === 'processing';
 
                 return `
                 <div class="history-card" style="flex-direction: column; align-items: stretch;">
@@ -235,16 +236,36 @@
                             <h4>Order #${shortId}</h4>
                             <p>Total: LE ${Number(order.totalAmount).toFixed(2)} • Date: ${orderDate}</p>
                         </div>
-                        <div class="history-status">${statusLabels[order.fulfillmentStatus] || 'Processing'}</div>
+                        <div class="history-status">${order.status === 'cancelled' ? 'Cancelled' : (statusLabels[order.fulfillmentStatus] || 'Processing')}</div>
                     </div>
+                    ${order.status === 'cancelled' ? '' : `
                     <div class="tracking-timeline">
                         <div class="track-step active"><div class="track-icon"></div><span>Placed</span></div>
                         <div class="track-step ${currentStep >= 0 ? 'active' : ''}"><div class="track-icon"></div><span>Processing</span></div>
                         <div class="track-step ${currentStep >= 1 ? 'active' : ''}"><div class="track-icon"></div><span>Shipped</span></div>
                         <div class="track-step ${currentStep >= 2 ? 'active' : ''}"><div class="track-icon"></div><span>Delivered</span></div>
-                    </div>
+                    </div>`}
+                    ${canCancel ? `<button class="cancel-order-btn" data-id="${order._id}" style="margin-top:14px; align-self:flex-start; background:transparent; border:1px solid #e05252; color:#e05252; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">Cancel Order</button>` : ''}
                 </div>`;
             }).join('');
+
+            document.querySelectorAll('.cancel-order-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (!confirm('Cancel this order and get a full refund? This cannot be undone.')) return;
+                    btn.disabled = true;
+                    btn.innerText = 'Cancelling...';
+                    try {
+                        await api.cancelOrder(btn.dataset.id);
+                        if (typeof showToast === 'function') showToast('Order cancelled and refunded.');
+                        location.reload();
+                    } catch (err) {
+                        if (typeof showToast === 'function') showToast(err.message, 'error');
+                        else alert(err.message);
+                        btn.disabled = false;
+                        btn.innerText = 'Cancel Order';
+                    }
+                });
+            });
         }
     } catch (err) {
         console.error('Failed to load orders:', err);
@@ -300,7 +321,11 @@
                 const isLive = s.status === 'live' || s.status === 'scheduled';
                 const dateObj = new Date(s.scheduledDate || s.booking?.date || s.createdAt);
                 const dateStr = dateObj.toLocaleDateString('en-GB');
-                
+                const bookingId = s.booking?._id;
+                const bookingStatus = s.booking?.status;
+                const hoursLeft = (dateObj.getTime() - Date.now()) / (1000 * 60 * 60);
+                const canCancel = bookingId && ['pending', 'paid'].includes(bookingStatus) && hoursLeft >= 4;
+
                 html += `
                 <div class="history-card" style="flex-direction: column; align-items: stretch;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -314,6 +339,7 @@
                         ${isLive ? `
                             <button class="btn-join" onclick="window.location.href='session.html?id=${s._id}'">Join Session</button>
                         ` : `<button class="btn-reschedule" disabled>Completed</button>`}
+                        ${canCancel ? `<button class="cancel-session-btn" data-id="${bookingId}" style="margin-left:10px; background:transparent; border:1px solid #e05252; color:#e05252; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">Cancel Session</button>` : ''}
                     </div>
                 </div>`;
             });
@@ -322,6 +348,8 @@
             let html = '';
             bookings.forEach(b => {
                 const dateObj = new Date(b.date);
+                const hoursLeft = (dateObj.getTime() - Date.now()) / (1000 * 60 * 60);
+                const canCancel = ['pending', 'paid'].includes(b.status) && hoursLeft >= 4;
                 html += `
                 <div class="history-card" style="flex-direction: column; align-items: stretch;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -334,10 +362,30 @@
                     <p style="color: var(--text-gray); font-size: 0.85rem; margin-top: 10px;">
                         ${b.status === 'pending' ? 'Waiting for payment confirmation.' : 'Session will appear here once confirmed.'}
                     </p>
+                    ${canCancel ? `<button class="cancel-session-btn" data-id="${b._id}" style="margin-top:10px; align-self:flex-start; background:transparent; border:1px solid #e05252; color:#e05252; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">Cancel Session</button>` : ''}
                 </div>`;
             });
             bookingsList.innerHTML = html;
         }
+
+        // ─── زرار إلغاء الجلسة (سواء من قايمة الـ sessions أو قايمة الـ bookings) ───
+        document.querySelectorAll('.cancel-session-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (!confirm('Cancel this session? Free cancellation applies since it\'s more than 4 hours away.')) return;
+                btn.disabled = true;
+                btn.innerText = 'Cancelling...';
+                try {
+                    await api.cancelBooking(btn.dataset.id);
+                    if (typeof showToast === 'function') showToast('Session cancelled and refunded.');
+                    location.reload();
+                } catch (err) {
+                    if (typeof showToast === 'function') showToast(err.message, 'error');
+                    else alert(err.message);
+                    btn.disabled = false;
+                    btn.innerText = 'Cancel Session';
+                }
+            });
+        });
 
         // افتح تاب الجلسات لو في حجوزات
         if (sessions.length > 0 || bookings.length > 0) {

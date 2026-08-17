@@ -2926,7 +2926,7 @@ ul.social-row {
 
 .time-slots-list {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
 }
 
@@ -2945,6 +2945,14 @@ ul.social-row {
     background: rgba(216, 176, 86, 0.1);
     border-color: var(--gold-color);
     color: var(--gold-color);
+}
+
+.cancellation-policy-note {
+    color: var(--text-gray);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    margin: 14px 0 0;
+    text-align: center;
 }
 
 /* ريسبونسف للموبايل */
