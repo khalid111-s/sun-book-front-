@@ -3174,6 +3174,15 @@ ul.social-row {
 .pay-form.active { display: block; }
 
 .payment-method-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid rgba(216, 176, 86, 0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    color: #fff;
+    font-size: 0.95rem;
     transition: border-color 0.2s, background 0.2s;
 }
 .payment-method-option:hover {
@@ -3187,6 +3196,10 @@ ul.social-row {
     accent-color: var(--gold-color);
     width: 16px;
     height: 16px;
+    flex-shrink: 0;
+}
+.payment-method-option svg {
+    flex-shrink: 0;
 }
 
 /* ملخص الطلب في الدفع */
