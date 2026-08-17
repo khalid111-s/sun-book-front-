@@ -787,6 +787,44 @@ if (modal) {
         }).catch(err => console.error('Failed to load month availability:', err));
     }
 
+    // نعرّضها للخارج (زي أزرار "Book now" السريعة في الصفحة الرئيسية) عشان تقدر تفتح
+    // الكالندر وتحدد يوم معين مباشرة بضغطة واحدة
+    window.openBookingModalForDate = function (targetDate) {
+        modal.classList.add('active');
+        currentDate = new Date(targetDate);
+        renderCalendar();
+        // نستنى لحظة عشان الأيام تتحقن في الـ DOM، وبعدين نلاقي نفس اليوم ونحدده
+        setTimeout(() => {
+            const dayNum = targetDate.getDate();
+            const allDays = document.querySelectorAll('#calendarDays .cal-day:not(.empty)');
+            allDays.forEach(dayDiv => {
+                if (Number(dayDiv.dataset.day) === dayNum && !dayDiv.classList.contains('disabled')) {
+                    dayDiv.click();
+                }
+            });
+        }, 50);
+    };
+
+    // ─── تجهيز أزرار المواعيد السريعة في الصفحة الرئيسية بأيام حقيقية (مش ثابتة) ───
+    const quickDatesContainer = document.getElementById('homeBookingQuickDates');
+    if (quickDatesContainer) {
+        quickDatesContainer.innerHTML = '';
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const startDay = new Date();
+        startDay.setHours(0, 0, 0, 0);
+        startDay.setDate(startDay.getDate() + 1); // أقل يوم متاح للحجز هو بكرة
+
+        for (let i = 0; i < 4; i++) {
+            const d = new Date(startDay);
+            d.setDate(d.getDate() + i);
+            const pill = document.createElement('span');
+            pill.className = 'booking-slot-pill booking-slot-pill--active';
+            pill.innerText = `${dayNames[d.getDay()]} ${d.getDate()}`;
+            pill.addEventListener('click', () => window.openBookingModalForDate(d));
+            quickDatesContainer.appendChild(pill);
+        }
+    }
+
     const prevMonthBtn = document.getElementById('prevMonth');
     const nextMonthBtn = document.getElementById('nextMonth');
 

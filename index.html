@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/png" href="assets/sun-icon.png">
 </head>
-<body>
+<body class="use-api-booking">
 <div data-include="components/header.html"></div>
 
 <!-- ====== Hero Section ====== -->
@@ -114,23 +114,10 @@
                     </div>
                 </div>
 
-                <div class="booking-slot-row" style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
-                    <span class="booking-slot-label" style="color: #fff; font-weight: 600; font-size: 0.9rem; width: 75px; font-family: 'Segoe UI', sans-serif;">Morning</span>
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                        <span class="booking-slot-pill">Tue 28</span>
-                        <span class="booking-slot-pill">Wed 29</span>
-                        <span class="booking-slot-pill">Thu 30</span>
-                        <span class="booking-slot-pill">Fri 31</span>
-                    </div>
-                </div>
-
                 <div class="booking-slot-row" style="display: flex; align-items: center; gap: 12px; margin-bottom: 30px;">
-                    <span class="booking-slot-label" style="color: #fff; font-weight: 600; font-size: 0.9rem; width: 75px; font-family: 'Segoe UI', sans-serif;">Afternoon</span>
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                        <span class="booking-slot-pill booking-slot-pill--active" onclick="document.getElementById('bookingModal').classList.add('active'); if(typeof renderCalendar==='function') renderCalendar();">Tue 28</span>
-                        <span class="booking-slot-pill booking-slot-pill--active" onclick="document.getElementById('bookingModal').classList.add('active'); if(typeof renderCalendar==='function') renderCalendar();">Wed 29</span>
-                        <span class="booking-slot-pill booking-slot-pill--active" onclick="document.getElementById('bookingModal').classList.add('active'); if(typeof renderCalendar==='function') renderCalendar();">Thu 30</span>
-                        <span class="booking-slot-pill booking-slot-pill--active" onclick="document.getElementById('bookingModal').classList.add('active'); if(typeof renderCalendar==='function') renderCalendar();">Fri 31</span>
+                    <span class="booking-slot-label" style="color: #fff; font-weight: 600; font-size: 0.9rem; width: 75px; font-family: 'Segoe UI', sans-serif;">Available</span>
+                    <div id="homeBookingQuickDates" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        <!-- بيتحقن ديناميكيًا بأربع أيام حقيقية قادمة، ابتداءً من بكرة -->
                     </div>
                 </div>
 
@@ -213,10 +200,13 @@
                     Cairo Time
                 </p>
                 <div class="time-slots-list">
-                    <button class="time-slot-btn">05:30 PM - 06:00 PM</button>
-                    <button class="time-slot-btn">06:00 PM - 06:30 PM</button>
-                    <button class="time-slot-btn">06:30 PM - 07:00 PM</button>
+                    <button class="time-slot-btn">4:00 PM</button>
+                    <button class="time-slot-btn">6:00 PM</button>
+                    <button class="time-slot-btn">8:00 PM</button>
                 </div>
+                <p class="cancellation-policy-note">
+                    Free cancellation up to 4 hours before your session. After that, the booking is final.
+                </p>
                 <button class="btn-shop confirm-booking-btn" style="width: 100%; margin-top: 20px;">Confirm & Book</button>
             </div>
         </div>
@@ -226,5 +216,67 @@
 <script src="components/loader.js"></script>
 <script src="js/api.js"></script>
 <script src="js/script.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const confirmBtn = document.querySelector('.confirm-booking-btn');
+  if (!confirmBtn) return;
+
+  confirmBtn.addEventListener('click', async () => {
+    // ─── التحقق من اختيار التاريخ والوقت ──────────────────
+    const selectedDay = document.querySelector('.cal-day.selected');
+    const monthYear = document.getElementById('monthYearDisplay')?.innerText || '';
+    const selectedTimeBtn = document.querySelector('.time-slot-btn.selected');
+
+    if (!selectedDay || !selectedTimeBtn) {
+      if (typeof showToast === 'function') showToast('Please select date & time', 'error');
+      else alert('Please select date & time');
+      return;
+    }
+
+    // ─── التحقق من تسجيل الدخول ───────────────────────────
+    const token = localStorage.getItem('sunbook_token');
+    if (!token) {
+      if (typeof showToast === 'function') showToast('Please sign in first', 'error');
+      localStorage.setItem('sunbook_redirect_after_login', 'index.html');
+      setTimeout(() => window.location.href = 'login.html', 1500);
+      return;
+    }
+
+    const timeStr = selectedTimeBtn.innerText.trim();
+
+    confirmBtn.innerText = 'Booking...';
+    confirmBtn.disabled = true;
+
+    try {
+      const res = await api.bookSession({
+        dateStr: `${selectedDay.innerText} ${monthYear}`,
+        timeStr,
+        subject: 'Exclusive One-on-One Session',
+        price: 199,
+        notes: `Preferred time: ${timeStr}`,
+      });
+
+      document.getElementById('bookingModal')?.classList.remove('active');
+
+      // ─── لو فيه رابط دفع (PayTabs)، نوديه هناك يكمّل الدفع ──
+      if (res.data.paymentUrl) {
+        if (typeof showToast === 'function') showToast('Redirecting to payment...');
+        window.location.href = res.data.paymentUrl;
+      } else {
+        // بوابة الدفع لسه مش متظبطة في الـ .env (وضع تطوير)، أو الدفع cash/wallet
+        if (typeof showToast === 'function') showToast('Booked successfully!');
+        window.location.href = 'profile.html?tab=sessions';
+      }
+
+    } catch (err) {
+      if (typeof showToast === 'function') showToast(err.message, 'error');
+      else alert(err.message);
+    } finally {
+      confirmBtn.innerText = 'Confirm & Book';
+      confirmBtn.disabled = false;
+    }
+  });
+});
+</script>
 </body>
 </html>
