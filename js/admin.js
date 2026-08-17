@@ -269,6 +269,9 @@ async function loadDashboardStats() {
                         <option value="delivered" ${o.fulfillmentStatus === 'delivered' ? 'selected' : ''}>Delivered</option>
                        </select>`
                     : '—';
+                const paymentCell = o.paymentMethod === 'cash_on_delivery'
+                    ? '<span style="color:#e0a552;">💵 Cash on Delivery</span>'
+                    : '<span style="color:var(--gold-color);">💳 Card/Wallet</span>';
                 return `
                     <tr>
                         <td>${new Date(o.createdAt).toLocaleDateString()}</td>
@@ -276,13 +279,14 @@ async function loadDashboardStats() {
                         <td>${o.customerName}</td>
                         <td>${itemsSummary}</td>
                         <td>LE ${Number(o.totalAmount).toFixed(2)}</td>
+                        <td>${paymentCell}</td>
                         <td>${o.country || 'Unknown'}</td>
                         <td>${o.status === 'paid' ? '<span class="admin-badge-yes">Paid</span>' : o.status}</td>
                         <td>${fulfillmentCell}</td>
                     </tr>
                 `;
             }).join('')
-            : '<tr><td colspan="8">No orders yet.</td></tr>';
+            : '<tr><td colspan="9">No orders yet.</td></tr>';
     } catch (err) {
         console.error('Failed to load dashboard stats:', err);
     }

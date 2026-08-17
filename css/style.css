@@ -3173,6 +3173,22 @@ ul.social-row {
 .pay-form { display: none; }
 .pay-form.active { display: block; }
 
+.payment-method-option {
+    transition: border-color 0.2s, background 0.2s;
+}
+.payment-method-option:hover {
+    border-color: var(--gold-color) !important;
+}
+.payment-method-option:has(input:checked) {
+    border-color: var(--gold-color) !important;
+    background: rgba(216, 176, 86, 0.08);
+}
+.payment-method-option input[type="radio"] {
+    accent-color: var(--gold-color);
+    width: 16px;
+    height: 16px;
+}
+
 /* ملخص الطلب في الدفع */
 .checkout-items-list {
     display: flex;

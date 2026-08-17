@@ -94,10 +94,21 @@
                 <div class="checkout-box">
                     <h3 class="checkout-title">Payment Method</h3>
 
-                    <!-- بيانات الدفع بتتاخد بأمان من صفحة Paymob الرسمية بعد الضغط على الزرار تحت -->
+                    <div id="payment-method-options" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                        <label class="payment-method-option" style="display:flex; align-items:center; gap:10px; padding:12px 14px; border:1px solid rgba(216,176,86,0.3); border-radius:8px; cursor:pointer;">
+                            <input type="radio" name="paymentMethodChoice" value="card" checked>
+                            <span>💳 Card / Mobile Wallet</span>
+                        </label>
+                        <label id="codOption" class="payment-method-option" style="display:none; align-items:center; gap:10px; padding:12px 14px; border:1px solid rgba(216,176,86,0.3); border-radius:8px; cursor:pointer;">
+                            <input type="radio" name="paymentMethodChoice" value="cash_on_delivery">
+                            <span>💵 Cash on Delivery</span>
+                        </label>
+                    </div>
+
+                    <!-- بيانات الدفع بتتاخد بأمان من صفحة PayTabs الرسمية بعد الضغط على الزرار تحت -->
                     <div id="card-form" class="pay-form active">
-                        <p style="color: var(--text-gray); font-size: 0.9rem;">
-                            You'll be redirected to Paymob's secure payment page to enter your card or mobile wallet details safely.
+                        <p style="color: var(--text-gray); font-size: 0.9rem;" id="paymentMethodNote">
+                            You'll be redirected to our secure payment page to enter your card or mobile wallet details safely.
                         </p>
                     </div>
                 </div>
@@ -329,6 +340,7 @@
                     address: document.getElementById('ship-address')?.value || '',
                     governorate: document.getElementById('governorate')?.value || '',
                     currency: orderCurrency,
+                    paymentMethod: (document.querySelector('input[name="paymentMethodChoice"]:checked')?.value) || 'card',
                     items: bookItems.map(item => ({
                         product: (item.id && item.id.length === 24) ? item.id : undefined,
                         title: item.title,
@@ -421,7 +433,12 @@
             }
         } else {
             if (dlContainer) dlContainer.style.display = 'none';
-            if (successMsg) successMsg.innerText = 'Your order has been placed securely. A receipt has been sent to your email.';
+            const isCod = document.querySelector('input[name="paymentMethodChoice"]:checked')?.value === 'cash_on_delivery';
+            if (successMsg) {
+                successMsg.innerText = isCod
+                    ? 'Your order has been placed! Please have the exact amount ready — you will pay in cash when it arrives.'
+                    : 'Your order has been placed securely. A receipt has been sent to your email.';
+            }
         }
 
         localStorage.removeItem('sunbook_cart');
@@ -941,7 +958,33 @@ function initSmartCheckout() {
     document.addEventListener("DOMContentLoaded", function() {
         initSmartCheckout();
         autoFillCheckoutData();
+        initPaymentMethodToggle();
     });
+
+    // ─── إظهار خيار "الدفع عند الاستلام" بس لو في السلة منتج فيزيكال، وتحديث النص حسب الاختيار ───
+    function initPaymentMethodToggle() {
+        const cart = JSON.parse(localStorage.getItem('sunbook_cart')) || [];
+        const hasPhysical = cart.some(item => item.type === 'physical');
+        const codOption = document.getElementById('codOption');
+        if (codOption && hasPhysical) {
+            codOption.style.display = 'flex';
+        }
+
+        const noteEl = document.getElementById('paymentMethodNote');
+        const submitBtn = document.getElementById('confirmPaymentBtn');
+        document.querySelectorAll('input[name="paymentMethodChoice"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                const isCod = radio.value === 'cash_on_delivery' && radio.checked;
+                if (isCod) {
+                    if (noteEl) noteEl.innerText = "You'll pay in cash when your order arrives at your door. No online payment needed.";
+                    if (submitBtn) submitBtn.innerText = 'Confirm Order (Pay on Delivery)';
+                } else if (radio.checked) {
+                    if (noteEl) noteEl.innerText = "You'll be redirected to our secure payment page to enter your card or mobile wallet details safely.";
+                    if (submitBtn) submitBtn.innerText = 'Pay Now & Complete Order';
+                }
+            });
+        });
+    }
 </script>
 </body>
 </html>
