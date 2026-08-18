@@ -108,6 +108,22 @@ const api = {
       body: JSON.stringify({ reason }),
     }),
 
+  /** isoDateStr بصيغة "YYYY-MM-DD" (زي ما بيرجعها input type=date)، timeStr زي "4:00 PM" */
+  rescheduleBooking: (id, isoDateStr, timeStr) => {
+    const [year, month, day] = isoDateStr.split('-').map(Number);
+    const timeMatch = (timeStr || '').match(/(\d+):(\d+)\s*(AM|PM)/i);
+    let hours = timeMatch ? parseInt(timeMatch[1], 10) : 0;
+    const minutes = timeMatch ? parseInt(timeMatch[2], 10) : 0;
+    const isPM = timeMatch && /PM/i.test(timeMatch[3]);
+    if (isPM && hours !== 12) hours += 12;
+    if (!isPM && hours === 12) hours = 0;
+    const combined = new Date(year, month - 1, day, hours, minutes);
+    return api.request(`/bookings/${id}/reschedule`, {
+      method: 'PATCH',
+      body: JSON.stringify({ date: combined.toISOString() }),
+    });
+  },
+
   getMySessions: () => api.request('/sessions/my-sessions'),
 
   getSession: (id) => api.request(`/sessions/${id}`),

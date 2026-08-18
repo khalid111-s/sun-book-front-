@@ -569,6 +569,50 @@ function downloadOrdersCSV(orders) {
     URL.revokeObjectURL(url);
 }
 
+// ---------- Export helper مشترك (بيبني ملف CSV من أي مصفوفة صفوف ويحمّله) ----------
+function downloadCSV(headers, rows, filenamePrefix) {
+    const csvContent = [headers, ...rows]
+        .map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filenamePrefix}-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// ---------- Export sessions (bookings) to CSV ----------
+function downloadSessionsCSV(bookings) {
+    const headers = ['Date & Time', 'Student Name', 'Student Email', 'Student Phone', 'Subject', 'Price (LE)', 'Payment Status'];
+    const rows = bookings.map(b => [
+        new Date(b.date).toLocaleString(),
+        b.student?.name || '',
+        b.student?.email || '',
+        b.student?.phone || '',
+        b.subject || '',
+        b.price,
+        b.status,
+    ]);
+    downloadCSV(headers, rows, 'sunbook-sessions');
+}
+
+// ---------- Export users to CSV ----------
+function downloadUsersCSV(users) {
+    const headers = ['Name', 'Email', 'Registered On', 'Orders Made'];
+    const rows = users.map(u => [
+        u.name,
+        u.email,
+        new Date(u.createdAt).toLocaleDateString(),
+        u.orderCount ?? 0,
+    ]);
+    downloadCSV(headers, rows, 'sunbook-users');
+}
+
 // ---------- 4. الأحداث ----------
 const tabPanelIds = {
     products: 'tabProducts',
@@ -675,6 +719,7 @@ async function loadPromoCodesTable() {
             const expired = new Date(p.expiresAt).getTime() < now;
             const discountLabel = p.discountType === 'percentage' ? `${p.discountValue}%` : `LE ${p.discountValue}`;
             const usageLabel = p.usageLimit ? `${p.timesUsed} / ${p.usageLimit}` : `${p.timesUsed} / ∞`;
+            const perUserLabel = p.perUserLimit ? `${p.perUserLimit}x per person` : 'Unlimited per person';
             let statusLabel;
             if (!p.active) statusLabel = '<span style="color:#e05252;">Deactivated</span>';
             else if (expired) statusLabel = '<span style="color:#e05252;">Expired</span>';
@@ -686,7 +731,7 @@ async function loadPromoCodesTable() {
                         <button class="copy-promo-btn" data-code="${p.code}" title="Copy code" style="background:transparent;border:1px solid rgba(216,176,86,0.4);color:var(--gold-color);border-radius:4px;padding:2px 7px;font-size:0.75rem;cursor:pointer;margin-left:6px;">Copy</button>
                     </td>
                     <td>${discountLabel}</td>
-                    <td>${usageLabel}</td>
+                    <td>${usageLabel}<br><span style="color:var(--text-gray); font-size:0.75rem;">${perUserLabel}</span></td>
                     <td>${new Date(p.expiresAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                     <td>${statusLabel}</td>
                     <td>
@@ -806,6 +851,46 @@ function initAdminPanel() {
         }
     });
 
+    document.getElementById('exportSessionsBtn').addEventListener('click', async (e) => {
+        const btn = e.target;
+        const originalText = btn.innerText;
+        btn.innerText = 'Preparing...';
+        btn.disabled = true;
+        try {
+            const { data: bookings } = await api.getAllBookings();
+            if (!bookings.length) {
+                alert('No sessions to export yet.');
+            } else {
+                downloadSessionsCSV(bookings);
+            }
+        } catch (err) {
+            alert('Failed to export sessions: ' + err.message);
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    });
+
+    document.getElementById('exportUsersBtn').addEventListener('click', async (e) => {
+        const btn = e.target;
+        const originalText = btn.innerText;
+        btn.innerText = 'Preparing...';
+        btn.disabled = true;
+        try {
+            const { data: users } = await api.getUsers();
+            if (!users.length) {
+                alert('No users to export yet.');
+            } else {
+                downloadUsersCSV(users);
+            }
+        } catch (err) {
+            alert('Failed to export users: ' + err.message);
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    });
+
     // ---- سعر الصرف الاحتياطي (fallback) ----
     api.getSettings().then(({ data }) => {
         const input = document.getElementById('eurToEgpRateInput');
@@ -847,6 +932,7 @@ function initAdminPanel() {
             usageLimit: document.getElementById('promoFieldUsageLimit').value
                 ? parseInt(document.getElementById('promoFieldUsageLimit').value, 10)
                 : null,
+            perUserLimit: parseInt(document.getElementById('promoFieldPerUserLimit').value, 10) || 1,
             durationAmount: parseInt(document.getElementById('promoFieldDurationAmount').value, 10),
             durationUnit: document.getElementById('promoFieldDurationUnit').value,
         };

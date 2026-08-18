@@ -162,6 +162,31 @@
      ========================================= -->
 <div data-include="components/footer.html"></div>
 
+<!-- ====== نافذة إعادة جدولة الجلسة ====== -->
+<div id="rescheduleModal" class="booking-modal-overlay">
+    <div class="booking-modal-content" style="max-width: 420px;">
+        <button id="closeRescheduleModalBtn" class="close-modal">&times;</button>
+        <div style="padding: 30px;">
+            <h3 style="color: var(--gold-color); margin-bottom: 6px;">Reschedule Session</h3>
+            <p style="color: var(--text-gray); font-size: 0.85rem; margin-bottom: 20px;">You can only reschedule a session once. Choose a new date and time below.</p>
+
+            <label style="color:#fff; font-size:0.9rem; display:block; margin-bottom:6px;">New Date</label>
+            <input type="date" id="rescheduleDateInput" style="width:100%; padding:10px; border-radius:6px; border:1px solid #444; background:#1a1b1d; color:#fff; margin-bottom:18px;">
+
+            <label style="color:#fff; font-size:0.9rem; display:block; margin-bottom:6px;">New Time</label>
+            <div id="rescheduleTimeSlots" class="time-slots-list" style="margin-bottom: 20px;">
+                <button class="time-slot-btn" data-time="4:00 PM">4:00 PM</button>
+                <button class="time-slot-btn" data-time="6:00 PM">6:00 PM</button>
+                <button class="time-slot-btn" data-time="8:00 PM">8:00 PM</button>
+            </div>
+
+            <p id="rescheduleMsg" style="font-size: 0.85rem; min-height: 18px; margin-bottom: 12px;"></p>
+
+            <button id="confirmRescheduleBtn" class="btn-shop" style="width: 100%;">Confirm New Time</button>
+        </div>
+    </div>
+</div>
+
 <script src="components/loader.js"></script>
 <script src="js/script.js"></script>
 <script src="js/api.js"></script>
@@ -323,8 +348,11 @@
                 const dateStr = dateObj.toLocaleDateString('en-GB');
                 const bookingId = s.booking?._id;
                 const bookingStatus = s.booking?.status;
+                const rescheduleCount = s.booking?.rescheduleCount || 0;
                 const hoursLeft = (dateObj.getTime() - Date.now()) / (1000 * 60 * 60);
-                const canCancel = bookingId && ['pending', 'paid'].includes(bookingStatus) && hoursLeft >= 4;
+                const canManage = bookingId && ['pending', 'paid'].includes(bookingStatus) && hoursLeft >= 4;
+                const canCancel = canManage;
+                const canReschedule = canManage && rescheduleCount < 1;
 
                 html += `
                 <div class="history-card" style="flex-direction: column; align-items: stretch;">
@@ -339,6 +367,7 @@
                         ${isLive ? `
                             <button class="btn-join" onclick="window.location.href='session.html?id=${s._id}'">Join Session</button>
                         ` : `<button class="btn-reschedule" disabled>Completed</button>`}
+                        ${canReschedule ? `<button class="reschedule-session-btn" data-id="${bookingId}" style="margin-left:10px; background:transparent; border:1px solid var(--gold-color); color:var(--gold-color); padding:8px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">Reschedule</button>` : ''}
                         ${canCancel ? `<button class="cancel-session-btn" data-id="${bookingId}" style="margin-left:10px; background:transparent; border:1px solid #e05252; color:#e05252; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">Cancel Session</button>` : ''}
                     </div>
                 </div>`;
@@ -349,7 +378,9 @@
             bookings.forEach(b => {
                 const dateObj = new Date(b.date);
                 const hoursLeft = (dateObj.getTime() - Date.now()) / (1000 * 60 * 60);
-                const canCancel = ['pending', 'paid'].includes(b.status) && hoursLeft >= 4;
+                const canManage = ['pending', 'paid'].includes(b.status) && hoursLeft >= 4;
+                const canCancel = canManage;
+                const canReschedule = canManage && (b.rescheduleCount || 0) < 1;
                 html += `
                 <div class="history-card" style="flex-direction: column; align-items: stretch;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -362,11 +393,19 @@
                     <p style="color: var(--text-gray); font-size: 0.85rem; margin-top: 10px;">
                         ${b.status === 'pending' ? 'Waiting for payment confirmation.' : 'Session will appear here once confirmed.'}
                     </p>
-                    ${canCancel ? `<button class="cancel-session-btn" data-id="${b._id}" style="margin-top:10px; align-self:flex-start; background:transparent; border:1px solid #e05252; color:#e05252; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">Cancel Session</button>` : ''}
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                        ${canReschedule ? `<button class="reschedule-session-btn" data-id="${b._id}" style="background:transparent; border:1px solid var(--gold-color); color:var(--gold-color); padding:8px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">Reschedule</button>` : ''}
+                        ${canCancel ? `<button class="cancel-session-btn" data-id="${b._id}" style="background:transparent; border:1px solid #e05252; color:#e05252; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">Cancel Session</button>` : ''}
+                    </div>
                 </div>`;
             });
             bookingsList.innerHTML = html;
         }
+
+        // ─── زرار إعادة الجدولة ───
+        document.querySelectorAll('.reschedule-session-btn').forEach(btn => {
+            btn.addEventListener('click', () => openRescheduleModal(btn.dataset.id));
+        });
 
         // ─── زرار إلغاء الجلسة (سواء من قايمة الـ sessions أو قايمة الـ bookings) ───
         document.querySelectorAll('.cancel-session-btn').forEach(btn => {
@@ -530,6 +569,106 @@
         checkNameChangeEligibility();
     }
 }
+
+// ====== نافذة إعادة جدولة الجلسة ======
+let rescheduleBookingId = null;
+
+function openRescheduleModal(bookingId) {
+    rescheduleBookingId = bookingId;
+    const modal = document.getElementById('rescheduleModal');
+    const dateInput = document.getElementById('rescheduleDateInput');
+    const msgEl = document.getElementById('rescheduleMsg');
+
+    // أقل تاريخ متاح = بكرة (نفس قاعدة الحجز الأصلية)
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    dateInput.min = tomorrow.toISOString().split('T')[0];
+    dateInput.value = tomorrow.toISOString().split('T')[0];
+
+    msgEl.innerText = '';
+    document.querySelectorAll('#rescheduleTimeSlots .time-slot-btn').forEach(b => {
+        b.classList.remove('selected', 'booked');
+        b.disabled = false;
+    });
+
+    modal.classList.add('active');
+    refreshRescheduleAvailability();
+}
+
+async function refreshRescheduleAvailability() {
+    const dateInput = document.getElementById('rescheduleDateInput');
+    if (!dateInput.value) return;
+    const slotBtns = document.querySelectorAll('#rescheduleTimeSlots .time-slot-btn');
+    slotBtns.forEach(b => { b.disabled = true; });
+
+    try {
+        const { data } = await api.getBookingAvailability(dateInput.value);
+        const bookedTimes = new Set(data.slots.filter(s => s.booked).map(s => s.time));
+        slotBtns.forEach(b => {
+            b.classList.remove('selected', 'booked');
+            const time = b.dataset.time;
+            if (bookedTimes.has(time)) {
+                b.classList.add('booked');
+                b.disabled = true;
+            } else {
+                b.disabled = false;
+            }
+        });
+    } catch (err) {
+        console.error('Failed to load availability:', err);
+        slotBtns.forEach(b => { b.disabled = false; });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const dateInput = document.getElementById('rescheduleDateInput');
+    if (dateInput) dateInput.addEventListener('change', refreshRescheduleAvailability);
+
+    document.getElementById('closeRescheduleModalBtn')?.addEventListener('click', () => {
+        document.getElementById('rescheduleModal').classList.remove('active');
+    });
+
+    document.getElementById('rescheduleModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'rescheduleModal') e.currentTarget.classList.remove('active');
+    });
+
+    document.getElementById('rescheduleTimeSlots')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.time-slot-btn');
+        if (!btn || btn.disabled) return;
+        document.querySelectorAll('#rescheduleTimeSlots .time-slot-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+    });
+
+    document.getElementById('confirmRescheduleBtn')?.addEventListener('click', async () => {
+        const dateInput = document.getElementById('rescheduleDateInput');
+        const selectedTimeBtn = document.querySelector('#rescheduleTimeSlots .time-slot-btn.selected');
+        const msgEl = document.getElementById('rescheduleMsg');
+        const confirmBtn = document.getElementById('confirmRescheduleBtn');
+
+        if (!dateInput.value || !selectedTimeBtn) {
+            msgEl.style.color = '#e05252';
+            msgEl.innerText = 'Please select a date and time.';
+            return;
+        }
+
+        confirmBtn.disabled = true;
+        confirmBtn.innerText = 'Rescheduling...';
+        msgEl.innerText = '';
+
+        try {
+            await api.rescheduleBooking(rescheduleBookingId, dateInput.value, selectedTimeBtn.dataset.time);
+            if (typeof showToast === 'function') showToast('Session rescheduled successfully!');
+            document.getElementById('rescheduleModal').classList.remove('active');
+            location.reload();
+        } catch (err) {
+            msgEl.style.color = '#e05252';
+            msgEl.innerText = err.message || 'Could not reschedule. Please try again.';
+        } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.innerText = 'Confirm New Time';
+        }
+    });
+});
 </script>
 
 </body>

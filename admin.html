@@ -647,6 +647,7 @@
         <div class="dashboard-box" style="margin-bottom: 20px;">
             <h3><svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Booked Sessions</h3>
             <p class="dashboard-note" style="margin-top:0;">Every one-on-one session booking with date, time, payment status, and student info.</p>
+            <button id="exportSessionsBtn" class="admin-logout-btn" style="width: 100%; margin-top: 10px;">Download Sessions CSV</button>
         </div>
         <div class="admin-table-wrap">
             <table class="admin-table">
@@ -673,6 +674,7 @@
         <div class="dashboard-box" style="margin-bottom: 20px;">
             <h3><svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg> Registered Users</h3>
             <p class="dashboard-note" style="margin-top:0;">All accounts registered on the site, with how many orders each one has made.</p>
+            <button id="exportUsersBtn" class="admin-logout-btn" style="width: 100%; margin-top: 10px;">Download Users CSV</button>
         </div>
         <div class="admin-table-wrap">
             <table class="admin-table">
@@ -715,6 +717,10 @@
                     <div class="admin-field">
                         <label>Usage Limit (optional)</label>
                         <input type="number" id="promoFieldUsageLimit" min="1" placeholder="unlimited if empty">
+                    </div>
+                    <div class="admin-field">
+                        <label>Per-User Limit</label>
+                        <input type="number" id="promoFieldPerUserLimit" min="1" value="1">
                     </div>
                     <div class="admin-field">
                         <label>Valid For</label>
