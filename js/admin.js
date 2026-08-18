@@ -18,8 +18,7 @@ async function checkAdminAccess() {
     const token = localStorage.getItem('sunbook_token');
 
     if (!token) {
-        localStorage.setItem('sunbook_redirect_after_login', 'admin.html');
-        window.location.href = 'login.html';
+        window.location.href = 'admin-login.html';
         return;
     }
 
@@ -31,15 +30,97 @@ async function checkAdminAccess() {
             return;
         }
 
+        // نتأكد إن الحساب اللي داخل بيه دلوقتي متسجّل في قايمة حسابات الأدمن المحفوظة، عشان يظهر في السويتشر
+        saveAdminAccount({ _id: user._id, name: user.name, email: user.email, token });
+
         if (gateEl) gateEl.style.display = 'none';
         if (panelEl) panelEl.style.display = 'block';
+        renderAdminAccountSwitcher(user.email);
         initAdminPanel();
     } catch (err) {
-        // التوكن غير صالح أو منتهي - نرجعه لصفحة الدخول
+        // التوكن غير صالح أو منتهي - نرجعه لصفحة دخول الأدمن
         localStorage.removeItem('sunbook_token');
-        localStorage.setItem('sunbook_redirect_after_login', 'admin.html');
-        window.location.href = 'login.html';
+        window.location.href = 'admin-login.html';
     }
+}
+
+// ---------- سويتشر الحسابات: يوري مين الأدمن الداخل بيه دلوقتي، ويسمح بالتبديل من غير logout ----------
+function renderAdminAccountSwitcher(activeEmail) {
+    const chip = document.getElementById('adminAccountChip');
+    const avatar = document.getElementById('adminAccountAvatar');
+    const label = document.getElementById('adminAccountLabel');
+    const dropdown = document.getElementById('adminAccountDropdown');
+    if (!chip || !dropdown) return;
+
+    const accounts = getSavedAdminAccounts();
+    const active = accounts.find((a) => a.email === activeEmail);
+
+    avatar.textContent = ((active?.name || activeEmail || '?').charAt(0)).toUpperCase();
+    label.textContent = active?.name || activeEmail;
+    chip.style.display = 'flex';
+
+    function renderDropdown() {
+        const optionsHtml = accounts.map((a) => {
+            const isActive = a.email === activeEmail;
+            const initial = (a.name || a.email).charAt(0).toUpperCase();
+            return `
+                <button type="button" class="admin-account-option ${isActive ? 'active' : ''}" data-email="${a.email}">
+                    <span class="admin-avatar-circle">${initial}</span>
+                    <span>
+                        <span class="acc-name">${a.name || 'Admin'}</span>
+                        <span class="acc-email">${a.email}</span>
+                    </span>
+                    ${isActive ? '<span class="acc-check">✓</span>' : ''}
+                </button>
+            `;
+        }).join('');
+
+        dropdown.innerHTML = `
+            <div class="admin-account-dropdown-label">Admin accounts</div>
+            ${optionsHtml}
+            <div class="admin-account-dropdown-divider"></div>
+            <button type="button" class="admin-account-dropdown-action" id="addAdminAccountBtn">+ Add another admin account</button>
+            <button type="button" class="admin-account-dropdown-action danger" id="signOutAccountBtn">Sign out this account</button>
+        `;
+
+        dropdown.querySelectorAll('.admin-account-option').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const email = btn.dataset.email;
+                if (email === activeEmail) { dropdown.classList.remove('open'); return; }
+                const target = accounts.find((a) => a.email === email);
+                if (target) {
+                    activateAdminAccount(target);
+                    window.location.reload();
+                }
+            });
+        });
+
+        document.getElementById('addAdminAccountBtn').addEventListener('click', () => {
+            window.location.href = 'admin-login.html';
+        });
+
+        document.getElementById('signOutAccountBtn').addEventListener('click', () => {
+            const remaining = removeAdminAccount(activeEmail);
+            localStorage.removeItem('sunbook_token');
+            localStorage.removeItem('sunbook_username');
+            localStorage.removeItem('sunbook_user_id');
+            if (remaining.length) {
+                activateAdminAccount(remaining[0]);
+                window.location.reload();
+            } else {
+                window.location.href = 'admin-login.html';
+            }
+        });
+    }
+
+    renderDropdown();
+    chip.onclick = (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('open');
+    };
+    document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && e.target !== chip) dropdown.classList.remove('open');
+    });
 }
 
 // ---------- 2. تحميل جدول المنتجات ----------
@@ -848,10 +929,12 @@ function initAdminPanel() {
     });
 
     document.getElementById('adminLogoutBtn').addEventListener('click', () => {
+        const currentEmail = getActiveAdminEmail();
+        if (currentEmail) removeAdminAccount(currentEmail);
         localStorage.removeItem('sunbook_token');
         localStorage.removeItem('sunbook_username');
         localStorage.removeItem('sunbook_user_id');
-        window.location.href = 'index.html';
+        window.location.href = 'admin-login.html';
     });
 
     document.getElementById('exportOrdersBtn').addEventListener('click', async (e) => {

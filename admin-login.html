@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Sign In - The Sun Book</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="assets/sun-icon.png">
+    <style>
+        .admin-login-wrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 16px;
+        }
+        .admin-shield-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(216,176,86,0.1);
+            border: 1px solid rgba(216,176,86,0.4);
+            color: var(--gold-color);
+            font-size: 0.72rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 5px 14px;
+            border-radius: 30px;
+        }
+        .admin-login-title {
+            color: var(--gold-color);
+            font-family: var(--font-logo);
+            margin: 12px 0 4px;
+            font-size: 1.6rem;
+        }
+        .admin-login-sub {
+            color: var(--text-gray);
+            font-size: 0.85rem;
+            margin-bottom: 22px;
+        }
+        .saved-account-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            background: rgba(216,176,86,0.06);
+            border: 1px solid rgba(216,176,86,0.25);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            text-align: left;
+        }
+        .saved-account-btn:hover { background: rgba(216,176,86,0.14); }
+        .saved-account-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, #d8b056, #b8860b);
+            color: #111; font-weight: bold; font-size: 0.9rem;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .saved-account-name { display: block; color: #f2f2f2; font-size: 0.9rem; }
+        .saved-account-email { display: block; color: var(--text-gray); font-size: 0.72rem; }
+        .admin-login-error {
+            color: #ff8080;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            display: none;
+        }
+        .admin-back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-gray);
+            font-size: 0.8rem;
+        }
+        .admin-back-link:hover { color: var(--gold-color); }
+    </style>
+</head>
+<body style="background: var(--bg-dark);">
+
+<div class="admin-login-wrap">
+    <div class="auth-card" style="max-width: 420px; width: 100%;">
+        <div style="text-align:center;">
+            <span class="admin-shield-badge">🛡 Admin Access</span>
+            <h1 class="admin-login-title">The Sun Book</h1>
+            <p class="admin-login-sub">Sign in with an admin account to continue</p>
+        </div>
+
+        <div id="savedAccountsWrap" style="display:none;">
+            <p style="color: var(--text-gray); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">Continue as</p>
+            <div id="savedAccountsList"></div>
+            <div class="social-divider" style="margin: 18px 0;"><span>or sign in with another account</span></div>
+        </div>
+
+        <form id="adminLoginForm" class="auth-form active" onsubmit="handleAdminLogin(event)">
+            <input type="email" id="adminEmail" class="auth-input" placeholder="Admin Email" required>
+            <input type="password" id="adminPassword" class="auth-input" placeholder="Password" required>
+            <button type="submit" class="btn-shop auth-submit-btn">Sign In</button>
+        </form>
+        <p id="adminLoginError" class="admin-login-error"></p>
+
+        <a href="index.html" class="admin-back-link">← Back to site</a>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/admin-accounts.js"></script>
+<script>
+function renderSavedAccounts() {
+    const accounts = getSavedAdminAccounts();
+    const wrap = document.getElementById('savedAccountsWrap');
+    const list = document.getElementById('savedAccountsList');
+    if (!accounts.length) {
+        wrap.style.display = 'none';
+        return;
+    }
+    wrap.style.display = 'block';
+    list.innerHTML = accounts.map((a) => {
+        const initial = (a.name || a.email || '?').charAt(0).toUpperCase();
+        return `
+            <button type="button" class="saved-account-btn" onclick="quickLogin(${JSON.stringify(a.email)})">
+                <span class="saved-account-avatar">${initial}</span>
+                <span>
+                    <span class="saved-account-name">${a.name || 'Admin'}</span>
+                    <span class="saved-account-email">${a.email}</span>
+                </span>
+            </button>
+        `;
+    }).join('');
+}
+
+// دخول سريع بحساب اتحفظ قبل كده - من غير ما تكتب باسورد تاني (طالما التوكن لسه صالح)
+function quickLogin(email) {
+    const accounts = getSavedAdminAccounts();
+    const account = accounts.find((a) => a.email === email);
+    if (!account) return;
+    activateAdminAccount(account);
+    window.location.href = 'admin.html';
+}
+
+async function handleAdminLogin(event) {
+    event.preventDefault();
+    const errorEl = document.getElementById('adminLoginError');
+    errorEl.style.display = 'none';
+
+    const email = document.getElementById('adminEmail').value.trim();
+    const password = document.getElementById('adminPassword').value;
+
+    try {
+        const res = await api.login(email, password);
+        if (res.data.role !== 'admin') {
+            errorEl.textContent = 'This account does not have admin access.';
+            errorEl.style.display = 'block';
+            return;
+        }
+        saveAdminAccount({ _id: res.data._id, name: res.data.name, email: res.data.email, token: res.data.token });
+        activateAdminAccount(res.data);
+        window.location.href = 'admin.html';
+    } catch (err) {
+        errorEl.textContent = err.message || 'Sign in failed. Check your email and password.';
+        errorEl.style.display = 'block';
+    }
+}
+
+renderSavedAccounts();
+</script>
+
+</body>
+</html>
