@@ -647,11 +647,11 @@ function initTabs() {
 // ---------- تاب الجلسات ----------
 async function loadSessionsTable() {
     const tbody = document.getElementById('sessionsTableBody');
-    tbody.innerHTML = '<tr><td colspan="7">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9">Loading...</td></tr>';
     try {
         const { data } = await api.getAllBookings();
         if (!data.length) {
-            tbody.innerHTML = '<tr><td colspan="7">No sessions booked yet.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9">No sessions booked yet.</td></tr>';
             return;
         }
         const statusBadge = (status) => {
@@ -661,19 +661,46 @@ async function loadSessionsTable() {
             if (status === 'cancelled') return `<span style="color:#e05252;">${status}</span>`;
             return status; // pending
         };
-        tbody.innerHTML = data.map(b => `
-            <tr>
-                <td>${new Date(b.date).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+        // شارة حالة الجلسة نفسها (مختلفة عن حالة الدفع) - عشان الأدمن يعرف الجلسة live دلوقتي ولا لسه ولا فاتت
+        const sessionStatusBadge = (sessionStatus) => {
+            if (!sessionStatus) return '<span style="color:#888;">—</span>';
+            if (sessionStatus === 'live') return '<span style="color:#34A853; font-weight:bold;">live now</span>';
+            if (sessionStatus === 'completed') return '<span class="admin-badge-yes">completed</span>';
+            if (sessionStatus === 'missed') return '<span style="color:#e05252;">missed</span>';
+            if (sessionStatus === 'cancelled') return '<span style="color:#e05252;">cancelled</span>';
+            return sessionStatus; // scheduled
+        };
+        // بنعتبر الجلسة "قريبة" لو هيبدأ خلال أقل من 24 ساعة ولسه في انتظارها
+        const isSoon = (dateStr, sessionStatus) => {
+            if (!['scheduled', 'live'].includes(sessionStatus)) return false;
+            const hoursUntil = (new Date(dateStr).getTime() - Date.now()) / (1000 * 60 * 60);
+            return hoursUntil <= 24 && hoursUntil > -1;
+        };
+        const joinCell = (b) => {
+            if (!b.sessionId || !['scheduled', 'live'].includes(b.sessionStatus)) {
+                return '<span style="color:#888;">—</span>';
+            }
+            const label = b.sessionStatus === 'live' ? 'Join (live)' : 'Join';
+            return `<a href="session.html?id=${b.sessionId}" target="_blank" rel="noopener" class="admin-badge-yes" style="text-decoration:none; padding:6px 14px; border-radius:6px;">${label}</a>`;
+        };
+        tbody.innerHTML = data.map(b => {
+            const soon = isSoon(b.date, b.sessionStatus);
+            return `
+            <tr${soon ? ' style="background: rgba(216,176,86,0.12);"' : ''}>
+                <td>${new Date(b.date).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}${soon ? ' <span style="color:#d8b056; font-size:0.75rem;">● soon</span>' : ''}</td>
                 <td>${b.student?.name || '—'}</td>
                 <td>${b.student?.email || '—'}</td>
                 <td>${b.student?.phone || '—'}</td>
                 <td>${b.subject || '—'}</td>
                 <td>LE ${Number(b.price).toFixed(2)}</td>
                 <td>${statusBadge(b.status)}</td>
+                <td>${sessionStatusBadge(b.sessionStatus)}</td>
+                <td>${joinCell(b)}</td>
             </tr>
-        `).join('');
+        `;
+        }).join('');
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="7" style="color:#e05252;">Failed to load sessions: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="color:#e05252;">Failed to load sessions: ${err.message}</td></tr>`;
     }
 }
 
