@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Setup - The Sun Book</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="assets/sun-icon.png">
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        .setup-wrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 16px;
+        }
+        .setup-warning {
+            background: rgba(255,77,77,0.08);
+            border: 1px solid rgba(255,77,77,0.35);
+            color: #ff9b9b;
+            font-size: 0.78rem;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .setup-result {
+            margin-top: 14px;
+            font-size: 0.85rem;
+            display: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+        }
+        .setup-result.ok { display: block; background: rgba(216,176,86,0.1); border: 1px solid rgba(216,176,86,0.4); color: var(--gold-color); }
+        .setup-result.err { display: block; background: rgba(255,77,77,0.08); border: 1px solid rgba(255,77,77,0.35); color: #ff9b9b; }
+    </style>
+</head>
+<body style="background: var(--bg-dark);">
+
+<div class="setup-wrap">
+    <div class="auth-card" style="max-width: 440px; width: 100%;">
+        <div style="text-align:center; margin-bottom: 14px;">
+            <h1 style="color: var(--gold-color); font-family: var(--font-logo); font-size: 1.5rem;">Admin Setup</h1>
+            <p style="color: var(--text-gray); font-size: 0.85rem; margin-top: 6px;">Promote a registered account to admin — no server access needed.</p>
+        </div>
+
+        <div class="setup-warning">
+            ⚠️ This page requires the secret setup key configured on the server (<code>ADMIN_SETUP_KEY</code>). Only one account can be admin at a time — promoting a new one demotes the previous admin automatically. Keep this page's link private.
+        </div>
+
+        <form id="setupForm" class="auth-form active" onsubmit="handleSetup(event)">
+            <input type="email" id="setupEmail" class="auth-input" placeholder="Account email to make admin (must already be registered)" required>
+            <input type="password" id="setupKey" class="auth-input" placeholder="Setup Key" required>
+            <button type="submit" class="btn-shop auth-submit-btn">Make This Account Admin</button>
+        </form>
+
+        <p id="setupResult" class="setup-result"></p>
+
+        <a href="admin-login.html" style="display:block; text-align:center; margin-top:18px; color: var(--text-gray); font-size: 0.8rem;">← Go to Admin Sign In</a>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+async function handleSetup(event) {
+    event.preventDefault();
+    const resultEl = document.getElementById('setupResult');
+    resultEl.className = 'setup-result';
+    resultEl.style.display = 'none';
+
+    const email = document.getElementById('setupEmail').value.trim();
+    const setupKey = document.getElementById('setupKey').value;
+
+    try {
+        const res = await api.promoteAdmin(email, setupKey);
+        resultEl.textContent = `✅ Done — ${res.data.name || res.data.email} is now admin. You can sign in from the Admin Sign In page.`;
+        resultEl.className = 'setup-result ok';
+        document.getElementById('setupForm').reset();
+    } catch (err) {
+        resultEl.textContent = '❌ ' + (err.message || 'Something went wrong.');
+        resultEl.className = 'setup-result err';
+    }
+}
+</script>
+
+</body>
+</html>

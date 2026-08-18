@@ -96,7 +96,7 @@ function renderAdminAccountSwitcher(activeEmail) {
         });
 
         document.getElementById('addAdminAccountBtn').addEventListener('click', () => {
-            window.location.href = 'admin-login.html';
+            window.location.href = 'admin-login.html?return=admin';
         });
 
         document.getElementById('signOutAccountBtn').addEventListener('click', () => {
@@ -926,15 +926,6 @@ function initAdminPanel() {
         } finally {
             select.disabled = false;
         }
-    });
-
-    document.getElementById('adminLogoutBtn').addEventListener('click', () => {
-        const currentEmail = getActiveAdminEmail();
-        if (currentEmail) removeAdminAccount(currentEmail);
-        localStorage.removeItem('sunbook_token');
-        localStorage.removeItem('sunbook_username');
-        localStorage.removeItem('sunbook_user_id');
-        window.location.href = 'admin-login.html';
     });
 
     document.getElementById('exportOrdersBtn').addEventListener('click', async (e) => {

@@ -100,7 +100,7 @@
         </form>
         <p id="adminLoginError" class="admin-login-error"></p>
 
-        <a href="index.html" class="admin-back-link">← Back to site</a>
+        <a href="index.html" id="backLink" class="admin-back-link">← Back to site</a>
     </div>
 </div>
 
@@ -164,6 +164,15 @@ async function handleAdminLogin(event) {
 }
 
 renderSavedAccounts();
+
+// لو جينا هنا من زرار "Add another admin account" جوه لوحة الأدمن، لازم زرار الرجوع يوديك للوحة تاني مش لموقع الزباين
+const params = new URLSearchParams(window.location.search);
+if (params.get('return') === 'admin') {
+    const backLink = document.getElementById('backLink');
+    backLink.href = 'admin.html';
+    backLink.textContent = '← Back to Admin Panel';
+}
+
 </script>
 
 </body>

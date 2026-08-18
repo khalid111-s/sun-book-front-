@@ -33,6 +33,13 @@ const api = {
       body: JSON.stringify({ email, password }),
     }),
 
+  // طريقة أسهل لتحويل حساب مسجّل لـ admin - عن طريق صفحة admin-setup.html بدل سكريبت في الـ terminal
+  promoteAdmin: (email, setupKey) =>
+    api.request('/users/promote-admin', {
+      method: 'POST',
+      body: JSON.stringify({ email, setupKey }),
+    }),
+
   googleLogin: (credential) =>
     api.request('/auth/google', {
       method: 'POST',
