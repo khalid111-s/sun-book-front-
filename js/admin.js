@@ -681,7 +681,7 @@ async function loadSessionsTable() {
                 return '<span style="color:#888;">—</span>';
             }
             const label = b.sessionStatus === 'live' ? 'Join (live)' : 'Join';
-            return `<a href="session.html?id=${b.sessionId}" target="_blank" rel="noopener" class="admin-badge-yes" style="text-decoration:none; padding:6px 14px; border-radius:6px;">${label}</a>`;
+            return `<a href="session.html?id=${b.sessionId}&from=admin" target="_blank" rel="noopener" class="admin-badge-yes" style="text-decoration:none; padding:6px 14px; border-radius:6px;">${label}</a>`;
         };
         tbody.innerHTML = data.map(b => {
             const soon = isSoon(b.date, b.sessionStatus);

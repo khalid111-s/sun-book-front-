@@ -33,7 +33,7 @@
   <h2 id="waitingTitle" style="color: var(--gold-color); margin-bottom: 10px;"></h2>
   <p id="waitingMessage" style="color:#aaa; max-width: 420px; line-height: 1.6;"></p>
   <p id="waitingCountdown" style="color: var(--gold-color); font-size: 1.3rem; margin-top: 20px; font-weight: bold;"></p>
-  <a href="profile.html" style="margin-top: 24px; color: var(--gold-color); text-decoration: underline;">Back to Profile</a>
+  <a id="backLink" href="profile.html" style="margin-top: 24px; color: var(--gold-color); text-decoration: underline;">Back to Profile</a>
 </div>
 
 <div id="jitsi-container" style="display:none;"></div>
@@ -44,6 +44,10 @@
 <script>
 const urlParams = new URLSearchParams(window.location.search);
 const sessionId = urlParams.get('id');
+// لو دخلنا الجلسة من لوحة الأدمن (أو من إيميل الأدمن)، أي "رجوع" لازم يودّينا للوحة الأدمن تاني، مش لبروفايل مستخدم عادي
+const cameFromAdmin = urlParams.get('from') === 'admin';
+const backDestination = cameFromAdmin ? 'admin.html' : 'profile.html';
+document.getElementById('backLink').href = backDestination;
 let jitsiApi = null;
 
 let countdownInterval = null;
@@ -146,7 +150,7 @@ async function initMeeting() {
     jitsiApi.addEventListener('readyToClose', endCall);
   } catch (err) {
     alert('Error: ' + err.message);
-    window.location.href = 'profile.html';
+    window.location.href = backDestination;
   }
 }
 
@@ -158,7 +162,7 @@ async function endCall() {
   try {
     await api.endSession(sessionId);
   } catch (e) {}
-  window.location.href = 'profile.html';
+  window.location.href = backDestination;
 }
 
 initMeeting();
