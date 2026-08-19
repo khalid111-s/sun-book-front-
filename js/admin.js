@@ -181,10 +181,6 @@ function resetForm() {
     document.getElementById('fieldPrice').value = '';
     document.getElementById('fieldPriceEUR').value = '';
     document.getElementById('fieldImage').value = '';
-    document.getElementById('fieldImageFile').value = '';
-    document.getElementById('imagePreviewWrap').style.display = 'none';
-    document.getElementById('imagePreview').src = '';
-    document.getElementById('imageUploadStatus').innerText = '';
     document.getElementById('fieldType').value = 'physical';
     document.getElementById('fieldBadges').value = '';
     document.getElementById('fieldOrder').value = 0;
@@ -208,10 +204,6 @@ function fillFormForEdit(product) {
     document.getElementById('fieldPrice').value = product.price;
     document.getElementById('fieldPriceEUR').value = product.priceEUR ?? '';
     document.getElementById('fieldImage').value = product.image;
-    document.getElementById('fieldImageFile').value = '';
-    document.getElementById('imagePreview').src = product.image;
-    document.getElementById('imagePreviewWrap').style.display = 'block';
-    document.getElementById('imageUploadStatus').innerText = 'الصورة الحالية للمنتج';
     document.getElementById('fieldType').value = product.type;
     document.getElementById('fieldBadges').value = (product.badges || []).join(', ');
     document.getElementById('fieldOrder').value = product.order ?? 0;
@@ -877,42 +869,6 @@ function initAdminPanel() {
         document.getElementById('stockCountWrap').style.display = e.target.checked ? 'block' : 'none';
     });
 
-    // ---------- رفع صورة المنتج: بترفع أوتوماتيك أول ما تختار الملف ----------
-    document.getElementById('fieldImageFile').addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const previewWrap = document.getElementById('imagePreviewWrap');
-        const previewImg = document.getElementById('imagePreview');
-        const statusEl = document.getElementById('imageUploadStatus');
-        const errorEl = document.getElementById('formError');
-        errorEl.innerText = '';
-
-        if (file.size > 8 * 1024 * 1024) {
-            errorEl.innerText = 'حجم الصورة أكبر من 8MB، اختار صورة أصغر.';
-            e.target.value = '';
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = async () => {
-            const base64DataUrl = reader.result;
-            previewImg.src = base64DataUrl; // معاينة فورية قبل الرفع
-            previewWrap.style.display = 'block';
-            statusEl.innerText = 'جاري الرفع...';
-
-            try {
-                const uploadedUrl = await api.uploadImage(base64DataUrl);
-                document.getElementById('fieldImage').value = uploadedUrl;
-                statusEl.innerText = 'تم الرفع ✓';
-            } catch (err) {
-                statusEl.innerText = '';
-                errorEl.innerText = `فشل رفع الصورة: ${err.message || 'حاول تاني'}`;
-            }
-        };
-        reader.readAsDataURL(file);
-    });
-
     document.getElementById('productForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const errorEl = document.getElementById('formError');
@@ -920,7 +876,7 @@ function initAdminPanel() {
         const payload = readFormData();
 
         if (!payload.title || Number.isNaN(payload.price) || !payload.image) {
-            errorEl.innerText = 'Please fill in title, price, and upload a product image.';
+            errorEl.innerText = 'Please fill in title, price and image path.';
             return;
         }
 

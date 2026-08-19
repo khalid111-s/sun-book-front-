@@ -8,9 +8,6 @@ const API_URL = (() => {
   return isLocal ? 'http://localhost:5000/api' : PRODUCTION_API_URL;
 })();
 
-// نفس دومين الباك إند بس من غير "/api" في الآخر - مستخدم عشان نبني رابط كامل لصورة مرفوعة (اللي بترجع كمسار نسبي زي /uploads/xxx.png)
-const BACKEND_ORIGIN = API_URL.replace(/\/api\/?$/, '');
-
 const api = {
   async request(endpoint, options = {}) {
     const token = localStorage.getItem('sunbook_token');
@@ -104,15 +101,6 @@ const api = {
     }),
 
   getTeachers: () => api.request('/users/teachers/list'),
-
-  // بترفع صورة (base64 data URL) وترجع رابط كامل جاهز يتحط في fieldImage
-  uploadImage: async (base64DataUrl) => {
-    const res = await api.request('/upload', {
-      method: 'POST',
-      body: JSON.stringify({ image: base64DataUrl }),
-    });
-    return `${BACKEND_ORIGIN}${res.data.path}`;
-  },
 
   getProducts: () => api.request('/products'),
 
