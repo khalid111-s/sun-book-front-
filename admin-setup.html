@@ -116,6 +116,7 @@
 </div>
 
 <script src="js/api.js"></script>
+<script src="js/admin-accounts.js"></script>
 <script>
 let keyDebounceTimer = null;
 
@@ -221,6 +222,14 @@ async function handleDemote(email, btnEl) {
     try {
         const res = await api.demoteAdmin(email, key);
         showBanner(true, `Done — ${res.data.name || res.data.email} is no longer an admin.`);
+        // نشيله من قايمة حسابات الأدمن المحفوظة في المتصفح ده، عشان يختفي من السويتشر على طول من غير ما تستنى إنه يحاول يدخل
+        removeAdminAccount(email);
+        // لو الحساب اللي اتشال ده هو نفسه اللي داخل بيه دلوقتي في تاب/متصفح تاني، نمسح الـ session النشط بتاعه كمان
+        if (getActiveAdminEmail() === email) {
+            localStorage.removeItem('sunbook_token');
+            localStorage.removeItem('sunbook_username');
+            localStorage.removeItem('sunbook_user_id');
+        }
         loadAdmins(false);
     } catch (err) {
         showBanner(false, err.message || 'Could not remove admin access. No changes were made.');

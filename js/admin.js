@@ -25,8 +25,12 @@ async function checkAdminAccess() {
     try {
         const { data: user } = await api.getMe();
         if (user.role !== 'admin') {
-            if (gateEl) gateEl.style.display = 'none';
-            if (deniedEl) deniedEl.style.display = 'block';
+            // الحساب ده مبقاش admin (اتشال من صفحة admin-setup مثلاً) - نشيله من قايمة السويتشر المحفوظة في المتصفح ده كمان
+            removeAdminAccount(user.email);
+            localStorage.removeItem('sunbook_token');
+            localStorage.removeItem('sunbook_username');
+            localStorage.removeItem('sunbook_user_id');
+            window.location.href = 'admin-login.html?denied=1';
             return;
         }
 

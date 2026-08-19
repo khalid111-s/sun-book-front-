@@ -91,6 +91,8 @@
             <p class="admin-login-sub">Sign in with an admin account to continue</p>
         </div>
 
+        <p id="deniedBanner" class="admin-login-error" style="display:none; text-align:center;">That account no longer has admin access. Sign in with another one.</p>
+
         <div id="savedAccountsWrap" style="display:none;">
             <p style="color: var(--text-gray); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">Continue as</p>
             <div id="savedAccountsList"></div>
@@ -172,6 +174,12 @@ async function handleAdminLogin(event) {
 }
 
 renderSavedAccounts();
+
+// لو اتبعتنا هنا لأن الحساب اتشال من الأدمن، نوري رسالة توضيحية
+const deniedParams = new URLSearchParams(window.location.search);
+if (deniedParams.get('denied') === '1') {
+    document.getElementById('deniedBanner').style.display = 'block';
+}
 
 // لو جينا هنا من زرار "Add another admin account" جوه لوحة الأدمن، لازم زرار الرجوع يوديك للوحة تاني مش لموقع الزباين
 const params = new URLSearchParams(window.location.search);
