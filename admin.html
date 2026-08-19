@@ -630,8 +630,13 @@
                     <input type="number" id="fieldPriceEUR" step="0.01" min="0" placeholder="leave empty to show LE everywhere">
                 </div>
                 <div class="admin-field">
-                    <label>Image path (in /assets)</label>
-                    <input type="text" id="fieldImage" placeholder="assets/your-real-photo.jpg" required>
+                    <label>Product Image</label>
+                    <input type="file" id="fieldImageFile" accept="image/png, image/jpeg, image/webp">
+                    <input type="hidden" id="fieldImage">
+                    <div id="imagePreviewWrap" style="margin-top:8px; display:none;">
+                        <img id="imagePreview" src="" alt="preview" style="max-width:120px; max-height:160px; border-radius:4px; display:block;">
+                        <span id="imageUploadStatus" style="font-size:12px; color:#c4c4c4;"></span>
+                    </div>
                 </div>
                 <div class="admin-field">
                     <label>Type</label>

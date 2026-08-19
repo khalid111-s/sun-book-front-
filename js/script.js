@@ -218,7 +218,9 @@ function productCardHTML(product) {
                 ${egyptStripHTML}
                 ${outOfStockOverlay}
                 <a href="product.html?id=${product.id}">
-                    <img src="${product.image}" alt="${product.title}" class="card-img" loading="lazy">
+                    <div class="book-mockup">
+                        <img src="${product.image}" alt="${product.title}" class="card-img" loading="lazy">
+                    </div>
                 </a>
             </div>
             <div class="card-info-wrapper">
