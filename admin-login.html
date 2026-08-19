@@ -123,7 +123,7 @@ function renderSavedAccounts() {
     list.innerHTML = accounts.map((a) => {
         const initial = (a.name || a.email || '?').charAt(0).toUpperCase();
         return `
-            <button type="button" class="saved-account-btn" onclick="quickLogin(${JSON.stringify(a.email)})">
+            <button type="button" class="saved-account-btn" data-email="${a.email}">
                 <span class="saved-account-avatar">${initial}</span>
                 <span>
                     <span class="saved-account-name">${a.name || 'Admin'}</span>
@@ -132,6 +132,10 @@ function renderSavedAccounts() {
             </button>
         `;
     }).join('');
+
+    list.querySelectorAll('.saved-account-btn').forEach((btn) => {
+        btn.addEventListener('click', () => quickLogin(btn.dataset.email));
+    });
 }
 
 // دخول سريع بحساب اتحفظ قبل كده - من غير ما تكتب باسورد تاني (طالما التوكن لسه صالح)
