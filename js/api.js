@@ -40,6 +40,17 @@ const api = {
       body: JSON.stringify({ email, setupKey }),
     }),
 
+  // عكسها: يرجّع حساب admin لـ "student" عشان تفضى مكان من الـ 3 المسموحين
+  demoteAdmin: (email, setupKey) =>
+    api.request('/users/demote-admin', {
+      method: 'POST',
+      body: JSON.stringify({ email, setupKey }),
+    }),
+
+  // بيرجع الأدمنز الحاليين، عشان تعرف تختار مين تشيل لو وصلت للحد الأقصى (3)
+  listAdmins: (setupKey) =>
+    api.request(`/users/admins-list?setupKey=${encodeURIComponent(setupKey)}`),
+
   googleLogin: (credential) =>
     api.request('/auth/google', {
       method: 'POST',

@@ -18,7 +18,12 @@
             font-weight: bold;
             transition: all 0.3s;
             margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
+        .btn-admin-link svg { width: 15px; height: 15px; flex-shrink: 0; }
         .btn-admin-link:hover {
             background: var(--gold-color);
             color: #111;
@@ -58,7 +63,10 @@
                     </button>
                 </div>
 
-                <button class="btn-admin-link" id="goToAdminBtn" style="display:none;" onclick="window.location.href='admin.html'">🛡 Go to Admin Panel</button>
+                <button class="btn-admin-link" id="goToAdminBtn" style="display:none;" onclick="window.location.href='admin.html'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18 2 8l5 4 5-7 5 7 5-4-2 10"></path><path d="M4 18h16"></path></svg>
+                    Go to Admin Panel
+                </button>
                 <button class="btn-logout" onclick="logout()">Sign Out</button>
             </div>
 

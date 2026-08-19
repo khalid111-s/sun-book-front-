@@ -27,6 +27,7 @@
             padding: 5px 14px;
             border-radius: 30px;
         }
+        .admin-shield-badge svg { width: 13px; height: 13px; flex-shrink: 0; }
         .admin-login-title {
             color: var(--gold-color);
             font-family: var(--font-logo);
@@ -82,7 +83,10 @@
 <div class="admin-login-wrap">
     <div class="auth-card" style="max-width: 420px; width: 100%;">
         <div style="text-align:center;">
-            <span class="admin-shield-badge">🛡 Admin Access</span>
+            <span class="admin-shield-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18 2 8l5 4 5-7 5 7 5-4-2 10"></path><path d="M4 18h16"></path></svg>
+                Admin Access
+            </span>
             <h1 class="admin-login-title">The Sun Book</h1>
             <p class="admin-login-sub">Sign in with an admin account to continue</p>
         </div>

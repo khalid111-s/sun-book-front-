@@ -25,37 +25,91 @@
             margin-bottom: 20px;
             line-height: 1.5;
         }
-        .setup-result {
-            margin-top: 14px;
-            font-size: 0.85rem;
-            display: none;
-            padding: 10px 14px;
-            border-radius: 8px;
+        .setup-section-label {
+            color: var(--gold-color);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 22px 0 10px;
+            display: block;
         }
-        .setup-result.ok { display: block; background: rgba(216,176,86,0.1); border: 1px solid rgba(216,176,86,0.4); color: var(--gold-color); }
-        .setup-result.err { display: block; background: rgba(255,77,77,0.08); border: 1px solid rgba(255,77,77,0.35); color: #ff9b9b; }
+        /* بانر النتيجة - كبير وواضح، ميختفيش لوحده عشان تبقى متأكد نجح ولا فشل */
+        .result-banner {
+            display: none;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin: 14px 0;
+        }
+        .result-banner.show { display: flex; }
+        .result-banner.ok { background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.45); color: #8de89a; }
+        .result-banner.err { background: rgba(255,77,77,0.08); border: 1px solid rgba(255,77,77,0.35); color: #ff9b9b; }
+        .result-banner .icon { font-size: 1.1rem; flex-shrink: 0; }
+
+        .admins-list-box {
+            border: 1px solid rgba(216,176,86,0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .admin-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(216,176,86,0.12);
+        }
+        .admin-row:last-child { border-bottom: none; }
+        .admin-row-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: linear-gradient(135deg, #d8b056, #b8860b);
+            color: #111; font-weight: bold; font-size: 0.8rem;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .admin-row-info { flex: 1; min-width: 0; }
+        .admin-row-name { display: block; color: #f2f2f2; font-size: 0.85rem; }
+        .admin-row-email { display: block; color: var(--text-gray); font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .admin-row-remove {
+            background: transparent; border: 1px solid rgba(255,77,77,0.4); color: #ff8080;
+            font-size: 0.72rem; padding: 5px 10px; border-radius: 6px; cursor: pointer; flex-shrink: 0;
+        }
+        .admin-row-remove:hover { background: rgba(255,77,77,0.12); }
+        .admin-row-remove:disabled { opacity: 0.5; cursor: not-allowed; }
+        .admins-empty-state {
+            padding: 16px; text-align: center; color: var(--text-gray); font-size: 0.8rem;
+        }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
     </style>
 </head>
 <body style="background: var(--bg-dark);">
 
 <div class="setup-wrap">
-    <div class="auth-card" style="max-width: 440px; width: 100%;">
+    <div class="auth-card" style="max-width: 460px; width: 100%;">
         <div style="text-align:center; margin-bottom: 14px;">
             <h1 style="color: var(--gold-color); font-family: var(--font-logo); font-size: 1.5rem;">Admin Setup</h1>
-            <p style="color: var(--text-gray); font-size: 0.85rem; margin-top: 6px;">Promote a registered account to admin — no server access needed.</p>
+            <p style="color: var(--text-gray); font-size: 0.85rem; margin-top: 6px;">Manage who has admin access — up to 3 accounts at a time.</p>
         </div>
 
         <div class="setup-warning">
-            ⚠️ This page requires the secret setup key configured on the server (<code>ADMIN_SETUP_KEY</code>). Only one account can be admin at a time — promoting a new one demotes the previous admin automatically. Keep this page's link private.
+            ⚠️ Requires the secret key configured on the server (<code>ADMIN_SETUP_KEY</code>). Keep this page's link private.
         </div>
 
-        <form id="setupForm" class="auth-form active" onsubmit="handleSetup(event)">
-            <input type="email" id="setupEmail" class="auth-input" placeholder="Account email to make admin (must already be registered)" required>
-            <input type="password" id="setupKey" class="auth-input" placeholder="Setup Key" required>
-            <button type="submit" class="btn-shop auth-submit-btn">Make This Account Admin</button>
-        </form>
+        <label style="color: var(--text-gray); font-size: 0.78rem;">Setup Key</label>
+        <input type="password" id="setupKeyInput" class="auth-input" placeholder="Enter setup key to unlock this page" style="margin-top: 6px;">
 
-        <p id="setupResult" class="setup-result"></p>
+        <div id="resultBanner" class="result-banner"></div>
+
+        <span class="setup-section-label">Current admins (<span id="adminCountLabel">–</span>/3)</span>
+        <div id="adminsListBox" class="admins-list-box">
+            <div class="admins-empty-state">Enter the setup key above to load the current admin list.</div>
+        </div>
+
+        <span class="setup-section-label">Promote an account to admin</span>
+        <form id="promoteForm" class="auth-form active" onsubmit="handlePromote(event)">
+            <input type="email" id="promoteEmail" class="auth-input" placeholder="Account email (must already be registered)" required>
+            <button type="submit" id="promoteBtn" class="btn-shop auth-submit-btn">Make This Account Admin</button>
+        </form>
 
         <a href="admin-login.html" style="display:block; text-align:center; margin-top:18px; color: var(--text-gray); font-size: 0.8rem;">← Go to Admin Sign In</a>
     </div>
@@ -63,23 +117,115 @@
 
 <script src="js/api.js"></script>
 <script>
-async function handleSetup(event) {
-    event.preventDefault();
-    const resultEl = document.getElementById('setupResult');
-    resultEl.className = 'setup-result';
-    resultEl.style.display = 'none';
+let keyDebounceTimer = null;
 
-    const email = document.getElementById('setupEmail').value.trim();
-    const setupKey = document.getElementById('setupKey').value;
+function showBanner(ok, message) {
+    const el = document.getElementById('resultBanner');
+    el.className = 'result-banner show ' + (ok ? 'ok' : 'err');
+    el.innerHTML = `<span class="icon">${ok ? '✅' : '❌'}</span><span>${message}</span>`;
+}
 
+function hideBanner() {
+    const el = document.getElementById('resultBanner');
+    el.className = 'result-banner';
+    el.innerHTML = '';
+}
+
+function getKey() {
+    return document.getElementById('setupKeyInput').value.trim();
+}
+
+function renderAdmins(admins) {
+    document.getElementById('adminCountLabel').textContent = admins.length;
+    const box = document.getElementById('adminsListBox');
+    if (!admins.length) {
+        box.innerHTML = '<div class="admins-empty-state">No admins yet.</div>';
+        return;
+    }
+    box.innerHTML = admins.map((a) => {
+        const initial = (a.name || a.email || '?').charAt(0).toUpperCase();
+        return `
+            <div class="admin-row">
+                <span class="admin-row-avatar">${initial}</span>
+                <span class="admin-row-info">
+                    <span class="admin-row-name">${a.name || 'Admin'}</span>
+                    <span class="admin-row-email">${a.email}</span>
+                </span>
+                <button type="button" class="admin-row-remove" data-email="${a.email}">Remove</button>
+            </div>
+        `;
+    }).join('');
+
+    box.querySelectorAll('.admin-row-remove').forEach((btn) => {
+        btn.addEventListener('click', () => handleDemote(btn.dataset.email, btn));
+    });
+}
+
+async function loadAdmins(showErrorBanner) {
+    const key = getKey();
+    if (!key) {
+        document.getElementById('adminsListBox').innerHTML = '<div class="admins-empty-state">Enter the setup key above to load the current admin list.</div>';
+        document.getElementById('adminCountLabel').textContent = '–';
+        return;
+    }
     try {
-        const res = await api.promoteAdmin(email, setupKey);
-        resultEl.textContent = `✅ Done — ${res.data.name || res.data.email} is now admin. You can sign in from the Admin Sign In page.`;
-        resultEl.className = 'setup-result ok';
-        document.getElementById('setupForm').reset();
+        const res = await api.listAdmins(key);
+        renderAdmins(res.data);
     } catch (err) {
-        resultEl.textContent = '❌ ' + (err.message || 'Something went wrong.');
-        resultEl.className = 'setup-result err';
+        document.getElementById('adminsListBox').innerHTML = '<div class="admins-empty-state">Could not load — check the setup key.</div>';
+        document.getElementById('adminCountLabel').textContent = '–';
+        if (showErrorBanner) showBanner(false, err.message || 'Could not load admins.');
+    }
+}
+
+document.getElementById('setupKeyInput').addEventListener('input', () => {
+    clearTimeout(keyDebounceTimer);
+    keyDebounceTimer = setTimeout(() => loadAdmins(false), 500);
+});
+
+async function handlePromote(event) {
+    event.preventDefault();
+    hideBanner();
+    const key = getKey();
+    if (!key) {
+        showBanner(false, 'Enter the setup key first.');
+        return;
+    }
+    const email = document.getElementById('promoteEmail').value.trim();
+    const btn = document.getElementById('promoteBtn');
+    btn.disabled = true;
+    btn.textContent = 'Working...';
+    try {
+        const res = await api.promoteAdmin(email, key);
+        if (res.data.alreadyAdmin) {
+            showBanner(true, `${res.data.name || res.data.email} was already an admin — nothing to change.`);
+        } else {
+            showBanner(true, `Done — ${res.data.name || res.data.email} is now an admin. They can sign in from the Admin Sign In page.`);
+        }
+        document.getElementById('promoteForm').reset();
+        loadAdmins(false);
+    } catch (err) {
+        showBanner(false, err.message || 'Something went wrong. No changes were made.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Make This Account Admin';
+    }
+}
+
+async function handleDemote(email, btnEl) {
+    hideBanner();
+    const key = getKey();
+    if (!confirm(`Remove admin access from ${email}?`)) return;
+    btnEl.disabled = true;
+    btnEl.textContent = '...';
+    try {
+        const res = await api.demoteAdmin(email, key);
+        showBanner(true, `Done — ${res.data.name || res.data.email} is no longer an admin.`);
+        loadAdmins(false);
+    } catch (err) {
+        showBanner(false, err.message || 'Could not remove admin access. No changes were made.');
+        btnEl.disabled = false;
+        btnEl.textContent = 'Remove';
     }
 }
 </script>
