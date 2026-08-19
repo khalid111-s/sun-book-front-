@@ -1183,7 +1183,7 @@ body {
     width: auto;
     height: auto;
     max-width: 100%;
-    max-height: 320px; /* = ارتفاع card-image-wrapper (300px) ناقص الـ padding (14px من فوق وتحت) */
+    max-height: 370px; /* = ارتفاع card-image-wrapper (300px) ناقص الـ padding (14px من فوق وتحت) */
     object-fit: contain;
     filter: drop-shadow(0 15px 15px rgba(0,0,0,0.7));
     transition: transform 0.3s ease;
