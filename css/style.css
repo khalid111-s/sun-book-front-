@@ -1169,12 +1169,12 @@ body {
 .card-image-wrapper {
     /* تدرج لوني دائري بيدي إضاءة ذهبية خفيفة ورا الكتاب زي اللي ورا الكوتشي */
     background: radial-gradient(circle at center, rgba(216, 176, 86, 0.1), #131313 80%);
-    height: 240px;
+    height: 300px;
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
-    padding: 20px;
+    padding: 14px;
     overflow: hidden;
     border-bottom: 1px solid rgba(216, 176, 86, 0.1);
 }
@@ -1183,7 +1183,7 @@ body {
     width: auto;
     height: auto;
     max-width: 100%;
-    max-height: 200px; /* = ارتفاع card-image-wrapper (240px) ناقص الـ padding (20px من فوق وتحت) */
+    max-height: 272px; /* = ارتفاع card-image-wrapper (300px) ناقص الـ padding (14px من فوق وتحت) */
     object-fit: contain;
     filter: drop-shadow(0 15px 15px rgba(0,0,0,0.7));
     transition: transform 0.3s ease;
@@ -1708,12 +1708,12 @@ ul.social-row {
     }
 
     .card-image-wrapper {
-        height: 110px;
+        height: 150px;
         padding: 10px;
     }
 
     .card-img {
-        max-height: 90px; /* = 110px ناقص padding 10px من فوق وتحت */
+        max-height: 130px; /* = 150px ناقص padding 10px من فوق وتحت */
     }
 
     .card-info-wrapper {
