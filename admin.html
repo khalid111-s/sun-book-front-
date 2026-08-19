@@ -396,6 +396,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41L13.42 20.58a2 2 0 0 1-2.83 0L2.59 12.59A2 2 0 0 1 2 11.17V4a2 2 0 0 1 2-2h7.17a2 2 0 0 1 1.42.59l8.01 8a2 2 0 0 1-.01 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
             Promo Codes
         </button>
+        <button class="admin-tab-btn" data-tab="archives">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"></path><path d="M1 3h22v5H1z"></path><path d="M10 12h4"></path></svg>
+            Archives
+        </button>
     </div>
 
     <!-- ====== تاب الداشبورد: زوار، طلبات، أرباح ====== -->
@@ -822,8 +826,24 @@
             </table>
         </div>
     </div>
+
+    <!-- ====== تاب الأرشيف الشهري: ملخص كل شهر بصيغة PDF فيه رسوم بيانية، من غير ما تمسح أي بيانات أصلية ====== -->
+    <div id="tabArchives" class="admin-tab-panel" style="display:none;">
+        <div class="admin-form">
+            <h2>Monthly Archives</h2>
+            <p style="color: var(--text-gray); font-size: 0.85rem; margin-top: -10px; margin-bottom: 16px;">
+                A downloadable PDF summary for each month (revenue, orders, sessions, charts). This doesn't delete or touch your original data — it's just a snapshot report.
+            </p>
+        </div>
+        <div id="archivesListWrap" class="admin-table-wrap" style="padding: 10px;">
+            <p style="color: var(--text-gray); padding: 16px;">Loading...</p>
+        </div>
+    </div>
 </div>
 
+<!-- عشان نقدر نبني PDF فيه رسوم بيانية للأرشيف الشهري من غير سيرفر تخزين ملفات -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script src="js/api.js"></script>
 <script src="js/admin-accounts.js"></script>
 <script src="js/admin.js"></script>

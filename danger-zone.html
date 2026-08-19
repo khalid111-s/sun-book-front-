@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danger Zone - The Sun Book</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="assets/sun-icon.png">
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        .setup-wrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 16px;
+        }
+        .setup-warning {
+            background: rgba(255,77,77,0.08);
+            border: 1px solid rgba(255,77,77,0.35);
+            color: #ff9b9b;
+            font-size: 0.78rem;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .setup-section-label {
+            color: var(--gold-color);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 22px 0 10px;
+            display: block;
+        }
+        .result-banner {
+            display: none;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin: 14px 0;
+        }
+        .result-banner.show { display: flex; }
+        .result-banner.ok { background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.45); color: #8de89a; }
+        .result-banner.err { background: rgba(255,77,77,0.08); border: 1px solid rgba(255,77,77,0.35); color: #ff9b9b; }
+        .result-banner .icon { font-size: 1.1rem; flex-shrink: 0; }
+
+        .wipe-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px;
+            border: 1px solid rgba(216,176,86,0.2);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .wipe-option:hover { background: rgba(216,176,86,0.06); }
+        .wipe-option input { margin-top: 3px; accent-color: var(--gold-color); }
+        .wipe-option-title { display: block; color: #f2f2f2; font-size: 0.88rem; font-weight: bold; }
+        .wipe-option-desc { display: block; color: var(--text-gray); font-size: 0.75rem; margin-top: 2px; }
+
+        .safe-list {
+            background: rgba(76,175,80,0.06);
+            border: 1px solid rgba(76,175,80,0.25);
+            color: #a8e6ad;
+            font-size: 0.75rem;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-top: 14px;
+            line-height: 1.5;
+        }
+
+        .wipe-btn {
+            background: #ff4d4d;
+            color: #fff;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+        .wipe-btn:hover { background: #e63e3e; }
+        button:disabled { opacity: 0.55; cursor: not-allowed; }
+    </style>
+</head>
+<body style="background: var(--bg-dark);">
+
+<div class="setup-wrap">
+    <div class="auth-card" style="max-width: 460px; width: 100%;">
+        <div style="text-align:center; margin-bottom: 14px;">
+            <h1 style="color: #ff8080; font-family: var(--font-logo); font-size: 1.5rem;">⚠ Danger Zone</h1>
+            <p style="color: var(--text-gray); font-size: 0.85rem; margin-top: 6px;">Permanently delete test data before going live.</p>
+        </div>
+
+        <div class="setup-warning">
+            This cannot be undone. Only wipe what you're sure is test data. Requires the same <code>ADMIN_SETUP_KEY</code> as Admin Setup.
+        </div>
+
+        <label style="color: var(--text-gray); font-size: 0.78rem;">Setup Key</label>
+        <input type="password" id="setupKeyInput" class="auth-input" placeholder="Enter setup key to unlock this page" style="margin-top: 6px;">
+
+        <div id="resultBanner" class="result-banner"></div>
+
+        <span class="setup-section-label">What to wipe</span>
+
+        <label class="wipe-option">
+            <input type="checkbox" value="orders">
+            <span>
+                <span class="wipe-option-title">Orders</span>
+                <span class="wipe-option-desc">All book/store orders (test purchases).</span>
+            </span>
+        </label>
+        <label class="wipe-option">
+            <input type="checkbox" value="bookings">
+            <span>
+                <span class="wipe-option-title">Bookings &amp; Sessions</span>
+                <span class="wipe-option-desc">All 1-on-1 session bookings and their session records.</span>
+            </span>
+        </label>
+        <label class="wipe-option">
+            <input type="checkbox" value="promocodes">
+            <span>
+                <span class="wipe-option-title">Promo Codes</span>
+                <span class="wipe-option-desc">All discount codes you generated while testing.</span>
+            </span>
+        </label>
+        <label class="wipe-option">
+            <input type="checkbox" value="users">
+            <span>
+                <span class="wipe-option-title">Users</span>
+                <span class="wipe-option-desc">All registered accounts except admins.</span>
+            </span>
+        </label>
+        <label class="wipe-option">
+            <input type="checkbox" value="analytics">
+            <span>
+                <span class="wipe-option-title">Visitor Analytics</span>
+                <span class="wipe-option-desc">Site visits, active visitor tracking, and event logs.</span>
+            </span>
+        </label>
+
+        <div class="safe-list">
+            ✓ Never touched by this page: admin accounts, products, and site settings.
+        </div>
+
+        <span class="setup-section-label">Confirm</span>
+        <p style="color: var(--text-gray); font-size: 0.78rem; margin-bottom: 8px;">Type <strong style="color:#ff8080;">DELETE</strong> below to enable the button.</p>
+        <input type="text" id="confirmInput" class="auth-input" placeholder="Type DELETE to confirm">
+
+        <button type="button" id="wipeBtn" class="wipe-btn" disabled>Permanently Wipe Selected Data</button>
+
+        <a href="admin-setup.html" style="display:block; text-align:center; margin-top:18px; color: var(--text-gray); font-size: 0.8rem;">← Go to Admin Setup</a>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+function showBanner(ok, message) {
+    const el = document.getElementById('resultBanner');
+    el.className = 'result-banner show ' + (ok ? 'ok' : 'err');
+    el.innerHTML = `<span class="icon">${ok ? '✅' : '❌'}</span><span>${message}</span>`;
+}
+
+function hideBanner() {
+    const el = document.getElementById('resultBanner');
+    el.className = 'result-banner';
+    el.innerHTML = '';
+}
+
+const wipeBtn = document.getElementById('wipeBtn');
+const confirmInput = document.getElementById('confirmInput');
+
+confirmInput.addEventListener('input', () => {
+    wipeBtn.disabled = confirmInput.value.trim() !== 'DELETE';
+});
+
+const TYPE_LABELS = {
+    orders: 'Orders',
+    bookings: 'Bookings & Sessions',
+    promocodes: 'Promo Codes',
+    users: 'Users',
+    analytics: 'Visitor Analytics',
+};
+
+wipeBtn.addEventListener('click', async () => {
+    hideBanner();
+    const key = document.getElementById('setupKeyInput').value.trim();
+    if (!key) {
+        showBanner(false, 'Enter the setup key first.');
+        return;
+    }
+    const types = Array.from(document.querySelectorAll('.wipe-option input:checked')).map((el) => el.value);
+    if (!types.length) {
+        showBanner(false, 'Choose at least one data type to wipe.');
+        return;
+    }
+
+    const typeNames = types.map((t) => TYPE_LABELS[t]).join(', ');
+    if (!confirm(`This will permanently delete: ${typeNames}. This cannot be undone. Continue?`)) {
+        return;
+    }
+
+    wipeBtn.disabled = true;
+    wipeBtn.textContent = 'Wiping...';
+    try {
+        const res = await api.wipeData(types, key);
+        const summary = Object.entries(res.data).map(([type, count]) => `${TYPE_LABELS[type] || type}: ${count} deleted`).join(' · ');
+        showBanner(true, `Done — ${summary}`);
+        document.querySelectorAll('.wipe-option input:checked').forEach((el) => { el.checked = false; });
+        confirmInput.value = '';
+    } catch (err) {
+        showBanner(false, err.message || 'Something went wrong. No changes may have been applied — check carefully.');
+    } finally {
+        wipeBtn.disabled = confirmInput.value.trim() !== 'DELETE';
+        wipeBtn.textContent = 'Permanently Wipe Selected Data';
+    }
+});
+</script>
+
+</body>
+</html>

@@ -701,6 +701,7 @@ const tabPanelIds = {
     sessions: 'tabSessions',
     users: 'tabUsers',
     promocodes: 'tabPromoCodes',
+    archives: 'tabArchives',
 };
 
 // كل تاب من التابات دي بيتحمّل أول مرة بس تفتحه، مش من أول ما الصفحة تفتح
@@ -708,6 +709,7 @@ const tabLoaders = {
     sessions: () => loadSessionsTable(),
     users: () => loadUsersTable(),
     promocodes: () => loadPromoCodesTable(),
+    archives: () => loadArchivesList(),
 };
 const loadedTabs = new Set();
 
@@ -1109,3 +1111,142 @@ function initAdminPanel() {
 }
 
 document.addEventListener('DOMContentLoaded', checkAdminAccess);
+
+// ---------- تاب الأرشيف الشهري: ملخص PDF لكل شهر (مش بيمسح ولا يلمس أي بيانات أصلية) ----------
+async function loadArchivesList() {
+    const wrap = document.getElementById('archivesListWrap');
+    wrap.innerHTML = '<p style="color: var(--text-gray); padding: 16px;">Loading...</p>';
+    try {
+        const { data: months } = await api.getAvailableMonths();
+        if (!months.length) {
+            wrap.innerHTML = '<p style="color: var(--text-gray); padding: 16px;">No data yet to build a report from.</p>';
+            return;
+        }
+        wrap.innerHTML = months.map((m) => `
+            <div style="display:flex; align-items:center; justify-content:space-between; padding: 14px 16px; border-bottom: 1px solid rgba(216,176,86,0.12);">
+                <span style="color:#f2f2f2;">${m.label}</span>
+                <button type="button" class="archive-download-btn" data-year="${m.year}" data-month="${m.month}" data-label="${m.label}" style="background: transparent; border: 1px solid var(--gold-color); color: var(--gold-color); padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">Download PDF</button>
+            </div>
+        `).join('');
+
+        wrap.querySelectorAll('.archive-download-btn').forEach((btn) => {
+            btn.addEventListener('click', () => downloadMonthlyArchive(btn));
+        });
+    } catch (err) {
+        wrap.innerHTML = `<p style="color:#e05252; padding: 16px;">Failed to load: ${err.message}</p>`;
+    }
+}
+
+async function downloadMonthlyArchive(btn) {
+    const { year, month } = btn.dataset;
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Building...';
+    try {
+        const { data } = await api.getMonthlyReportData(year, month);
+        await buildArchivePdf(data);
+    } catch (err) {
+        alert('Failed to build report: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
+}
+
+// بيرسم شارت على canvas مخفي مؤقت، ويرجّعه كـ صورة عشان نحطها جوه الـ PDF
+async function renderChartToImage(config, width, height) {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    canvas.style.position = 'fixed';
+    canvas.style.left = '-9999px';
+    document.body.appendChild(canvas);
+    const chart = new Chart(canvas, config);
+    await new Promise((resolve) => setTimeout(resolve, 300)); // نستنى الرسم يخلص قبل ما ناخد الصورة
+    const imgData = canvas.toDataURL('image/png', 1.0);
+    chart.destroy();
+    canvas.remove();
+    return imgData;
+}
+
+async function buildArchivePdf(data) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const gold = [216, 176, 86];
+    let y = 50;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.setTextColor(...gold);
+    doc.text('The Sun Book', 40, y);
+    y += 24;
+    doc.setFontSize(14);
+    doc.setTextColor(40, 40, 40);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Monthly Report — ${data.label}`, 40, y);
+    y += 30;
+
+    doc.setFontSize(11);
+    const summaryLines = [
+        `Store revenue: LE ${Number(data.orders.totalRevenue).toFixed(2)}  (${data.orders.totalOrders} orders)`,
+        `Sessions revenue: LE ${Number(data.bookings.totalRevenue).toFixed(2)}  (${data.bookings.totalBookings} bookings)`,
+        `New users this month: ${data.newUsers}`,
+    ];
+    summaryLines.forEach((line) => {
+        doc.text(line, 40, y);
+        y += 18;
+    });
+    y += 12;
+
+    const chartColors = ['#d8b056', '#4caf50', '#e05252', '#5a8dee', '#888888'];
+    let chartsBottom = y;
+
+    if (data.orders.byStatus.length) {
+        const chartImg = await renderChartToImage({
+            type: 'pie',
+            data: {
+                labels: data.orders.byStatus.map((s) => s.status),
+                datasets: [{ data: data.orders.byStatus.map((s) => s.count), backgroundColor: chartColors }],
+            },
+            options: { responsive: false, animation: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } },
+        }, 460, 320);
+        doc.setFontSize(12);
+        doc.setTextColor(...gold);
+        doc.text('Orders by status', 40, y);
+        doc.addImage(chartImg, 'PNG', 40, y + 8, 230, 160);
+        chartsBottom = Math.max(chartsBottom, y + 8 + 160);
+    }
+
+    if (data.bookings.byStatus.length) {
+        const chartImg2 = await renderChartToImage({
+            type: 'pie',
+            data: {
+                labels: data.bookings.byStatus.map((s) => s.status),
+                datasets: [{ data: data.bookings.byStatus.map((s) => s.count), backgroundColor: chartColors }],
+            },
+            options: { responsive: false, animation: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } },
+        }, 460, 320);
+        doc.setFontSize(12);
+        doc.setTextColor(...gold);
+        doc.text('Bookings by status', pageWidth / 2 + 10, y);
+        doc.addImage(chartImg2, 'PNG', pageWidth / 2 + 10, y + 8, 230, 160);
+        chartsBottom = Math.max(chartsBottom, y + 8 + 160);
+    }
+    y = chartsBottom + 24;
+
+    if (data.topProducts.length) {
+        doc.setFontSize(12);
+        doc.setTextColor(...gold);
+        doc.text('Top products', 40, y);
+        y += 18;
+        doc.setFontSize(10);
+        doc.setTextColor(40, 40, 40);
+        data.topProducts.forEach((p) => {
+            doc.text(`${p.title} — ${p.quantitySold} sold — LE ${Number(p.revenue).toFixed(2)}`, 50, y);
+            y += 16;
+        });
+    }
+
+    doc.save(`sunbook-report-${data.year}-${String(data.month).padStart(2, '0')}.pdf`);
+}

@@ -51,6 +51,17 @@ const api = {
   listAdmins: (setupKey) =>
     api.request(`/users/admins-list?setupKey=${encodeURIComponent(setupKey)}`),
 
+  // تاب الأرشيف الشهري: قايمة الشهور اللي فيها بيانات + أرقام شهر معين لبناء الـ PDF
+  getAvailableMonths: () => api.request('/reports/months'),
+  getMonthlyReportData: (year, month) => api.request(`/reports/monthly/${year}/${month}`),
+
+  // Danger Zone: مسح أنواع بيانات معينة (تيست) - محمي بمفتاح الإعداد
+  wipeData: (types, setupKey) =>
+    api.request('/maintenance/wipe-data', {
+      method: 'POST',
+      body: JSON.stringify({ types, setupKey }),
+    }),
+
   googleLogin: (credential) =>
     api.request('/auth/google', {
       method: 'POST',
