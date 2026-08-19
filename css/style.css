@@ -1169,7 +1169,7 @@ body {
 .card-image-wrapper {
     /* تدرج لوني دائري بيدي إضاءة ذهبية خفيفة ورا الكتاب زي اللي ورا الكوتشي */
     background: radial-gradient(circle at center, rgba(216, 176, 86, 0.1), #131313 80%);
-    height: 300px;
+    height: 500px;
     display: flex;
     justify-content: center;
     align-items: center;
