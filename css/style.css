@@ -1179,7 +1179,7 @@ body {
     /* تمركز مضمون 100% جوه الـ wrapper (مش معتمد على flex) عشان الصورة متطلعش عالية ولا واطية */
     position: absolute;
     top: 55%;
-    left: 45%;
+    left: 47%;
     transform: translate(-50%, -50%);
     width: auto;
     height: auto;
