@@ -1184,8 +1184,8 @@ body {
     width: auto;
     height: auto;
     /* سقف ثابت بالبكسل (مش نسبة %) عشان الصورة متكبرش عن الحجم ده أبدًا، أيًا كان حجم الكارت أو الشاشة */
-    max-width: 230px;
-    max-height: 270px;
+    max-width: 260px;
+    max-height: 300px;
     object-fit: contain;
     filter: drop-shadow(0 15px 15px rgba(0,0,0,0.7));
     transition: transform 0.3s ease;
