@@ -1178,8 +1178,8 @@ body {
 .card-img {
     /* تمركز مضمون 100% جوه الـ wrapper (مش معتمد على flex) عشان الصورة متطلعش عالية ولا واطية */
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: 55%;
+    left: 55%;
     transform: translate(-50%, -50%);
     width: auto;
     height: auto;
