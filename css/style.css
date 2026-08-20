@@ -1156,7 +1156,7 @@ body {
     border-radius: 20px; /* دوران خفيف زي الصورة */
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    min-height: 480px; /* عشان الكروت تبقى قد بعض */
+    min-height: 510px; /* عشان الكروت تبقى قد بعض (اتزودت مع ارتفاع صورة الكارت الجديد) */
 }
 
 .product-card:hover {
@@ -1169,13 +1169,13 @@ body {
 .card-image-wrapper {
     /* تدرج لوني دائري بيدي إضاءة ذهبية خفيفة ورا الكتاب زي اللي ورا الكوتشي */
     background: radial-gradient(circle at center, rgba(216, 176, 86, 0.1), #131313 80%);
-    height: 300px;
+    height: 330px;
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
     padding: 2px;
-    overflow: visible;
+    overflow: hidden;
     border-bottom: 1px solid rgba(216, 176, 86, 0.1);
 }
 
@@ -1183,7 +1183,7 @@ body {
     width: auto;
     height: auto;
     max-width: 92%;
-    max-height: 340px; /* أكبر من ارتفاع الـ wrapper نفسه عشان الصورة تطلع بره حدوده شوية وتبان أكبر */
+    max-height: 320px; /* أصغر من ارتفاع الـ wrapper (330px) عشان تفضل متمركزة ومتقصش من فوق */
     object-fit: contain;
     filter: drop-shadow(0 15px 15px rgba(0,0,0,0.7));
     transition: transform 0.3s ease;
