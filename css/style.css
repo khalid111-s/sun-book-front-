@@ -1170,27 +1170,29 @@ body {
     /* تدرج لوني دائري بيدي إضاءة ذهبية خفيفة ورا الكتاب زي اللي ورا الكوتشي */
     background: radial-gradient(circle at center, rgba(216, 176, 86, 0.1), #131313 80%);
     height: 330px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     position: relative;
-    padding: 2px;
     overflow: hidden;
     border-bottom: 1px solid rgba(216, 176, 86, 0.1);
 }
 
 .card-img {
+    /* تمركز مضمون 100% جوه الـ wrapper (مش معتمد على flex) عشان الصورة متطلعش عالية ولا واطية */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: auto;
     height: auto;
-    max-width: 92%;
-    max-height: 320px; /* أصغر من ارتفاع الـ wrapper (330px) عشان تفضل متمركزة ومتقصش من فوق */
+    max-width: 90%;
+    max-height: 94%; /* نسبة من ارتفاع الـ wrapper بدل رقم ثابت، عشان تفضل متمركزة في أي حجم */
     object-fit: contain;
     filter: drop-shadow(0 15px 15px rgba(0,0,0,0.7));
     transition: transform 0.3s ease;
 }
 
 .product-card:hover .card-img {
-    transform: scale(1.08); /* زووم خفيف للكتاب */
+    /* بنحافظ على نفس التمركز (translate) وبنضيف الزووم بس، عشان الكتاب يكبر مكانه من غير ما "يرتفع" */
+    transform: translate(-50%, -50%) scale(1.06);
 }
 
 
@@ -1703,19 +1705,17 @@ ul.social-row {
     }
 
     .product-card {
-        min-height: auto; /* بلاش نجبر ارتفاع 480px ثابت على الموبايل */
+        min-height: 420px; /* بلاش نجبر 480px القديم، بس نديها حد أدنى معقول مع الصورة الأكبر */
         border-radius: 14px;
     }
 
     .card-image-wrapper {
-        height: 150px;
-        padding: 2px;
-        overflow: visible;
+        height: 190px; /* زودتها شوية على الموبايل عشان الكتاب يبان بحجم كويس */
     }
 
     .card-img {
-        max-height: 170px; /* أكبر شوية من الـ wrapper نفسه عشان تبان أكبر على الموبايل */
-        max-width: 92%;
+        max-width: 88%;
+        max-height: 94%; /* نفس المنطق: نسبة من الـ wrapper بدل رقم ثابت، فتفضل متمركزة صح */
     }
 
     .card-info-wrapper {
