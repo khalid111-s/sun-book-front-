@@ -1183,8 +1183,9 @@ body {
     transform: translate(-50%, -50%);
     width: auto;
     height: auto;
-    max-width: 90%;
-    max-height: 94%; /* نسبة من ارتفاع الـ wrapper بدل رقم ثابت، عشان تفضل متمركزة في أي حجم */
+    /* سقف ثابت بالبكسل (مش نسبة %) عشان الصورة متكبرش عن الحجم ده أبدًا، أيًا كان حجم الكارت أو الشاشة */
+    max-width: 230px;
+    max-height: 270px;
     object-fit: contain;
     filter: drop-shadow(0 15px 15px rgba(0,0,0,0.7));
     transition: transform 0.3s ease;
@@ -1714,8 +1715,9 @@ ul.social-row {
     }
 
     .card-img {
-        max-width: 88%;
-        max-height: 94%; /* نفس المنطق: نسبة من الـ wrapper بدل رقم ثابت، فتفضل متمركزة صح */
+        /* سقف ثابت أصغر يناسب ارتفاع الـ wrapper بتاع الموبايل (190px)، بنفس فكرة الديسكتوب */
+        max-width: 135px;
+        max-height: 160px;
     }
 
     .card-info-wrapper {
