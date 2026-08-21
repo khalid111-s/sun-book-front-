@@ -149,10 +149,6 @@ async function loadSingleProductPage() {
         if (priceEl) priceEl.innerText = normalized.price;
         if (descEl) descEl.innerText = normalized.description;
 
-        // بريدكرمب: نحط اسم الكتاب بدل النص الافتراضي
-        const breadcrumbTitleEl = document.getElementById('breadcrumb-title');
-        if (breadcrumbTitleEl) breadcrumbTitleEl.innerText = normalized.title;
-
         // معاينة الغلاف (لايت بوكس): نحدث الصورة اللي هتتفتح
         const lightboxImgEl = document.getElementById('lightbox-img');
         if (lightboxImgEl) lightboxImgEl.src = normalized.image;
@@ -170,17 +166,12 @@ async function loadSingleProductPage() {
                 .join('');
         }
 
+        // شريط "متاح في مصر فقط" - بيتحط في عمود التفاصيل بدل ما يغطي صورة الغلاف
+        const egyptBannerEl = document.getElementById('productEgyptBanner');
+        if (egyptBannerEl) egyptBannerEl.hidden = !normalized.egyptOnly;
+
         const galleryEl = document.querySelector('.product-gallery');
         if (galleryEl) {
-            const existingStrip = galleryEl.querySelector('.egypt-only-strip');
-            if (existingStrip) existingStrip.remove();
-            if (normalized.egyptOnly) {
-                const strip = document.createElement('div');
-                strip.className = 'egypt-only-strip';
-                strip.innerText = 'Egypt Only';
-                galleryEl.prepend(strip);
-            }
-
             const existingOverlay = galleryEl.querySelector('.out-of-stock-overlay');
             if (existingOverlay) existingOverlay.remove();
             if (normalized.available === false) {

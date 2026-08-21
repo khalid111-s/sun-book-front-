@@ -1255,6 +1255,27 @@ body {
     box-shadow: 2px 0 10px rgba(0,0,0,0.35);
 }
 
+/* نسخة أفقية من نفس الفكرة، لصفحة تفاصيل المنتج بس - بتتحط جوه عمود التفاصيل بدل ما تغطي صورة الغلاف */
+.product-egypt-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    background: var(--gold-color);
+    color: #111;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 20px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+}
+
+.product-egypt-banner[hidden] {
+    display: none;
+}
+
 /* اللافتة اللي بتغطي صورة المنتج لما يخلص من المخزون */
 .out-of-stock-overlay {
     position: absolute;
@@ -2133,51 +2154,12 @@ ul.social-row {
 }
 
 /* =========================================
-   بريدكرمب صفحة المنتج
-   ========================================= */
-.product-breadcrumb {
-    padding: 18px 5% 0;
-    background-color: var(--bg-dark);
-}
-
-.product-breadcrumb .container {
-    max-width: 1100px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-}
-
-.product-breadcrumb a {
-    color: var(--text-gray);
-    text-decoration: none;
-}
-
-.product-breadcrumb a:hover {
-    color: var(--gold-color);
-}
-
-.product-breadcrumb .breadcrumb-sep {
-    color: var(--text-gray);
-    opacity: 0.5;
-}
-
-.product-breadcrumb .breadcrumb-current {
-    color: var(--gold-color);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 260px;
-}
-
-/* =========================================
    زرار معاينة الغلاف (فوق صورة الكتاب)
    ========================================= */
 .gallery-preview-btn {
     position: absolute;
     bottom: 16px;
-    left: 16px;
+    right: 16px;
     z-index: 2;
     width: 42px;
     height: 42px;

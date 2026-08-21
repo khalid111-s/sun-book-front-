@@ -10,15 +10,6 @@
 <body>
 <div data-include="components/header.html"></div>
 
-<!-- بريدكرمب بسيط فوق تفاصيل المنتج -->
-<div class="product-breadcrumb reveal">
-    <div class="container">
-        <a href="index.html">الرئيسية</a>
-        <span class="breadcrumb-sep">/</span>
-        <span class="breadcrumb-current" id="breadcrumb-title">تفاصيل الكتاب</span>
-    </div>
-</div>
-
 <!-- =========================================
      قسم تفاصيل المنتج الرئيسي (Hero) - Dynamic Template
      ========================================= -->
@@ -41,6 +32,9 @@
 
         <!-- التفاصيل على اليمين -->
         <div class="product-info-details">
+            <!-- شريط "متاح في مصر فقط" - بيظهر هنا بدل ما يبقى فوق صورة الغلاف -->
+            <div class="product-egypt-banner" id="productEgyptBanner" hidden>متاح في مصر فقط</div>
+
             <h1 id="product-title" class="product-title-large">جاري التحميل...</h1>
 
             <div id="product-badges" class="card-badges" style="margin: 8px 0;"></div>
