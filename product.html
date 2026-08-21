@@ -10,35 +10,88 @@
 <body>
 <div data-include="components/header.html"></div>
 
-<!-- قسم تفاصيل المنتج الموحد (Dynamic Template) -->
+<!-- =========================================
+     قسم تفاصيل المنتج الرئيسي (Hero) - Dynamic Template
+     ========================================= -->
 <section class="single-product-section reveal">
     <div class="container single-product-container">
-        
-        <!-- الصورة على الشمال -->
+
+        <!-- الصورة على الشمال مع توهج ذهبي خلفها -->
         <div class="product-gallery">
+            <div class="product-gallery-glow"></div>
             <img id="main-product-img" src="assets/sun-icon.png" alt="Book Cover">
         </div>
 
         <!-- التفاصيل على اليمين -->
         <div class="product-info-details">
             <h1 id="product-title" class="product-title-large">جاري التحميل...</h1>
+
             <div id="product-badges" class="card-badges" style="margin: 8px 0;"></div>
+
             <p id="product-price" class="product-price-large">LE 0.00</p>
-            
-            <div class="product-description">
+
+            <div class="product-description" id="product-desc-wrapper">
                 <p id="product-desc">جاري تحميل تفاصيل الكتاب والغموض اللي جواه...</p>
+                <button type="button" class="read-more-toggle" id="readMoreBtn" hidden>اقرأ المزيد</button>
             </div>
-            
+
             <div class="purchase-actions">
                 <div class="modern-qty">
-    <button class="qty-btn minus-btn">−</button>
-    <input type="number" value="1" min="1" class="qty-input-val">
-    <button class="qty-btn plus-btn">+</button>
-</div>
+                    <button class="qty-btn minus-btn">−</button>
+                    <input type="number" value="1" min="1" class="qty-input-val">
+                    <button class="qty-btn plus-btn">+</button>
+                </div>
                 <button class="btn-shop add-to-cart-large">Add to Cart </button>
             </div>
         </div>
-        
+
+    </div>
+</section>
+
+<!-- =========================================
+     قسم معاينة الكتاب (Flipbook) - عنصر نائب لمعاينة تفاعلية مستقبلية
+     ملحوظة للمطوّر: هنا المكان اللي هيتحط فيه لاحقًا مكوّن الكتاب اللي بيتقلب فعليًا
+     (flipbook) بمجرد ما صور صفحات الكتاب تبقى جاهزة. حاليًا عنصر تجميلي بس.
+     ========================================= -->
+<section class="book-preview-section reveal">
+    <div class="container">
+        <h2 class="section-title" style="text-align:center;">تصفح داخل الكتاب</h2>
+        <p class="section-subtitle" style="text-align:center;">معاينة تفاعلية لصفحات الكتاب — قريبًا</p>
+
+        <div class="book-flip-mock" id="bookFlipMock">
+            <div class="book-flip-mock-cover">
+                <img src="assets/sun-icon.png" alt="Book preview" id="book-flip-cover-img">
+            </div>
+            <div class="book-flip-mock-page page-1"></div>
+            <div class="book-flip-mock-page page-2"></div>
+            <span class="coming-soon-badge">Coming Soon</span>
+        </div>
+    </div>
+</section>
+
+<!-- =========================================
+     قسم التبويبات (تفاصيل الطبعة / آراء القراء)
+     ========================================= -->
+<section class="product-tabs-section reveal">
+    <div class="container">
+        <div class="product-tabs-nav">
+            <button class="product-tab-btn active" data-tab="details">تفاصيل الطبعة</button>
+            <button class="product-tab-btn" data-tab="reviews">آراء القراء</button>
+        </div>
+
+        <div class="product-tabs-content">
+            <div class="product-tab-pane active" id="tab-details">
+                <ul class="product-detail-list" id="product-detail-list">
+                    <li><span>الحالة</span><strong>سيتم تحديدها قريبًا</strong></li>
+                </ul>
+            </div>
+
+            <div class="product-tab-pane" id="tab-reviews">
+                <div class="empty-state">
+                    <p>لا توجد مراجعات بعد. كن أول من يشارك رأيه في هذا الكتاب!</p>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 

@@ -654,6 +654,53 @@ renderCart();
 updateCartBadge();
 
 /* =========================================
+   تفعيل التبويبات في صفحة المنتج (تفاصيل الطبعة / آراء القراء)
+   ========================================= */
+function initProductTabs() {
+    const tabBtns = document.querySelectorAll('.product-tab-btn');
+    if (!tabBtns.length) return;
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.tab;
+
+            document.querySelectorAll('.product-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.product-tab-pane').forEach(p => p.classList.remove('active'));
+
+            btn.classList.add('active');
+            const pane = document.getElementById(`tab-${target}`);
+            if (pane) pane.classList.add('active');
+        });
+    });
+}
+initProductTabs();
+
+/* =========================================
+   خاصية "اقرأ المزيد" لوصف المنتج (بتظهر بس لو النص فعلاً طويل)
+   ========================================= */
+function initProductReadMore() {
+    const wrapper = document.getElementById('product-desc-wrapper');
+    const descEl = document.getElementById('product-desc');
+    const btn = document.getElementById('readMoreBtn');
+    if (!wrapper || !descEl || !btn) return;
+
+    // بنستنى شوية عشان الوصف يتحط فعليًا من الـ API قبل ما نقيس ارتفاعه
+    const checkOverflow = () => {
+        const isOverflowing = descEl.scrollHeight > descEl.clientHeight + 2;
+        btn.hidden = !isOverflowing;
+    };
+
+    btn.addEventListener('click', () => {
+        wrapper.classList.toggle('expanded');
+        btn.innerText = wrapper.classList.contains('expanded') ? 'اقرأ أقل' : 'اقرأ المزيد';
+    });
+
+    setTimeout(checkOverflow, 600);
+    window.addEventListener('resize', checkOverflow);
+}
+initProductReadMore();
+
+/* =========================================
    نظام الحجز والتقويم (محدث بحجز المواعيد)
    ========================================= */
 

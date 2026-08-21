@@ -1178,8 +1178,8 @@ body {
 .card-img {
     /* تمركز مضمون 100% جوه الـ wrapper (مش معتمد على flex) عشان الصورة متطلعش عالية ولا واطية */
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: 55%;
+    left: 45%;
     transform: translate(-50%, -50%);
     width: auto;
     height: auto;
@@ -2049,6 +2049,293 @@ ul.social-row {
 
     .purchase-actions {
         flex-wrap: wrap;
+    }
+}
+
+/* =========================================
+   إضافات تصميم صفحة المنتج الجديدة (Redesign 2.0)
+   توهج خلف الغلاف + تكبير الصورة + خط "اقرأ المزيد" +
+   قسم معاينة الكتاب (Flipbook Placeholder) + التبويبات
+   ========================================= */
+
+/* توهج ذهبي ناعم خلف صورة الغلاف عشان تبقى هي بطلة القسم */
+.product-gallery-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(216, 176, 86, 0.22) 0%, rgba(216, 176, 86, 0) 65%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.product-gallery {
+    min-height: 420px;
+}
+
+.product-gallery img {
+    max-height: 480px;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.4s ease, filter 0.4s ease;
+}
+
+.product-gallery:hover img {
+    transform: translateY(-4px) scale(1.02);
+    filter: drop-shadow(0 20px 30px rgba(0,0,0,0.7));
+}
+
+/* خاصية "اقرأ المزيد" للوصف عشان يستحمل كلام قليل أو كتير براحة */
+.product-description {
+    position: relative;
+}
+
+.product-description p {
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: -webkit-line-clamp 0.2s ease;
+}
+
+.product-description.expanded p {
+    -webkit-line-clamp: unset;
+    overflow: visible;
+}
+
+.read-more-toggle {
+    background: none;
+    border: none;
+    color: var(--gold-color);
+    font-family: var(--font-main);
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 6px 0 0;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.read-more-toggle:hover {
+    color: #fff;
+}
+
+/* =========================================
+   قسم معاينة الكتاب (Flipbook Placeholder)
+   ========================================= */
+.book-preview-section {
+    padding: 20px 5% 90px;
+    background-color: var(--bg-dark);
+    text-align: center;
+}
+
+.book-preview-section .container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.book-flip-mock {
+    position: relative;
+    margin: 40px auto 0;
+    width: min(100%, 560px);
+    aspect-ratio: 16 / 10;
+    perspective: 1400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.book-flip-mock-cover {
+    position: relative;
+    width: 55%;
+    height: 85%;
+    border-radius: 4px 8px 8px 4px;
+    box-shadow: 0 25px 45px rgba(0,0,0,0.65);
+    transform: rotateY(-18deg);
+    transform-style: preserve-3d;
+    transition: transform 0.5s ease;
+    z-index: 2;
+    overflow: hidden;
+    background: #111;
+}
+
+.book-flip-mock-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.book-flip-mock:hover .book-flip-mock-cover {
+    transform: rotateY(-30deg);
+}
+
+.book-flip-mock-page {
+    position: absolute;
+    top: 8%;
+    height: 84%;
+    width: 42%;
+    background: linear-gradient(120deg, #f4f0e6, #e7e0cf);
+    border-radius: 2px 6px 6px 2px;
+    box-shadow: inset -6px 0 12px rgba(0,0,0,0.15), 0 15px 25px rgba(0,0,0,0.5);
+}
+
+.book-flip-mock-page.page-1 {
+    right: 50%;
+    transform-origin: right center;
+    transform: rotateY(8deg);
+    z-index: 1;
+}
+
+.book-flip-mock-page.page-2 {
+    right: calc(50% - 4%);
+    transform-origin: right center;
+    transform: rotateY(20deg);
+    z-index: 0;
+    opacity: 0.7;
+}
+
+.coming-soon-badge {
+    position: absolute;
+    bottom: 6px;
+    right: 50%;
+    transform: translateX(50%);
+    background: var(--gold-color);
+    color: #111;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+    z-index: 3;
+}
+
+/* =========================================
+   قسم التبويبات (تفاصيل الطبعة / آراء القراء)
+   ========================================= */
+.product-tabs-section {
+    padding: 0 5% 100px;
+    background-color: var(--bg-dark);
+}
+
+.product-tabs-section .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(216, 176, 86, 0.15);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.product-tabs-nav {
+    display: flex;
+    gap: 4px;
+    padding: 10px 10px 0;
+    border-bottom: 1px solid rgba(216, 176, 86, 0.15);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.product-tabs-nav::-webkit-scrollbar {
+    display: none;
+}
+
+.product-tab-btn {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    color: var(--text-gray);
+    font-family: var(--font-main);
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 14px 22px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.product-tab-btn:hover {
+    color: var(--gold-color);
+}
+
+.product-tab-btn.active {
+    color: var(--gold-color);
+    border-bottom: 2px solid var(--gold-color);
+}
+
+.product-tabs-content {
+    padding: 30px 35px 40px;
+}
+
+.product-tab-pane {
+    display: none;
+    animation: productTabFade 0.35s ease;
+}
+
+.product-tab-pane.active {
+    display: block;
+}
+
+@keyframes productTabFade {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.product-detail-list {
+    list-style: none;
+}
+
+.product-detail-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 12px 0;
+    border-bottom: 1px dashed rgba(216, 176, 86, 0.15);
+    color: var(--text-gray);
+    font-size: var(--text-base);
+}
+
+.product-detail-list li:last-child {
+    border-bottom: none;
+}
+
+.product-detail-list li span {
+    color: #fff;
+    font-weight: 600;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--text-gray);
+    padding: 30px 10px;
+    font-size: var(--text-base);
+}
+
+/* ريسبونسف قسم المعاينة والتبويبات على الموبايل */
+@media (max-width: 850px) {
+    .product-gallery {
+        min-height: 260px;
+    }
+
+    .book-flip-mock {
+        margin-top: 25px;
+        aspect-ratio: 4 / 3;
+    }
+
+    .book-flip-mock-cover {
+        width: 60%;
+    }
+
+    .book-flip-mock-page {
+        width: 46%;
+    }
+
+    .product-tabs-content {
+        padding: 22px 18px 30px;
+    }
+
+    .product-tab-btn {
+        padding: 12px 16px;
+        font-size: 0.88rem;
     }
 }
 
