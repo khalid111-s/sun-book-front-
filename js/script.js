@@ -744,7 +744,7 @@ function initProductReadMore() {
 
     btn.addEventListener('click', () => {
         wrapper.classList.toggle('expanded');
-        btn.innerText = wrapper.classList.contains('expanded') ? 'اقرأ أقل' : 'اقرأ المزيد';
+        btn.innerText = wrapper.classList.contains('expanded') ? 'Read Less' : 'Read More';
     });
 
     setTimeout(checkOverflow, 600);
