@@ -1922,7 +1922,7 @@ ul.social-row {
     gap: 50px;
     max-width: 1100px;
     margin: 0 auto;
-    align-items: center; /* بيخلي الصورة والكلام متسنترين قصاد بعض */
+    align-items: flex-start; /* عشان الصورة تقدر تبقى ثابتة وهي بتاخد سكرول */
 }
 
 /* =========================================
@@ -2025,11 +2025,11 @@ ul.social-row {
         flex: none;
         width: 100%;
         padding: 20px;
-        position: static;
+        position: static; /* نلغي الالتصاق (sticky) في الموبايل */
     }
 
     .product-gallery img {
-        max-height: 200px;
+        max-height: 300px; /* تكبير الصورة في الموبايل بدل ما كانت صغيرة (200px) */
         margin: 0 auto;
         display: block;
     }
@@ -2050,6 +2050,18 @@ ul.social-row {
     .purchase-actions {
         flex-wrap: wrap;
     }
+
+    /* مسافة إضافية تحت عشان شريط الشراء الثابت ميغطيش آخر حاجة في الصفحة */
+    .single-product-section {
+        padding-bottom: 100px;
+    }
+}
+
+/* إظهار شريط الشراء الثابت في الموبايل بس */
+@media (max-width: 850px) {
+    .mobile-buy-bar:not([hidden]) {
+        display: flex;
+    }
 }
 
 /* =========================================
@@ -2069,6 +2081,8 @@ ul.social-row {
 
 .product-gallery {
     min-height: 420px;
+    position: sticky; /* الصورة تفضل ثابتة وهي بتاخد سكرول للتفاصيل جنبها (ديسكتوب بس) */
+    top: 100px;
 }
 
 .product-gallery img {
@@ -2119,94 +2133,186 @@ ul.social-row {
 }
 
 /* =========================================
-   قسم معاينة الكتاب (Flipbook Placeholder)
+   بريدكرمب صفحة المنتج
    ========================================= */
-.book-preview-section {
-    padding: 20px 5% 90px;
+.product-breadcrumb {
+    padding: 18px 5% 0;
     background-color: var(--bg-dark);
-    text-align: center;
 }
 
-.book-preview-section .container {
+.product-breadcrumb .container {
     max-width: 1100px;
     margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
 }
 
-.book-flip-mock {
-    position: relative;
-    margin: 40px auto 0;
-    width: min(100%, 560px);
-    aspect-ratio: 16 / 10;
-    perspective: 1400px;
+.product-breadcrumb a {
+    color: var(--text-gray);
+    text-decoration: none;
+}
+
+.product-breadcrumb a:hover {
+    color: var(--gold-color);
+}
+
+.product-breadcrumb .breadcrumb-sep {
+    color: var(--text-gray);
+    opacity: 0.5;
+}
+
+.product-breadcrumb .breadcrumb-current {
+    color: var(--gold-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+}
+
+/* =========================================
+   زرار معاينة الغلاف (فوق صورة الكتاب)
+   ========================================= */
+.gallery-preview-btn {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    z-index: 2;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(3, 4, 6, 0.75);
+    border: 1px solid rgba(216, 176, 86, 0.4);
+    color: var(--gold-color);
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: 0.25s ease;
 }
 
-.book-flip-mock-cover {
-    position: relative;
-    width: 55%;
-    height: 85%;
-    border-radius: 4px 8px 8px 4px;
-    box-shadow: 0 25px 45px rgba(0,0,0,0.65);
-    transform: rotateY(-18deg);
-    transform-style: preserve-3d;
-    transition: transform 0.5s ease;
-    z-index: 2;
-    overflow: hidden;
-    background: #111;
-}
-
-.book-flip-mock-cover img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.book-flip-mock:hover .book-flip-mock-cover {
-    transform: rotateY(-30deg);
-}
-
-.book-flip-mock-page {
-    position: absolute;
-    top: 8%;
-    height: 84%;
-    width: 42%;
-    background: linear-gradient(120deg, #f4f0e6, #e7e0cf);
-    border-radius: 2px 6px 6px 2px;
-    box-shadow: inset -6px 0 12px rgba(0,0,0,0.15), 0 15px 25px rgba(0,0,0,0.5);
-}
-
-.book-flip-mock-page.page-1 {
-    right: 50%;
-    transform-origin: right center;
-    transform: rotateY(8deg);
-    z-index: 1;
-}
-
-.book-flip-mock-page.page-2 {
-    right: calc(50% - 4%);
-    transform-origin: right center;
-    transform: rotateY(20deg);
-    z-index: 0;
-    opacity: 0.7;
-}
-
-.coming-soon-badge {
-    position: absolute;
-    bottom: 6px;
-    right: 50%;
-    transform: translateX(50%);
+.gallery-preview-btn:hover {
     background: var(--gold-color);
     color: #111;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 5px 14px;
-    border-radius: 20px;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.4);
-    z-index: 3;
+    transform: scale(1.06);
+}
+
+/* =========================================
+   لايت بوكس معاينة الغلاف
+   ========================================= */
+.book-preview-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.book-preview-lightbox[hidden] {
+    display: none;
+}
+
+.lightbox-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(3, 4, 6, 0.88);
+}
+
+.lightbox-content {
+    position: relative;
+    z-index: 1;
+    max-width: 520px;
+    width: 100%;
+    background: #0a0b0d;
+    border: 1px solid rgba(216, 176, 86, 0.25);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+}
+
+.lightbox-preview-body img {
+    max-width: 100%;
+    max-height: 60vh;
+    object-fit: contain;
+    filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6));
+}
+
+.lightbox-caption {
+    margin-top: 16px;
+    color: var(--text-gray);
+    font-size: 0.9rem;
+}
+
+.lightbox-close-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid rgba(216, 176, 86, 0.3);
+    color: var(--gold-color);
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.25s ease;
+}
+
+.lightbox-close-btn:hover {
+    background: var(--gold-color);
+    color: #111;
+}
+
+/* =========================================
+   شريط الشراء الثابت للموبايل
+   ========================================= */
+.mobile-buy-bar {
+    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 500;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+    background: #0a0b0d;
+    border-top: 1px solid rgba(216, 176, 86, 0.25);
+}
+
+.mobile-buy-bar[hidden] {
+    display: none;
+}
+
+.mobile-buy-bar-price {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.mobile-buy-bar-label {
+    color: var(--text-gray);
+    font-size: 0.7rem;
+}
+
+.mobile-buy-bar-value {
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.mobile-buy-bar-btn {
+    flex-shrink: 0;
+    height: 44px;
+    padding: 0 26px;
 }
 
 /* =========================================
@@ -2316,17 +2422,8 @@ ul.social-row {
         min-height: 260px;
     }
 
-    .book-flip-mock {
-        margin-top: 25px;
-        aspect-ratio: 4 / 3;
-    }
-
-    .book-flip-mock-cover {
-        width: 60%;
-    }
-
-    .book-flip-mock-page {
-        width: 46%;
+    .lightbox-content {
+        padding: 20px;
     }
 
     .product-tabs-content {

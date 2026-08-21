@@ -149,6 +149,20 @@ async function loadSingleProductPage() {
         if (priceEl) priceEl.innerText = normalized.price;
         if (descEl) descEl.innerText = normalized.description;
 
+        // بريدكرمب: نحط اسم الكتاب بدل النص الافتراضي
+        const breadcrumbTitleEl = document.getElementById('breadcrumb-title');
+        if (breadcrumbTitleEl) breadcrumbTitleEl.innerText = normalized.title;
+
+        // معاينة الغلاف (لايت بوكس): نحدث الصورة اللي هتتفتح
+        const lightboxImgEl = document.getElementById('lightbox-img');
+        if (lightboxImgEl) lightboxImgEl.src = normalized.image;
+
+        // مزامنة شريط الشراء الثابت (موبايل) مع السعر
+        const mobileBuyBarPriceEl = document.getElementById('mobileBuyBarPrice');
+        if (mobileBuyBarPriceEl) mobileBuyBarPriceEl.innerText = normalized.price;
+        const mobileBuyBarEl = document.getElementById('mobileBuyBar');
+        if (mobileBuyBarEl) mobileBuyBarEl.hidden = false;
+
         const badgesEl = document.getElementById('product-badges');
         if (badgesEl) {
             badgesEl.innerHTML = (normalized.badges || [])
@@ -178,12 +192,19 @@ async function loadSingleProductPage() {
         }
 
         const addToCartLargeEl = document.querySelector('.add-to-cart-large');
+        const mobileBuyBarBtnEl = document.getElementById('mobileBuyBarBtn');
         if (addToCartLargeEl) {
             if (normalized.available === false) {
                 addToCartLargeEl.disabled = true;
                 addToCartLargeEl.innerText = 'Out of Stock';
                 addToCartLargeEl.style.opacity = '0.5';
                 addToCartLargeEl.style.cursor = 'not-allowed';
+                if (mobileBuyBarBtnEl) {
+                    mobileBuyBarBtnEl.disabled = true;
+                    mobileBuyBarBtnEl.innerText = 'Out of Stock';
+                    mobileBuyBarBtnEl.style.opacity = '0.5';
+                    mobileBuyBarBtnEl.style.cursor = 'not-allowed';
+                }
             } else {
                 addToCartLargeEl.disabled = false;
             }
@@ -645,6 +666,43 @@ if (addToCartLargeBtn && typeof productId !== 'undefined' && productId) {
         }
     });
 }
+
+// زرار "Add to Cart" في شريط الشراء الثابت (موبايل) - بيستخدم نفس منطق الزرار الكبير
+const mobileBuyBarBtn = document.getElementById('mobileBuyBarBtn');
+if (mobileBuyBarBtn && addToCartLargeBtn) {
+    mobileBuyBarBtn.addEventListener('click', () => {
+        if (addToCartLargeBtn.disabled) return;
+        addToCartLargeBtn.click();
+    });
+}
+
+/* =========================================
+   معاينة الغلاف (Lightbox) - بتتفتح لما تدوس على أيقونة العين فوق الصورة
+   ========================================= */
+function initGalleryPreviewLightbox() {
+    const previewBtn = document.getElementById('galleryPreviewBtn');
+    const lightbox = document.getElementById('bookPreviewLightbox');
+    const closeBtn = document.getElementById('lightboxCloseBtn');
+    const backdrop = document.getElementById('lightboxBackdrop');
+    if (!previewBtn || !lightbox) return;
+
+    const openLightbox = () => {
+        lightbox.hidden = false;
+        document.body.style.overflow = 'hidden';
+    };
+    const closeLightbox = () => {
+        lightbox.hidden = true;
+        document.body.style.overflow = '';
+    };
+
+    previewBtn.addEventListener('click', openLightbox);
+    if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
+    if (backdrop) backdrop.addEventListener('click', closeLightbox);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !lightbox.hidden) closeLightbox();
+    });
+}
+initGalleryPreviewLightbox();
 
 // ملحوظة: زراير "Add to Cart" في الصفحة الرئيسية (Best Offers / All Products)
 // بقت بتتربط تلقائيًا في bindAddToCartDelegation() جوه loadHomepageProducts()
