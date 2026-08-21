@@ -22,7 +22,7 @@
             <img id="main-product-img" src="assets/sun-icon.png" alt="Book Cover">
 
             <!-- زرار معاينة صورة الغلاف بحجم أكبر - جاهز لاحقًا لعرض صفحات الكتاب الحقيقية -->
-            <button type="button" class="gallery-preview-btn" id="galleryPreviewBtn" aria-label="معاينة الكتاب">
+            <button type="button" class="gallery-preview-btn" id="galleryPreviewBtn" aria-label="Preview book">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
                     <circle cx="12" cy="12" r="3"/>
@@ -33,7 +33,7 @@
         <!-- التفاصيل على اليمين -->
         <div class="product-info-details">
             <!-- شريط "متاح في مصر فقط" - بيظهر هنا بدل ما يبقى فوق صورة الغلاف -->
-            <div class="product-egypt-banner" id="productEgyptBanner" hidden>متاح في مصر فقط</div>
+            <div class="product-egypt-banner" id="productEgyptBanner" hidden>Egypt Only</div>
 
             <h1 id="product-title" class="product-title-large">جاري التحميل...</h1>
 
@@ -68,11 +68,11 @@
 <div class="book-preview-lightbox" id="bookPreviewLightbox" hidden>
     <div class="lightbox-backdrop" id="lightboxBackdrop"></div>
     <div class="lightbox-content">
-        <button type="button" class="lightbox-close-btn" id="lightboxCloseBtn" aria-label="إغلاق المعاينة">&times;</button>
+        <button type="button" class="lightbox-close-btn" id="lightboxCloseBtn" aria-label="Close preview">&times;</button>
         <div class="lightbox-preview-body">
-            <img id="lightbox-img" src="assets/sun-icon.png" alt="معاينة الكتاب">
+            <img id="lightbox-img" src="assets/sun-icon.png" alt="Book preview">
         </div>
-        <p class="lightbox-caption">معاينة صفحات الكتاب بالكامل — قريبًا</p>
+        <p class="lightbox-caption">Full page preview — coming soon</p>
     </div>
 </div>
 
@@ -94,8 +94,41 @@
             </div>
 
             <div class="product-tab-pane" id="tab-reviews">
-                <div class="empty-state">
-                    <p>لا توجد مراجعات بعد. كن أول من يشارك رأيه في هذا الكتاب!</p>
+                <!-- ملخص التقييم (متوسط النجوم + عدد المراجعات) -->
+                <div class="reviews-summary" id="reviewsSummary" hidden>
+                    <span class="reviews-summary-score" id="reviewsAverageScore">0.0</span>
+                    <span class="reviews-summary-stars" id="reviewsAverageStars"></span>
+                    <span class="reviews-summary-count" id="reviewsCount">0 reviews</span>
+                </div>
+
+                <!-- فورم إضافة/تعديل مراجعة - يظهر بس لو المستخدم مسجل دخول -->
+                <form class="review-form" id="reviewForm" hidden>
+                    <p class="review-form-label">Your rating</p>
+                    <div class="star-input" id="starInput">
+                        <button type="button" class="star-btn" data-value="1" aria-label="1 star">★</button>
+                        <button type="button" class="star-btn" data-value="2" aria-label="2 stars">★</button>
+                        <button type="button" class="star-btn" data-value="3" aria-label="3 stars">★</button>
+                        <button type="button" class="star-btn" data-value="4" aria-label="4 stars">★</button>
+                        <button type="button" class="star-btn" data-value="5" aria-label="5 stars">★</button>
+                    </div>
+                    <textarea class="review-textarea" id="reviewCommentInput" rows="3" maxlength="1000" placeholder="Share your thoughts about this book..."></textarea>
+                    <div class="review-form-actions">
+                        <button type="submit" class="btn-shop" id="reviewSubmitBtn">Submit Review</button>
+                        <button type="button" class="review-delete-btn" id="reviewDeleteBtn" hidden>Delete my review</button>
+                    </div>
+                </form>
+
+                <!-- بروبمت لو مش مسجل دخول -->
+                <div class="review-login-prompt" id="reviewLoginPrompt" hidden>
+                    <p>Sign in to leave a rating and share your opinion about this book.</p>
+                    <a href="login.html" class="btn-shop" id="reviewLoginLink">Sign In</a>
+                </div>
+
+                <!-- قايمة المراجعات -->
+                <div class="reviews-list" id="reviewsList">
+                    <div class="empty-state" id="reviewsEmptyState">
+                        <p>No reviews yet. Be the first to share your opinion about this book!</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -128,7 +161,7 @@
 <!-- شريط الشراء الثابت تحت - يظهر بس في الموبايل عشان السعر وزرار الشراء يفضلوا في الشاشة طول الوقت -->
 <div class="mobile-buy-bar" id="mobileBuyBar" hidden>
     <div class="mobile-buy-bar-price">
-        <span class="mobile-buy-bar-label">السعر</span>
+        <span class="mobile-buy-bar-label">Price</span>
         <span class="mobile-buy-bar-value" id="mobileBuyBarPrice">LE 0.00</span>
     </div>
     <button type="button" class="btn-shop mobile-buy-bar-btn" id="mobileBuyBarBtn">Add to Cart</button>

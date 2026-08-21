@@ -297,4 +297,16 @@ const api = {
       method: 'POST',
       body: JSON.stringify({ code }),
     }),
+
+  // ---- Reviews (تقييم + تعليق على كتاب معين) ----
+  getProductReviews: (productId) => api.request(`/reviews/${productId}`),
+
+  submitReview: (productId, rating, comment) =>
+    api.request(`/reviews/${productId}`, {
+      method: 'POST',
+      body: JSON.stringify({ rating, comment }),
+    }),
+
+  deleteReview: (reviewId) =>
+    api.request(`/reviews/${reviewId}`, { method: 'DELETE' }),
 };

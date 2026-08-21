@@ -336,6 +336,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadHomepageProducts();
     await loadSingleProductPage();
     await ensureProductsLoaded();
+    if (typeof productId !== 'undefined' && productId) {
+        loadProductReviews();
+    }
 });
 
 // =========================================
@@ -748,6 +751,173 @@ function initProductReadMore() {
     window.addEventListener('resize', checkOverflow);
 }
 initProductReadMore();
+
+/* =========================================
+   المراجعات (تقييم بالنجوم + تعليق) - صفحة المنتج
+   ========================================= */
+let selectedReviewRating = 0;
+
+function renderStars(container, value) {
+    container.querySelectorAll('.star-btn').forEach((btn) => {
+        const starVal = parseInt(btn.dataset.value, 10);
+        btn.classList.toggle('filled', starVal <= value);
+    });
+}
+
+function starsToText(rating) {
+    const rounded = Math.round(rating);
+    return '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+}
+
+function initReviewStarInput() {
+    const starInput = document.getElementById('starInput');
+    if (!starInput) return;
+
+    starInput.querySelectorAll('.star-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            selectedReviewRating = parseInt(btn.dataset.value, 10);
+            renderStars(starInput, selectedReviewRating);
+        });
+    });
+}
+
+function renderReviewsList(reviews) {
+    const listEl = document.getElementById('reviewsList');
+    if (!listEl) return;
+
+    if (!reviews.length) {
+        listEl.innerHTML = '<div class="empty-state" id="reviewsEmptyState"><p>No reviews yet. Be the first to share your opinion about this book!</p></div>';
+        return;
+    }
+
+    listEl.innerHTML = reviews.map((r) => `
+        <div class="review-item">
+            <div class="review-item-header">
+                <span class="review-item-name">${r.userName}</span>
+                <span class="review-item-date">${new Date(r.createdAt).toLocaleDateString()}</span>
+            </div>
+            <div class="review-item-stars">${starsToText(r.rating)}</div>
+            <p class="review-item-comment">${r.comment}</p>
+        </div>
+    `).join('');
+}
+
+function renderReviewsSummary(count, averageRating) {
+    const summaryEl = document.getElementById('reviewsSummary');
+    const scoreEl = document.getElementById('reviewsAverageScore');
+    const starsEl = document.getElementById('reviewsAverageStars');
+    const countEl = document.getElementById('reviewsCount');
+    if (!summaryEl) return;
+
+    if (count === 0) {
+        summaryEl.hidden = true;
+        return;
+    }
+
+    summaryEl.hidden = false;
+    if (scoreEl) scoreEl.innerText = averageRating.toFixed(1);
+    if (starsEl) starsEl.innerText = starsToText(averageRating);
+    if (countEl) countEl.innerText = `${count} review${count === 1 ? '' : 's'}`;
+}
+
+async function loadProductReviews() {
+    const token = localStorage.getItem('sunbook_token');
+    const userId = localStorage.getItem('sunbook_user_id');
+    const isLoggedIn = !!(token && userId);
+
+    const formEl = document.getElementById('reviewForm');
+    const loginPromptEl = document.getElementById('reviewLoginPrompt');
+    const loginLinkEl = document.getElementById('reviewLoginLink');
+    const deleteBtn = document.getElementById('reviewDeleteBtn');
+    const commentInput = document.getElementById('reviewCommentInput');
+    const starInput = document.getElementById('starInput');
+
+    if (loginLinkEl) {
+        loginLinkEl.addEventListener('click', () => {
+            localStorage.setItem('sunbook_redirect_after_login', window.location.href);
+        });
+    }
+
+    if (isLoggedIn) {
+        if (formEl) formEl.hidden = false;
+        if (loginPromptEl) loginPromptEl.hidden = true;
+    } else {
+        if (formEl) formEl.hidden = true;
+        if (loginPromptEl) loginPromptEl.hidden = false;
+    }
+
+    try {
+        const { data: reviews, count, averageRating } = await api.getProductReviews(productId);
+        renderReviewsList(reviews);
+        renderReviewsSummary(count, averageRating);
+
+        // لو اليوزر مسجل دخول وعنده مراجعة قديمة، نحمّلها في الفورم عشان يقدر يعدلها
+        if (isLoggedIn) {
+            const myReview = reviews.find((r) => r.user === userId);
+            if (myReview) {
+                selectedReviewRating = myReview.rating;
+                if (starInput) renderStars(starInput, selectedReviewRating);
+                if (commentInput) commentInput.value = myReview.comment;
+                if (deleteBtn) deleteBtn.hidden = false;
+                if (deleteBtn) deleteBtn.dataset.reviewId = myReview._id;
+            }
+        }
+    } catch (err) {
+        console.error('Failed to load reviews:', err);
+    }
+}
+
+function initProductReviewForm() {
+    const formEl = document.getElementById('reviewForm');
+    const deleteBtn = document.getElementById('reviewDeleteBtn');
+    if (!formEl) return;
+
+    formEl.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const commentInput = document.getElementById('reviewCommentInput');
+        const comment = commentInput ? commentInput.value.trim() : '';
+
+        if (!selectedReviewRating) {
+            if (typeof showToast === 'function') showToast('Please select a star rating first', 'error');
+            return;
+        }
+        if (!comment) {
+            if (typeof showToast === 'function') showToast('Please write a short comment', 'error');
+            return;
+        }
+
+        try {
+            await api.submitReview(productId, selectedReviewRating, comment);
+            if (typeof showToast === 'function') showToast('Thanks for your review!');
+            loadProductReviews();
+        } catch (err) {
+            if (typeof showToast === 'function') showToast(err.message || 'Could not submit review', 'error');
+        }
+    });
+
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', async () => {
+            const reviewId = deleteBtn.dataset.reviewId;
+            if (!reviewId) return;
+            try {
+                await api.deleteReview(reviewId);
+                selectedReviewRating = 0;
+                const commentInput = document.getElementById('reviewCommentInput');
+                if (commentInput) commentInput.value = '';
+                const starInput = document.getElementById('starInput');
+                if (starInput) renderStars(starInput, 0);
+                deleteBtn.hidden = true;
+                if (typeof showToast === 'function') showToast('Review deleted');
+                loadProductReviews();
+            } catch (err) {
+                if (typeof showToast === 'function') showToast(err.message || 'Could not delete review', 'error');
+            }
+        });
+    }
+}
+
+initReviewStarInput();
+initProductReviewForm();
 
 /* =========================================
    نظام الحجز والتقويم (محدث بحجز المواعيد)

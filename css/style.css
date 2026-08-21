@@ -2398,6 +2398,191 @@ ul.social-row {
     font-size: var(--text-base);
 }
 
+/* =========================================
+   قسم المراجعات (تقييم بالنجوم + تعليق)
+   ========================================= */
+.reviews-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(216, 176, 86, 0.15);
+}
+
+.reviews-summary[hidden] {
+    display: none;
+}
+
+.reviews-summary-score {
+    color: #fff;
+    font-size: 1.6rem;
+    font-weight: bold;
+}
+
+.reviews-summary-stars {
+    color: var(--gold-color);
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+}
+
+.reviews-summary-count {
+    color: var(--text-gray);
+    font-size: 0.85rem;
+}
+
+.review-form {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(216, 176, 86, 0.15);
+    border-radius: 10px;
+}
+
+.review-form[hidden],
+.review-login-prompt[hidden] {
+    display: none;
+}
+
+.review-form-label {
+    color: var(--text-gray);
+    font-size: 0.85rem;
+    margin: 0 0 8px;
+}
+
+.star-input {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 14px;
+}
+
+.star-btn {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    line-height: 1;
+    color: rgba(216, 176, 86, 0.3);
+    cursor: pointer;
+    padding: 2px;
+    transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.star-btn:hover {
+    transform: scale(1.1);
+}
+
+.star-btn.filled {
+    color: var(--gold-color);
+}
+
+.review-textarea {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(216, 176, 86, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 12px;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.review-textarea:focus {
+    outline: none;
+    border-color: var(--gold-color);
+}
+
+.review-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 14px;
+}
+
+.review-form-actions .btn-shop {
+    padding: 10px 26px;
+}
+
+.review-delete-btn {
+    background: none;
+    border: none;
+    color: #e07a5f;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.review-delete-btn[hidden] {
+    display: none;
+}
+
+.review-login-prompt {
+    text-align: center;
+    padding: 24px;
+    margin-bottom: 30px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(216, 176, 86, 0.15);
+    border-radius: 10px;
+}
+
+.review-login-prompt p {
+    color: var(--text-gray);
+    margin-bottom: 14px;
+}
+
+.review-login-prompt .btn-shop {
+    display: inline-flex;
+    padding: 10px 26px;
+    text-decoration: none;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.review-item {
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+.review-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.review-item-name {
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.review-item-date {
+    color: var(--text-gray);
+    font-size: 0.75rem;
+}
+
+.review-item-stars {
+    color: var(--gold-color);
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.review-item-comment {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
 /* ريسبونسف قسم المعاينة والتبويبات على الموبايل */
 @media (max-width: 850px) {
     .product-gallery {
