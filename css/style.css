@@ -1173,7 +1173,7 @@ body {
 
 .related-products-track .product-card {
     flex: 0 0 auto;
-    width: 240px;
+    width: 340px;
     scroll-snap-align: start;
 }
 
@@ -1207,7 +1207,7 @@ body {
 
 @media (max-width: 768px) {
     .related-products-track .product-card {
-        width: 200px;
+        width: 220px;
     }
     .related-carousel-arrow {
         width: 36px;
