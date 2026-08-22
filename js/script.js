@@ -291,6 +291,8 @@ function bindAddToCartDelegation(container) {
 }
 
 // كود الصفحة الرئيسية (index.html): بيرندر Best Offers و All Products من الـ API
+let allProductsFetched = false; // بيتحول true بس لما نجيب الكتالوج الكامل من /api/products (مش منتج واحد)
+
 async function loadHomepageProducts() {
     const bestOffersGrid = document.getElementById('best-offers-grid');
     const allProductsGrid = document.getElementById('all-products-grid');
@@ -302,6 +304,7 @@ async function loadHomepageProducts() {
     try {
         const { data } = await api.getProducts();
         productsData = data.map(normalizeProduct);
+        allProductsFetched = true;
 
         const featured = productsData.filter(p => p.featured);
         if (bestOffersGrid) {
@@ -343,11 +346,14 @@ function loadRelatedProducts() {
 }
 
 // كل الصفحات (بما فيها product.html) محتاجة تعرف قائمة المنتجات كاملة عشان السيرش شغال
+// وعشان قسم "كتب تانية ممكن تعجبك" في صفحة المنتج. بنعتمد على allProductsFetched مش على طول
+// productsData، لأن loadSingleProductPage() بيكون حط فيها المنتج الحالي بس قبل ما نوصل هنا.
 async function ensureProductsLoaded() {
-    if (productsData.length) return;
+    if (allProductsFetched) return;
     try {
         const { data } = await api.getProducts();
         productsData = data.map(normalizeProduct);
+        allProductsFetched = true;
     } catch (err) {
         console.error('Failed to preload products for search:', err);
     }
