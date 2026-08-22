@@ -320,6 +320,28 @@ async function loadHomepageProducts() {
     }
 }
 
+// قسم "كتب تانية ممكن تعجبك" في صفحة المنتج: بيعرض منتجات تانية غير المنتج الحالي
+// عشان الزائر يكمّل يتصفح بدل ما يقفل الصفحة بعد ما يشوف كتاب مش عاجبه أو خلص قراءته
+function loadRelatedProducts() {
+    const section = document.getElementById('relatedProductsSection');
+    const grid = document.getElementById('related-products-grid');
+    if (!section || !grid || !productId) return;
+
+    const candidates = productsData.filter(p => String(p.id) !== String(productId));
+    if (!candidates.length) {
+        section.hidden = true;
+        return;
+    }
+
+    // بنخلط الترتيب عشان الاقتراحات تتنوع بين زيارة وزيارة بدل ما تفضل ثابتة
+    const shuffled = [...candidates].sort(() => Math.random() - 0.5);
+    const picks = shuffled.slice(0, 4);
+
+    grid.innerHTML = picks.map(productCardHTML).join('');
+    bindAddToCartDelegation(grid);
+    section.hidden = false;
+}
+
 // كل الصفحات (بما فيها product.html) محتاجة تعرف قائمة المنتجات كاملة عشان السيرش شغال
 async function ensureProductsLoaded() {
     if (productsData.length) return;
@@ -338,6 +360,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await ensureProductsLoaded();
     if (typeof productId !== 'undefined' && productId) {
         loadProductReviews();
+        loadRelatedProducts();
     }
 });
 
@@ -405,14 +428,15 @@ function renderCartItemsNow() {
     if (cartItems.length === 0) {
         if (summaryBox) summaryBox.style.display = 'none';
         container.innerHTML = `
-            <div style="width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 40vh; text-align: center;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold-color)" stroke-width="2" style="width: 60px; height: 60px; margin-bottom: 20px;">
+            <div class="cart-empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold-color)" stroke-width="2" class="cart-empty-icon">
                     <circle cx="9" cy="21" r="1"></circle>
                     <circle cx="20" cy="21" r="1"></circle>
                     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                 </svg>
-                <p style="color: var(--gold-color); font-size: 1.8rem; font-weight: bold; letter-spacing: 1px; font-family: var(--font-logo);">Your cart is currently empty.</p>
-                <a href="index.html" class="btn-shop" style="margin-top: 25px; padding: 12px 30px; font-size: 1.1rem; text-decoration: none;">Return to Shop</a>
+                <h2 class="cart-empty-title">Your cart is empty</h2>
+                <p class="cart-empty-text">Looks like you haven't added any books yet. Explore our collection of ancient wisdom and find your next great read.</p>
+                <a href="index.html#all-products" class="btn-shop cart-empty-btn">Browse Books</a>
             </div>
         `;
         updateOrderSummary(0);

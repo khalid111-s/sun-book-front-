@@ -94,6 +94,12 @@ const api = {
 
   getMe: () => api.request('/auth/me'),
 
+  // بيمسح الحساب وكل بياناته المرتبطة (طلبات، حجوزات، حصص، مراجعات) نهائيًا من الباك اند
+  deleteAccount: () =>
+    api.request('/auth/delete-account', {
+      method: 'DELETE',
+    }),
+
   updateProfile: (data) =>
     api.request('/auth/update-profile', {
       method: 'PUT',

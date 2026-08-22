@@ -1584,6 +1584,48 @@ body {
     margin-top: 10px;
 }
 
+/* منطقة حذف الحساب - داخل تاب الإعدادات في البروفايل */
+.profile-danger-zone {
+    border: 1px solid rgba(255, 77, 77, 0.35);
+    background: rgba(255, 77, 77, 0.06);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-top: 5px;
+}
+
+.profile-danger-heading {
+    color: #ff8080;
+    font-size: 1rem;
+    margin-bottom: 6px;
+}
+
+.profile-danger-text {
+    color: var(--text-gray);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin-bottom: 14px;
+}
+
+.profile-danger-btn {
+    background: #ff4d4d;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.profile-danger-btn:hover {
+    background: #e63e3e;
+}
+
+.profile-danger-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
 .copyright {
     width: 100%;
     text-align: center;
@@ -2396,6 +2438,47 @@ ul.social-row {
     color: var(--text-gray);
     padding: 30px 10px;
     font-size: var(--text-base);
+}
+
+/* حالة السلة الفاضية (cart.html) */
+.cart-empty-state {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 40vh;
+    text-align: center;
+    padding: 20px;
+}
+
+.cart-empty-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 20px;
+}
+
+.cart-empty-title {
+    color: var(--gold-color);
+    font-size: 1.8rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    font-family: var(--font-logo);
+    margin-bottom: 10px;
+}
+
+.cart-empty-text {
+    color: var(--text-gray);
+    font-size: var(--text-base);
+    max-width: 380px;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.cart-empty-btn {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    text-decoration: none;
 }
 
 /* =========================================

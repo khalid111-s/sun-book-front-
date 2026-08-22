@@ -163,6 +163,15 @@
 <!-- استبدل زرار الحفظ القديم بده -->
 <button type="button" class="btn-shop profile-save-btn" onclick="saveProfileSettings()">Save All Changes</button>                            
                         </form>
+
+                        <hr class="profile-divider">
+
+                        <!-- منطقة حذف الحساب - منفصلة بصريًا وبلون تحذيري عشان توضح إنها إجراء لا رجعة فيه -->
+                        <div class="profile-danger-zone">
+                            <h4 class="profile-danger-heading">Delete Account</h4>
+                            <p class="profile-danger-text">Permanently delete your account and all associated data, including your orders, bookings, and reviews. This action cannot be undone.</p>
+                            <button type="button" class="profile-danger-btn" onclick="openDeleteAccountModal()">Delete My Account</button>
+                        </div>
                     </div>
                 </div>
 
@@ -209,6 +218,23 @@
             <p id="rescheduleMsg" style="font-size: 0.85rem; min-height: 18px; margin-bottom: 12px;"></p>
 
             <button id="confirmRescheduleBtn" class="btn-shop" style="width: 100%;">Confirm New Time</button>
+        </div>
+    </div>
+</div>
+
+<!-- ====== نافذة تأكيد حذف الحساب ====== -->
+<div id="deleteAccountModal" class="booking-modal-overlay">
+    <div class="booking-modal-content" style="max-width: 420px;">
+        <button id="closeDeleteAccountModalBtn" class="close-modal" onclick="closeDeleteAccountModal()">&times;</button>
+        <div style="padding: 30px;">
+            <h3 style="color: #ff8080; margin-bottom: 6px;">⚠ Delete Account</h3>
+            <p style="color: var(--text-gray); font-size: 0.85rem; margin-bottom: 20px;">This will permanently delete your account and all your data. This action cannot be undone. Type <strong style="color:#fff;">DELETE</strong> below to confirm.</p>
+
+            <input type="text" id="deleteAccountConfirmInput" class="auth-input" placeholder="Type DELETE to confirm" style="margin-bottom: 14px;">
+
+            <p id="deleteAccountMsg" style="font-size: 0.85rem; min-height: 18px; margin-bottom: 8px;"></p>
+
+            <button id="confirmDeleteAccountBtn" class="profile-danger-btn" style="width: 100%;" onclick="confirmDeleteAccount()">Permanently Delete My Account</button>
         </div>
     </div>
 </div>
@@ -474,6 +500,57 @@
         localStorage.removeItem('sunbook_token');
         localStorage.removeItem('sunbook_user_id');
         window.location.href = 'index.html';
+    }
+
+    // =========================================
+    // حذف الحساب (Delete Account) - محمي بمودال تأكيد يطلب كتابة "DELETE"
+    // متصل بـ DELETE /api/auth/delete-account في الباك اند: بيمسح الطلبات والحجوزات
+    // والحصص والمراجعات المرتبطة بالحساب، ثم الحساب نفسه.
+    // =========================================
+    function openDeleteAccountModal() {
+        const modal = document.getElementById('deleteAccountModal');
+        const input = document.getElementById('deleteAccountConfirmInput');
+        const msg = document.getElementById('deleteAccountMsg');
+        if (input) input.value = '';
+        if (msg) msg.innerText = '';
+        if (modal) modal.classList.add('active');
+    }
+
+    function closeDeleteAccountModal() {
+        const modal = document.getElementById('deleteAccountModal');
+        if (modal) modal.classList.remove('active');
+    }
+
+    // قفل المودال لو دست بره صندوق المحتوى (نفس سلوك مودال إعادة الجدولة)
+    document.getElementById('deleteAccountModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'deleteAccountModal') e.currentTarget.classList.remove('active');
+    });
+
+    async function confirmDeleteAccount() {
+        const input = document.getElementById('deleteAccountConfirmInput');
+        const msg = document.getElementById('deleteAccountMsg');
+        const btn = document.getElementById('confirmDeleteAccountBtn');
+
+        if (!input || input.value.trim().toUpperCase() !== 'DELETE') {
+            if (msg) { msg.style.color = '#ff8080'; msg.innerText = 'Please type DELETE to confirm.'; }
+            return;
+        }
+
+        try {
+            if (btn) { btn.disabled = true; btn.innerText = 'Deleting...'; }
+            if (typeof api !== 'undefined' && typeof api.deleteAccount === 'function') {
+                await api.deleteAccount();
+            }
+            localStorage.removeItem('sunbook_username');
+            localStorage.removeItem('sunbook_token');
+            localStorage.removeItem('sunbook_user_id');
+            if (typeof showToast === 'function') showToast('Your account has been deleted.');
+            window.location.href = 'index.html';
+        } catch (err) {
+            console.error('Delete account error:', err);
+            if (msg) { msg.style.color = '#ff8080'; msg.innerText = err.message || 'Failed to delete account. Please try again.'; }
+            if (btn) { btn.disabled = false; btn.innerText = 'Permanently Delete My Account'; }
+        }
     }
 
     function switchProfileTab(tabId, btnElement) {
