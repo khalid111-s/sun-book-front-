@@ -1746,8 +1746,11 @@ body {
 
 /* =========================================
    تنسيقات السوشيال ميديا (بالعرض وأنيميشن)
+   ملحوظة: الأسماء دي متعمّد إنها غير عامة (مش social-row/icon-content) عشان بعض
+   إضافات المتصفح (Ad-blockers) بتخفي أي عنصر اسمه فيه "social" تلقائيًا،
+   وده كان بيخلي الأيقونات تختفي عند بعض الزوار من غير أي خطأ في الكود نفسه.
    ========================================= */
-ul.social-row {
+ul.footer-follow-icons {
     list-style: none;
     display: flex;         /* السطر ده هو اللي بيخليهم جنب بعض بالعرض */
     justify-content: flex-start;
@@ -1757,12 +1760,12 @@ ul.social-row {
     margin: 0;
 }
 
-.social-row .icon-content {
+.footer-follow-item {
     position: relative;
 }
 
 /* تنسيق المربع اللي بيظهر (Tooltip) */
-.social-row .icon-content .tooltip {
+.footer-follow-item .footer-follow-tooltip {
     position: absolute;
     top: -30px;
     left: 50%;
@@ -1780,14 +1783,14 @@ ul.social-row {
     z-index: 10;
 }
 
-.social-row .icon-content:hover .tooltip {
+.footer-follow-item:hover .footer-follow-tooltip {
     opacity: 1;
     visibility: visible;
     top: -45px; /* بيطلع لفوق شوية بشياكة */
 }
 
 /* تنسيق الدواير بتاعت الأيقونات */
-.social-row .icon-content .link {
+.footer-follow-item .footer-follow-link {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1800,23 +1803,23 @@ ul.social-row {
     transition: all 0.3s ease-in-out;
 }
 
-.social-row .icon-content .link svg {
+.footer-follow-item .footer-follow-link svg {
     width: 20px;
     height: 20px;
     fill: currentColor;
 }
 
 /* التأثيرات والألوان لما تقف عليهم بالماوس */
-.social-row .icon-content .link:hover {
+.footer-follow-item .footer-follow-link:hover {
     box-shadow: 0px 5px 15px rgba(216, 176, 86, 0.15); /* توهج خفيف */
     transform: translateY(-3px); /* نطة خفيفة لفوق */
 }
 
 /* كل برنامج بياخد لونه المميز لما تقف عليه */
-.social-row .icon-content .link[data-social="facebook"]:hover { color: #1877F2; border-color: #1877F2; }
-.social-row .icon-content .link[data-social="instagram"]:hover { color: #E4405F; border-color: #E4405F; }
-.social-row .icon-content .link[data-social="youtube"]:hover { color: #FF0000; border-color: #FF0000; }
-.social-row .icon-content .link[data-social="tiktok"]:hover { color: #00f2fe; border-color: #00f2fe; }
+.footer-follow-item .footer-follow-link[data-platform="facebook"]:hover { color: #1877F2; border-color: #1877F2; }
+.footer-follow-item .footer-follow-link[data-platform="instagram"]:hover { color: #E4405F; border-color: #E4405F; }
+.footer-follow-item .footer-follow-link[data-platform="youtube"]:hover { color: #FF0000; border-color: #FF0000; }
+.footer-follow-item .footer-follow-link[data-platform="tiktok"]:hover { color: #00f2fe; border-color: #00f2fe; }
 
 /* ريسپونسف للشاشات الصغيرة */
 @media (max-width: 992px) {
