@@ -7,6 +7,7 @@ window.sunbookComponents.footer = `
                 <h4 class="footer-title">Quick Links</h4>
                 <ul class="policy-row">
                     <li><a href="about.html">About Us</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
                     <li><a href="contact.html">Contact Us</a></li>
                 </ul>
             </div>

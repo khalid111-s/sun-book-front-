@@ -1831,3 +1831,31 @@ document.addEventListener('DOMContentLoaded', () => {
         wrapper.appendChild(toggleBtn);
     });
 });
+
+// =========================================
+// أكورديون صفحة الأسئلة الشائعة (faq.html) - بيفتح/يقفل كل سؤال لوحده
+// من غير ما يقفل باقي الأسئلة المفتوحة (كل سؤال شغال مستقل عن التاني)
+// =========================================
+function initFaqAccordion() {
+    const questions = document.querySelectorAll('.faq-question');
+    if (!questions.length) return;
+
+    questions.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const item = btn.closest('.faq-item');
+            const answer = item.querySelector('.faq-answer');
+            const isOpen = item.classList.contains('active');
+
+            if (isOpen) {
+                item.classList.remove('active');
+                btn.setAttribute('aria-expanded', 'false');
+                answer.style.maxHeight = null;
+            } else {
+                item.classList.add('active');
+                btn.setAttribute('aria-expanded', 'true');
+                answer.style.maxHeight = answer.scrollHeight + 'px';
+            }
+        });
+    });
+}
+document.addEventListener('DOMContentLoaded', initFaqAccordion);

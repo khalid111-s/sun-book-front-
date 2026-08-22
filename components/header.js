@@ -74,6 +74,7 @@ window.sunbookComponents.header = `
             <ul class="sidebar-links">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="about.html">About Us</a></li>
+                <li><a href="faq.html">FAQ</a></li>
                 <li><a href="contact.html">Contact Us</a></li>
                 <li><a href="policies.html">Policies</a></li>
             </ul>
