@@ -338,11 +338,56 @@ function loadRelatedProducts() {
 
     // بنخلط الترتيب عشان الاقتراحات تتنوع بين زيارة وزيارة بدل ما تفضل ثابتة
     const shuffled = [...candidates].sort(() => Math.random() - 0.5);
-    const picks = shuffled.slice(0, 4);
+    const picks = shuffled.slice(0, 8);
 
     grid.innerHTML = picks.map(productCardHTML).join('');
     bindAddToCartDelegation(grid);
     section.hidden = false;
+
+    initRelatedProductsCarousel();
+}
+
+// بيربط سهمي التنقل (يمين/شمال) بسكرول أفقي سلس داخل الكاروسيل، وبيعطّل السهم
+// المناسب لما نوصل لأول أو آخر الصف عشان الزائر يعرف إنه وصل للنهاية
+function initRelatedProductsCarousel() {
+    const track = document.getElementById('related-products-grid');
+    const prevBtn = document.getElementById('relatedPrevBtn');
+    const nextBtn = document.getElementById('relatedNextBtn');
+    if (!track || !prevBtn || !nextBtn) return;
+
+    const scrollAmount = () => {
+        const card = track.querySelector('.product-card');
+        const cardWidth = card ? card.getBoundingClientRect().width : 240;
+        const gap = parseFloat(getComputedStyle(track).gap) || 20;
+        return cardWidth + gap;
+    };
+
+    const updateArrowState = () => {
+        const maxScroll = track.scrollWidth - track.clientWidth - 2; // هامش بسيط لتفادي أخطاء التقريب
+        prevBtn.disabled = track.scrollLeft <= 0;
+        nextBtn.disabled = track.scrollLeft >= maxScroll;
+    };
+
+    // منربطش الأحداث أكتر من مرة لو الدالة اتنادت أكتر من مرة (مثلاً بعد فلترة تانية)
+    if (!prevBtn.dataset.carouselBound) {
+        prevBtn.dataset.carouselBound = 'true';
+        prevBtn.addEventListener('click', () => {
+            track.scrollBy({ left: -scrollAmount(), behavior: 'smooth' });
+        });
+    }
+    if (!nextBtn.dataset.carouselBound) {
+        nextBtn.dataset.carouselBound = 'true';
+        nextBtn.addEventListener('click', () => {
+            track.scrollBy({ left: scrollAmount(), behavior: 'smooth' });
+        });
+    }
+    if (!track.dataset.carouselBound) {
+        track.dataset.carouselBound = 'true';
+        track.addEventListener('scroll', updateArrowState);
+        window.addEventListener('resize', updateArrowState);
+    }
+
+    updateArrowState();
 }
 
 // كل الصفحات (بما فيها product.html) محتاجة تعرف قائمة المنتجات كاملة عشان السيرش شغال

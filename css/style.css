@@ -1146,6 +1146,76 @@ body {
 }
 
 /* =========================================
+   كاروسيل "كتب تانية ممكن تعجبك" (product.html) - سكرول أفقي بسهمين بدل الشبكة العادية
+   ========================================= */
+.related-products-carousel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.related-products-track {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    padding: 4px 2px 12px;
+    flex: 1;
+    /* إخفاء شريط السكرول بصريًا مع الحفاظ على إمكانية السحب باللمس */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.related-products-track::-webkit-scrollbar {
+    display: none;
+}
+
+.related-products-track .product-card {
+    flex: 0 0 auto;
+    width: 240px;
+    scroll-snap-align: start;
+}
+
+.related-carousel-arrow {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #131313;
+    border: 1px solid rgba(216, 176, 86, 0.35);
+    color: var(--gold-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.related-carousel-arrow:hover {
+    background: rgba(216, 176, 86, 0.12);
+}
+
+.related-carousel-arrow:active {
+    transform: scale(0.94);
+}
+
+.related-carousel-arrow:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .related-products-track .product-card {
+        width: 200px;
+    }
+    .related-carousel-arrow {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+/* =========================================
    تصميم الكروت الجديد (مستوحى من الصورة بألوان The Sun Book)
    ========================================= */
 .product-card {
