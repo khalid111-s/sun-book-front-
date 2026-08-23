@@ -213,18 +213,17 @@ async function loadSingleProductPage() {
 
 // عرض كارت منتج واحد (نفس الـ HTML structure المستخدم أصلاً في index.html)
 function productCardHTML(product) {
-    const t = (window.SunbookI18n && window.SunbookI18n.t) || ((k) => k);
     const badgesHTML = (product.badges || [])
         .map(b => `<span class="badge">${b}</span>`)
         .join('');
     const egyptStripHTML = product.egyptOnly
-        ? `<div class="egypt-only-strip">${t('egypt_only')}</div>`
+        ? `<div class="egypt-only-strip">Egypt Only</div>`
         : '';
     const outOfStock = product.available === false;
-    const outOfStockOverlay = outOfStock ? `<div class="out-of-stock-overlay">${t('out_of_stock')}</div>` : '';
+    const outOfStockOverlay = outOfStock ? `<div class="out-of-stock-overlay">Out of Stock</div>` : '';
     const addToCartBtn = outOfStock
-        ? `<button class="add-to-cart-new add-to-cart" disabled style="opacity:0.5; cursor:not-allowed;">${t('out_of_stock')}</button>`
-        : `<button class="add-to-cart-new add-to-cart" data-id="${product.id}" data-title="${product.title.replace(/"/g, '&quot;')}">${t('add_to_cart')}</button>`;
+        ? `<button class="add-to-cart-new add-to-cart" disabled style="opacity:0.5; cursor:not-allowed;">Out of Stock</button>`
+        : `<button class="add-to-cart-new add-to-cart" data-id="${product.id}" data-title="${product.title.replace(/"/g, '&quot;')}">Add to cart</button>`;
     return `
         <div class="product-card">
             <div class="card-image-wrapper">
@@ -242,7 +241,7 @@ function productCardHTML(product) {
                 <p class="card-desc">${product.description}</p>
                 <div class="card-bottom">
                     <div class="price-block">
-                        <span class="price-label">${t('price_label')}</span>
+                        <span class="price-label">PRICE</span>
                         <span class="price-amount">${product.price}</span>
                     </div>
                     ${addToCartBtn}
@@ -324,39 +323,11 @@ async function loadHomepageProducts() {
     }
 }
 
-// بتعيد رسم أي كروت منتجات ظاهرة بالفعل في الصفحة من غير ما تعمل طلب API جديد،
-// مستخدمة نفس productsData المخزنة أصلاً - محتاجينها لما اللغة تتغير عشان
-// نصوص زي "Add to cart" / "Out of Stock" تتحدث فورًا من غير ما نعيد تحميل الصفحة
-function rerenderVisibleProductGrids() {
-    const bestOffersGrid = document.getElementById('best-offers-grid');
-    const allProductsGrid = document.getElementById('all-products-grid');
-    const relatedGrid = document.getElementById('related-products-grid');
-
-    if (bestOffersGrid && bestOffersGrid.querySelector('.product-card')) {
-        const featured = productsData.filter(p => p.featured);
-        bestOffersGrid.innerHTML = featured.length ? featured.map(productCardHTML).join('') : bestOffersGrid.innerHTML;
-        bindAddToCartDelegation(bestOffersGrid);
-    }
-    if (allProductsGrid && allProductsGrid.querySelector('.product-card')) {
-        allProductsGrid.innerHTML = productsData.length ? productsData.map(productCardHTML).join('') : allProductsGrid.innerHTML;
-        bindAddToCartDelegation(allProductsGrid);
-    }
-    if (relatedGrid && relatedGrid.querySelector('.product-card') && typeof productId !== 'undefined' && productId) {
-        const candidates = productsData.filter(p => String(p.id) !== String(productId));
-        if (candidates.length) {
-            // نفس عدد العناصر المعروضة حاليًا، من غير ما نعيد الخلط العشوائي مرة تانية
-            const currentCount = relatedGrid.querySelectorAll('.product-card').length || 4;
-            relatedGrid.innerHTML = candidates.slice(0, currentCount).map(productCardHTML).join('');
-            bindAddToCartDelegation(relatedGrid);
-        }
-    }
-}
-document.addEventListener('sunbook:languagechange', rerenderVisibleProductGrids);
-
 // قسم "كتب تانية ممكن تعجبك" في صفحة المنتج: بيعرض منتجات تانية غير المنتج الحالي
 // عشان الزائر يكمّل يتصفح بدل ما يقفل الصفحة بعد ما يشوف كتاب مش عاجبه أو خلص قراءته
 function loadRelatedProducts() {
-    const section = document.getElementById('relatedProductsSection');    const grid = document.getElementById('related-products-grid');
+    const section = document.getElementById('relatedProductsSection');
+    const grid = document.getElementById('related-products-grid');
     if (!section || !grid || !productId) return;
 
     const candidates = productsData.filter(p => String(p.id) !== String(productId));
@@ -1383,19 +1354,15 @@ function applyLoginState() {
             container.innerHTML = `<a href="profile.html" class="user-avatar" title="${loggedInUser}">${firstLetter}</a>`;
         } else {
             if (container.closest('.sidebar-footer')) {
-                container.innerHTML = `<a href="login.html" class="btn-shop" style="display: block; width: 100%;" data-i18n="sign_in">Sign In / Register</a>`;
+                container.innerHTML = `<a href="login.html" class="btn-shop" style="display: block; width: 100%;">Sign In / Register</a>`;
             } else {
-                container.innerHTML = `<a href="login.html" class="btn-shop" data-i18n="sign_in">Sign In / Register</a>`;
+                container.innerHTML = `<a href="login.html" class="btn-shop">Sign In / Register</a>`;
             }
         }
         
         // نعلم على الزرار إنه اتحدث عشان الكود ميرجعلوش تاني
         container.dataset.loaded = 'true'; 
     });
-
-    // النص اللي اتحط دلوقتي (Sign In / Register) لسه إنجليزي على طول حتى لو
-    // اللغة الحالية عربي، فلازم نطبّق الترجمة تاني فورًا بعد ما نحقنه
-    if (window.SunbookI18n) window.SunbookI18n.apply();
 }
 
 // الرادار اللي بيراقب تغييرات الصفحة لحظة بلحظة

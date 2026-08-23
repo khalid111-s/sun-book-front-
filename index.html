@@ -10,9 +10,6 @@
 
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/png" href="assets/sun-icon.png">
-
-    <!-- خطوط عربية بروح الموقع الكلاسيكية/الغموض - مستضافة محليًا (مش من جوجل)
-         عشان الموقع ميعتمدش على وصول خارجي لأي سيرفر تاني وقت التحميل -->
 </head>
 <body class="use-api-booking">
 <div data-include="components/header.html"></div>
@@ -20,9 +17,9 @@
 <!-- ====== Hero Section ====== -->
 <section class="hero-section">
    <div class="hero-visual hero-visual-clean">
-<img src="assets/no_bg.png" alt="The Sun Book illustration" class="hero-image">        <p class="hero-caption" data-i18n="hero_caption">Discover the timeless wisdom hidden in the ancient world.</p>
+<img src="assets/no_bg.png" alt="The Sun Book illustration" class="hero-image">        <p class="hero-caption">Discover the timeless wisdom hidden in the ancient world.</p>
         <div class="hero-buttons">
-            <a href="#all-products" class="btn-outline" data-i18n="hero_button">Explore Collection</a>
+            <a href="#all-products" class="btn-outline">Explore Collection</a>
         </div>
     </div>
 </section>
@@ -44,8 +41,8 @@
 <section class="best-offers-section section-plain">
     <div class="container">
         <div class="section-header">
-            <h2 class="section-title" data-i18n="best_offers_title">Best Offers</h2>
-            <p class="section-subtitle" data-i18n="best_offers_subtitle">Shop our exclusive deals and special offers</p>
+            <h2 class="section-title">Best Offers</h2>
+            <p class="section-subtitle">Shop our exclusive deals and special offers</p>
         </div>
 
         <div class="products-grid two-cards" id="best-offers-grid">
@@ -71,8 +68,8 @@
 <section id="all-products" class="all-products-section section-plain">
     <div class="container">
         <div class="section-header">
-            <h2 class="section-title" data-i18n="all_products_title">All Products</h2>
-            <p class="section-subtitle" data-i18n="all_products_subtitle">Explore our complete collection of ancient mysteries and wisdom</p>
+            <h2 class="section-title">All Products</h2>
+            <p class="section-subtitle">Explore our complete collection of ancient mysteries and wisdom</p>
         </div>
 
         <div class="products-grid three-columns" id="all-products-grid">
@@ -104,21 +101,21 @@
             </div>
 
             <div class="home-booking-right booking-card-right">
-                <h2 class="booking-card-title" data-i18n="booking_title">Exclusive one-on-one with Ahmed Salem</h2>
+                <h2 class="booking-card-title">Exclusive one-on-one with Ahmed Salem</h2>
 
                 <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px;">
                     <div style="display: flex; align-items: center; gap: 10px; color: #c4c4c4; font-size: 0.95rem;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d8b056" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                        <span data-i18n="booking_duration">30 minutes</span>
+                        <span>30 minutes</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px; color: #c4c4c4; font-size: 0.95rem;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d8b056" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                        <span data-i18n="booking_price_from">From LE 199.00</span>
+                        <span>From LE 199.00</span>
                     </div>
                 </div>
 
                 <div class="booking-slot-row" style="display: flex; align-items: center; gap: 12px; margin-bottom: 30px;">
-                    <span class="booking-slot-label" data-i18n="booking_available" style="color: #fff; font-weight: 600; font-size: 0.9rem; width: 75px; font-family: 'Segoe UI', sans-serif;">Available</span>
+                    <span class="booking-slot-label" style="color: #fff; font-weight: 600; font-size: 0.9rem; width: 75px; font-family: 'Segoe UI', sans-serif;">Available</span>
                     <div id="homeBookingQuickDates" style="display: flex; gap: 6px; flex-wrap: wrap;">
                         <!-- بيتحقن ديناميكيًا بأربع أيام حقيقية قادمة، ابتداءً من بكرة -->
                     </div>
@@ -126,9 +123,9 @@
 
                 <div class="booking-card-footer">
                     <a href="booking-details.html" class="booking-card-link">
-                        <span data-i18n="booking_view_details">View full details</span> <span class="booking-card-arrow" style="display: inline-block; transition: transform 0.3s;">→</span>
+                        View full details <span style="display: inline-block; transition: transform 0.3s;">→</span>
                     </a>
-                    <button class="book-now-btn booking-card-button" data-i18n="booking_book_now">Book now</button>
+                    <button class="book-now-btn booking-card-button">Book now</button>
                 </div>
             </div>
         </div>
@@ -175,7 +172,7 @@
                 </button>
             </div>
             <div class="calendar-weekdays">
-                <span data-i18n="modal_weekday_mo">MO</span><span data-i18n="modal_weekday_tu">TU</span><span data-i18n="modal_weekday_we">WE</span><span data-i18n="modal_weekday_th">TH</span><span data-i18n="modal_weekday_fr">FR</span><span data-i18n="modal_weekday_sa">SA</span><span data-i18n="modal_weekday_su">SU</span>
+                <span>MO</span><span>TU</span><span>WE</span><span>TH</span><span>FR</span><span>SA</span><span>SU</span>
             </div>
             <div id="calendarDays" class="calendar-days"></div>
         </div>
@@ -187,36 +184,35 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="gold-icon-svg">
                         <path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path>
                     </svg>
-                    <span data-i18n="modal_meeting_title">Book a 30 minutes meeting</span>
+                    Book a 30 minutes meeting
                 </p>
                 <div class="quantity-price">
-                    <span data-i18n="modal_quantity">Quantity 1</span>
+                    <span>Quantity 1</span>
                     <span class="gold-text">LE 199.00</span>
                 </div>
             </div>
             <div class="time-selection">
-                <h4 data-i18n="modal_time_question">What time works best?</h4>
+                <h4>What time works best?</h4>
                 <p class="timezone-info">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="gold-icon-svg">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle>
                     </svg>
-                    <span data-i18n="modal_timezone">Cairo Time</span>
+                    Cairo Time
                 </p>
                 <div class="time-slots-list">
                     <button class="time-slot-btn">4:00 PM</button>
                     <button class="time-slot-btn">6:00 PM</button>
                     <button class="time-slot-btn">8:00 PM</button>
                 </div>
-                <p class="cancellation-policy-note" data-i18n="modal_cancellation_note">
+                <p class="cancellation-policy-note">
                     Free cancellation up to 4 hours before your session. After that, the booking is final.
                 </p>
-                <button class="btn-shop confirm-booking-btn" style="width: 100%; margin-top: 20px;" data-i18n="modal_confirm_book">Confirm & Book</button>
+                <button class="btn-shop confirm-booking-btn" style="width: 100%; margin-top: 20px;">Confirm & Book</button>
             </div>
         </div>
     </div>
 </div>
 
-<script src="js/i18n.js"></script>
 <script src="components/loader.js"></script>
 <script src="js/api.js"></script>
 <script src="js/script.js"></script>

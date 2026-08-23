@@ -1,22 +1,20 @@
 window.sunbookComponents = window.sunbookComponents || {};
 window.sunbookComponents.header = `
 <div id="promo-banner" class="promo-banner">
-    <span data-i18n="promo_banner_text">✨ Become a member today and get 5% off all books and exclusive sessions!</span>
-    <a href="login.html" class="promo-banner-link" data-i18n="promo_banner_link">Sign Up Now</a>
+    ✨ Become a member today and get 5% off all books and exclusive sessions!
+    <a href="login.html" class="promo-banner-link">Sign Up Now</a>
 </div>
 <header class="header">
     <nav class="navbar">
-        <!-- اللوجو -->
         <a href="index.html" class="logo">
             <span class="logo-text">THE SUN</span>
             <img src="assets/sun-icon.png" alt="Sun Book Icon" class="logo-icon">
             <span class="logo-text">BOOK</span>
         </a>
 
-        <!-- السيرش -->
         <div class="search-wrapper">
             <div class="search-container">
-                <input type="text" class="input" placeholder="Search collection..." data-i18n-placeholder="search_placeholder" id="searchInput">
+                <input type="text" class="input" placeholder="Search collection..." id="searchInput">
                 <div class="search__icon">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"></circle>
@@ -26,7 +24,6 @@ window.sunbookComponents.header = `
             </div>
         </div>
 
-        <!-- الزراير -->
         <div class="nav-actions">
             <!-- عدسة البحث بتاعة الموبايل - بتفتح نفس شريط البحث كـ dropdown تحت الناف بار -->
             <div class="mobile-search-toggle" id="mobileSearchToggle">
@@ -35,8 +32,6 @@ window.sunbookComponents.header = `
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
             </div>
-            <!-- زرار تبديل اللغة (إنجليزي/عربي) - بيوري اسم اللغة اللي هتنقل لها -->
-            <button type="button" class="lang-toggle-btn" aria-label="Switch language">العربية</button>
             <a href="cart.html" class="cart-container">
                 <svg class="cart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="9" cy="21" r="1"></circle>
@@ -46,9 +41,9 @@ window.sunbookComponents.header = `
                 <span class="cart-badge">0</span>
             </a>
             <div id="auth-container">
-                <a href="login.html" class="btn-shop" data-i18n="sign_in">Sign In / Register</a>
+                <a href="login.html" class="btn-shop">Sign In / Register</a>
             </div>
-            
+
             <!-- زرار الموبايل (Hamburger Menu) اللي ضفناه -->
             <div class="mobile-toggle" id="mobileToggle">
                 <span class="bar"></span>
@@ -77,17 +72,17 @@ window.sunbookComponents.header = `
             
             <!-- الروابط الأساسية -->
             <ul class="sidebar-links">
-                <li><a href="index.html" data-i18n="nav_home">Home</a></li>
-                <li><a href="about.html" data-i18n="nav_about">About Us</a></li>
-                <li><a href="faq.html" data-i18n="nav_faq">FAQ</a></li>
-                <li><a href="contact.html" data-i18n="nav_contact">Contact Us</a></li>
-                <li><a href="policies.html" data-i18n="nav_policies">Policies</a></li>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="faq.html">FAQ</a></li>
+                <li><a href="contact.html">Contact Us</a></li>
+                <li><a href="policies.html">Policies</a></li>
             </ul>
             
             <!-- الفوتر بتاع القائمة (تسجيل الدخول / الحساب) -->
             <div class="sidebar-footer">
                 <div id="auth-container" style="width: 100%; text-align: center;">
-                    <a href="login.html" class="btn-shop" style="display: block; width: 100%;" data-i18n="sign_in">Sign In / Register</a>
+                    <a href="login.html" class="btn-shop" style="display: block; width: 100%;">Sign In / Register</a>
                 </div>
             </div>
         </div>

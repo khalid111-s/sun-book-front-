@@ -6,9 +6,6 @@ function loadComponent(targetSelector, componentName) {
 
   if (window.sunbookComponents[componentName]) {
     target.innerHTML = window.sunbookComponents[componentName];
-    // بعد ما نحقن الهيدر/الفوتر، لازم نطبّق الترجمة عليهم فورًا لو نظام
-    // اللغة (i18n.js) محمّل، لأنهم مش موجودين في الصفحة وقت التحميل الأول
-    if (window.SunbookI18n) window.SunbookI18n.apply();
     return;
   }
 
@@ -17,7 +14,6 @@ function loadComponent(targetSelector, componentName) {
   script.onload = () => {
     if (window.sunbookComponents[componentName]) {
       target.innerHTML = window.sunbookComponents[componentName];
-      if (window.SunbookI18n) window.SunbookI18n.apply();
     }
   };
   document.body.appendChild(script);
