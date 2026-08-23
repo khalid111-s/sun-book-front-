@@ -11,10 +11,17 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/png" href="assets/sun-icon.png">
 
-    <!-- خطوط عربية بروح الموقع الكلاسيكية/الغموض - بتتفعل بس لما اللغة تبقى عربي -->
+    <!-- خطوط عربية بروح الموقع الكلاسيكية/الغموض - بتتفعل بس لما اللغة تبقى عربي.
+         بنحملها بطريقة async (مش render-blocking) عشان لو فيه أي تأخير في الوصول
+         لسيرفرات جوجل، الصفحة تفضل تفتح عادي بالخط الافتراضي بدل ما "تعلّق" مستنية الخط -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Almarai:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" as="style"
+          href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Almarai:wght@400;700;800&display=swap"
+          onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Almarai:wght@400;700;800&display=swap" rel="stylesheet">
+    </noscript>
 </head>
 <body class="use-api-booking">
 <div data-include="components/header.html"></div>
