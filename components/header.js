@@ -1,8 +1,8 @@
 window.sunbookComponents = window.sunbookComponents || {};
 window.sunbookComponents.header = `
 <div id="promo-banner" class="promo-banner">
-    ✨ Become a member today and get 5% off all books and exclusive sessions!
-    <a href="login.html" class="promo-banner-link">Sign Up Now</a>
+    <span data-i18n="header.promoText">✨ Become a member today and get 5% off all books and exclusive sessions!</span>
+    <a href="login.html" class="promo-banner-link" data-i18n="header.promoLink">Sign Up Now</a>
 </div>
 <header class="header">
     <nav class="navbar">
@@ -14,7 +14,7 @@ window.sunbookComponents.header = `
 
         <div class="search-wrapper">
             <div class="search-container">
-                <input type="text" class="input" placeholder="Search collection..." id="searchInput">
+                <input type="text" class="input" placeholder="Search collection..." id="searchInput" data-i18n-placeholder="header.searchPlaceholder">
                 <div class="search__icon">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"></circle>
@@ -40,8 +40,9 @@ window.sunbookComponents.header = `
                 </svg>
                 <span class="cart-badge">0</span>
             </a>
+            <button type="button" class="lang-toggle-btn" style="display:none;">العربية</button>
             <div id="auth-container">
-                <a href="login.html" class="btn-shop">Sign In / Register</a>
+                <a href="login.html" class="btn-shop" data-i18n="header.signIn">Sign In / Register</a>
             </div>
 
             <!-- زرار الموبايل (Hamburger Menu) اللي ضفناه -->
@@ -72,17 +73,18 @@ window.sunbookComponents.header = `
             
             <!-- الروابط الأساسية -->
             <ul class="sidebar-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="about.html">About Us</a></li>
-                <li><a href="faq.html">FAQ</a></li>
-                <li><a href="contact.html">Contact Us</a></li>
-                <li><a href="policies.html">Policies</a></li>
+                <li><a href="index.html" data-i18n="header.navHome">Home</a></li>
+                <li><a href="about.html" data-i18n="header.navAbout">About Us</a></li>
+                <li><a href="faq.html" data-i18n="header.navFaq">FAQ</a></li>
+                <li><a href="contact.html" data-i18n="header.navContact">Contact Us</a></li>
+                <li><a href="policies.html" data-i18n="header.navPolicies">Policies</a></li>
             </ul>
             
             <!-- الفوتر بتاع القائمة (تسجيل الدخول / الحساب) -->
             <div class="sidebar-footer">
+                <button type="button" class="lang-toggle-btn lang-toggle-btn--sidebar" style="display:none;">العربية</button>
                 <div id="auth-container" style="width: 100%; text-align: center;">
-                    <a href="login.html" class="btn-shop" style="display: block; width: 100%;">Sign In / Register</a>
+                    <a href="login.html" class="btn-shop" style="display: block; width: 100%;" data-i18n="header.signIn">Sign In / Register</a>
                 </div>
             </div>
         </div>

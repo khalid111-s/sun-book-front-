@@ -252,7 +252,7 @@ body {
 
 .booking-card-title {
     color: #d8b056;
-    font-family: 'Times New Roman', serif;
+    font-family: var(--font-logo);
     font-size: 1.7rem;
     margin-bottom: 20px;
     letter-spacing: 1px;
@@ -303,7 +303,7 @@ body {
     align-items: center;
     gap: 5px;
     transition: color 0.3s;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: var(--font-main);
 }
 
 .booking-card-link:hover {
@@ -319,7 +319,7 @@ body {
     font-weight: 600;
     font-size: 0.95rem;
     transition: all 0.3s;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: var(--font-main);
     cursor: pointer;
 }
 
@@ -1116,7 +1116,7 @@ body {
 }
 
 .section-title {
-    font-family: 'Times New Roman', serif; 
+    font-family: var(--font-logo);
     font-size: var(--text-lg); /* استخدام الخط المرن */
     color: #d4af37;
     margin-bottom: 10px;
@@ -5850,3 +5850,80 @@ html {
     }
 }
 
+
+/* =========================================================================
+   دعم اللغة العربية / RTL
+   -------------------------------------------------------------------------
+   القواعد دي بتتفعّل بس لما html[dir="rtl"] (يعني المستخدم مختار عربي).
+   الهدف إن الموقع يبان "متصمم أصلاً عربي"، مش نسخة إنجليزي متقلوبة بالعافية:
+   - خط عربي حقيقي بدل الخط اللاتيني
+   - تفاصيل الاتجاه (الحدود، التدرجات، الأسهم) بتتصلح يدويًا مكان ما الانعكاس
+     التلقائي للمتصفح مش كافي لوحده
+   ========================================================================= */
+
+html[dir="rtl"] {
+    --font-logo: 'Amiri', 'Times New Roman', serif;
+    --font-main: 'Tajawal', 'Segoe UI', sans-serif;
+}
+
+/* زرار تبديل اللغة - نفس روح أزرار الموقع التانية */
+.lang-toggle-btn {
+    background: transparent;
+    border: 1px solid rgba(216, 176, 86, 0.35);
+    color: #d8b056;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: var(--font-main);
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.lang-toggle-btn:hover {
+    background: rgba(216, 176, 86, 0.1);
+}
+
+.lang-toggle-btn--sidebar {
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+/* فواصل الأقسام الدهبية (Best Offers / All Products) - بعد ما الفليكس
+   بيتقلب اتجاهه تلقائي في RTL، لازم التدرج اللوني يتبدل هو كمان عشان
+   الدهبي يفضل قريب من الأيقونة في النص مش بعيد عنها */
+html[dir="rtl"] .divider-line-left {
+    background: linear-gradient(to left, transparent, rgba(212, 175, 55, 0.2) 40%, rgba(212, 175, 55, 0.6) 100%);
+}
+
+html[dir="rtl"] .divider-line-right {
+    background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.2) 40%, rgba(212, 175, 55, 0.6) 100%);
+}
+
+/* كارت "احجز جلستك" - الفليكس بيتقلب، فالخط الفاصل لازم يتنقل من يمين
+   العنصر لشماله عشان يفضل بين الصورة والمحتوى مش على حافة الكارت الخارجية */
+html[dir="rtl"] .booking-card-left {
+    border-right: none;
+    border-left: 1px solid rgba(216, 176, 86, 0.08);
+}
+
+/* نفس الفكرة بالظبط جوه مودال الحجز (تقويم / مواعيد) */
+html[dir="rtl"] .modal-left {
+    border-right: none;
+    border-left: 1px solid rgba(216, 176, 86, 0.1);
+}
+
+/* أسهم التنقل بين الشهور في التقويم - بعد ما الفليكس بيتقلب، السهم اللي
+   كان بيرجع لموعد سابق يبقى فعليًا على اليمين، فلازم يتقلب شكله يشاور
+   يمين (اتجاه "الرجوع" في القراءة العربية) والعكس للسهم التاني */
+html[dir="rtl"] #prevMonth svg,
+html[dir="rtl"] #nextMonth svg {
+    transform: scaleX(-1);
+}
+
+/* سهم "عرض كل التفاصيل" في كارت الحجز - نفس المبدأ */
+html[dir="rtl"] .booking-arrow {
+    display: inline-block;
+    transform: scaleX(-1);
+}

@@ -213,17 +213,21 @@ async function loadSingleProductPage() {
 
 // عرض كارت منتج واحد (نفس الـ HTML structure المستخدم أصلاً في index.html)
 function productCardHTML(product) {
+    const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
     const badgesHTML = (product.badges || [])
         .map(b => `<span class="badge">${b}</span>`)
         .join('');
     const egyptStripHTML = product.egyptOnly
-        ? `<div class="egypt-only-strip">Egypt Only</div>`
+        ? `<div class="egypt-only-strip">${tr('product.egyptOnly', 'Egypt Only')}</div>`
         : '';
     const outOfStock = product.available === false;
-    const outOfStockOverlay = outOfStock ? `<div class="out-of-stock-overlay">Out of Stock</div>` : '';
+    const outOfStockLabel = tr('product.outOfStock', 'Out of Stock');
+    const outOfStockOverlay = outOfStock ? `<div class="out-of-stock-overlay">${outOfStockLabel}</div>` : '';
     const addToCartBtn = outOfStock
-        ? `<button class="add-to-cart-new add-to-cart" disabled style="opacity:0.5; cursor:not-allowed;">Out of Stock</button>`
-        : `<button class="add-to-cart-new add-to-cart" data-id="${product.id}" data-title="${product.title.replace(/"/g, '&quot;')}">Add to cart</button>`;
+        ? `<button class="add-to-cart-new add-to-cart" disabled style="opacity:0.5; cursor:not-allowed;">${outOfStockLabel}</button>`
+        : `<button class="add-to-cart-new add-to-cart" data-id="${product.id}" data-title="${product.title.replace(/"/g, '&quot;')}">${tr('product.addToCart', 'Add to cart')}</button>`;
+    // ملحوظة: عنوان الكتاب ووصفه بييجوا زي ما هما مسجلين في قاعدة البيانات (إنجليزي)
+    // ومبيتترجموش تلقائيًا، بالظبط زي عناوين الكتب في أي متجر عالمي كبير
     return `
         <div class="product-card">
             <div class="card-image-wrapper">
@@ -241,7 +245,7 @@ function productCardHTML(product) {
                 <p class="card-desc">${product.description}</p>
                 <div class="card-bottom">
                     <div class="price-block">
-                        <span class="price-label">PRICE</span>
+                        <span class="price-label">${tr('product.price', 'PRICE')}</span>
                         <span class="price-amount">${product.price}</span>
                     </div>
                     ${addToCartBtn}
@@ -293,6 +297,28 @@ function bindAddToCartDelegation(container) {
 // كود الصفحة الرئيسية (index.html): بيرندر Best Offers و All Products من الـ API
 let allProductsFetched = false; // بيتحول true بس لما نجيب الكتالوج الكامل من /api/products (مش منتج واحد)
 
+function trHome(key, fallback) {
+    return window.SunBookI18n ? window.SunBookI18n.t(key) : fallback;
+}
+
+// بيعيد رسم الكروت من الداتا المتخزنة (من غير ما نعمل fetch تاني) - مستخدمة أول تحميل وبعد تبديل اللغة
+function renderHomepageProductGrids() {
+    const bestOffersGrid = document.getElementById('best-offers-grid');
+    const allProductsGrid = document.getElementById('all-products-grid');
+    if (!bestOffersGrid && !allProductsGrid) return;
+    if (!allProductsFetched) return;
+
+    const featured = productsData.filter(p => p.featured);
+    if (bestOffersGrid) {
+        bestOffersGrid.innerHTML = featured.length ? featured.map(productCardHTML).join('') : `<p>${trHome('product.noOffers', 'No offers right now.')}</p>`;
+        bindAddToCartDelegation(bestOffersGrid);
+    }
+    if (allProductsGrid) {
+        allProductsGrid.innerHTML = productsData.length ? productsData.map(productCardHTML).join('') : `<p>${trHome('product.noProducts', 'No products yet.')}</p>`;
+        bindAddToCartDelegation(allProductsGrid);
+    }
+}
+
 async function loadHomepageProducts() {
     const bestOffersGrid = document.getElementById('best-offers-grid');
     const allProductsGrid = document.getElementById('all-products-grid');
@@ -305,23 +331,20 @@ async function loadHomepageProducts() {
         const { data } = await api.getProducts();
         productsData = data.map(normalizeProduct);
         allProductsFetched = true;
-
-        const featured = productsData.filter(p => p.featured);
-        if (bestOffersGrid) {
-            bestOffersGrid.innerHTML = featured.length ? featured.map(productCardHTML).join('') : '<p>No offers right now.</p>';
-            bindAddToCartDelegation(bestOffersGrid);
-        }
-        if (allProductsGrid) {
-            allProductsGrid.innerHTML = productsData.length ? productsData.map(productCardHTML).join('') : '<p>No products yet.</p>';
-            bindAddToCartDelegation(allProductsGrid);
-        }
+        renderHomepageProductGrids();
     } catch (err) {
         console.error('Failed to load products:', err);
-        const errorMsg = '<p>Could not load products. Please refresh the page.</p>';
+        const errorMsg = `<p>${trHome('product.loadError', 'Could not load products. Please refresh the page.')}</p>`;
         if (bestOffersGrid) bestOffersGrid.innerHTML = errorMsg;
         if (allProductsGrid) allProductsGrid.innerHTML = errorMsg;
     }
 }
+
+// لما اللغة تتبدل، نعيد رسم كروت المنتجات (المايكروكوبي بس - العنوان والوصف فاضلين زي ما هما)
+// وأي حاجة تانية محتاجة تتحدث فورًا من غير ما نستنى إعادة تحميل الصفحة
+document.addEventListener('sunbook:langChanged', () => {
+    renderHomepageProductGrids();
+});
 
 // قسم "كتب تانية ممكن تعجبك" في صفحة المنتج: بيعرض منتجات تانية غير المنتج الحالي
 // عشان الزائر يكمّل يتصفح بدل ما يقفل الصفحة بعد ما يشوف كتاب مش عاجبه أو خلص قراءته
@@ -1001,6 +1024,14 @@ initProductReviewForm();
 // المواعيد الثابتة الثلاثة المتاحة كل يوم - لازم تكون مطابقة لنفس القيم في الباك اند (DAILY_SLOTS)
 const DAILY_SLOTS = ['4:00 PM', '6:00 PM', '8:00 PM'];
 
+// Helper: بيبني تاريخ بصيغة ISO (YYYY-MM-DD) من أرقام السنة/الشهر/اليوم - بنستخدمه دايمًا
+// للحسابات الفعلية (بدل ما نعتمد على نص الشهر المعروض، اللي ممكن يبقى عربي)
+function toIsoDateStr(year, monthIndex, day) {
+    const mm = String(monthIndex + 1).padStart(2, '0');
+    const dd = String(day).padStart(2, '0');
+    return `${year}-${mm}-${dd}`;
+}
+
 // Helper: بيجيب حالة المواعيد الحقيقية ليوم معين من السيرفر (مش وهمية من localStorage)
 async function getAvailabilityForDate(dateStr) {
     try {
@@ -1065,7 +1096,7 @@ if (modal) {
         calendarDays.innerHTML = '';
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
-        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const monthNames = window.SunBookI18n ? window.SunBookI18n.getCalendarNames().months : ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         if (monthYearDisplay) monthYearDisplay.innerText = `${monthNames[month]} ${year}`;
 
         const firstDay = new Date(year, month, 1).getDay();
@@ -1089,6 +1120,7 @@ if (modal) {
             dayDiv.classList.add('cal-day');
             dayDiv.innerText = i;
             dayDiv.dataset.day = i;
+            dayDiv.dataset.iso = toIsoDateStr(year, month, i);
 
             const thisDate = new Date(year, month, i);
 
@@ -1099,8 +1131,7 @@ if (modal) {
                     if (this.classList.contains('fully-booked') || this.classList.contains('disabled')) return;
                     document.querySelectorAll('.cal-day').forEach(d => d.classList.remove('selected'));
                     this.classList.add('selected');
-                    const dateStr = `${i} ${monthNames[month]} ${year}`;
-                    updateTimeSlotsForDate(dateStr);
+                    updateTimeSlotsForDate(this.dataset.iso);
                 });
             }
             dayDivs.push(dayDiv);
@@ -1122,7 +1153,7 @@ if (modal) {
                 const isoKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
                 if (fullyBookedSet.has(isoKey)) {
                     dayDiv.classList.add('fully-booked');
-                    dayDiv.title = 'Fully booked';
+                    dayDiv.title = window.SunBookI18n ? window.SunBookI18n.t('calendar.fullyBooked') : 'Fully booked';
                 }
             });
         }).catch(err => console.error('Failed to load month availability:', err));
@@ -1148,9 +1179,10 @@ if (modal) {
 
     // ─── تجهيز أزرار المواعيد السريعة في الصفحة الرئيسية بأيام حقيقية (مش ثابتة) ───
     const quickDatesContainer = document.getElementById('homeBookingQuickDates');
-    if (quickDatesContainer) {
+    function renderHomeQuickDates() {
+        if (!quickDatesContainer) return;
         quickDatesContainer.innerHTML = '';
-        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const dayNames = window.SunBookI18n ? window.SunBookI18n.getCalendarNames().dayNamesShort : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const startDay = new Date();
         startDay.setHours(0, 0, 0, 0);
         startDay.setDate(startDay.getDate() + 1); // أقل يوم متاح للحجز هو بكرة
@@ -1165,6 +1197,11 @@ if (modal) {
             quickDatesContainer.appendChild(pill);
         }
     }
+    renderHomeQuickDates();
+    document.addEventListener('sunbook:langChanged', () => {
+        renderHomeQuickDates();
+        renderCalendar();
+    });
 
     const prevMonthBtn = document.getElementById('prevMonth');
     const nextMonthBtn = document.getElementById('nextMonth');

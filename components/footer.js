@@ -4,26 +4,26 @@ window.sunbookComponents.footer = `
     <div class="footer-top">
         <div class="footer-left">
             <div class="social-wrapper">
-                <h4 class="footer-title">Quick Links</h4>
+                <h4 class="footer-title" data-i18n="footer.quickLinks">Quick Links</h4>
                 <ul class="policy-row">
-                    <li><a href="about.html">About Us</a></li>
-                    <li><a href="faq.html">FAQ</a></li>
-                    <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="about.html" data-i18n="footer.about">About Us</a></li>
+                    <li><a href="faq.html" data-i18n="footer.faq">FAQ</a></li>
+                    <li><a href="contact.html" data-i18n="footer.contact">Contact Us</a></li>
                 </ul>
             </div>
         </div>
 
         <div class="footer-center">
-            <h4 class="footer-title">Newsletter</h4>
+            <h4 class="footer-title" data-i18n="footer.newsletter">Newsletter</h4>
             <form class="newsletter-form">
-                <input type="email" placeholder="Enter your email" required>
-                <button type="submit">Subscribe</button>
+                <input type="email" placeholder="Enter your email" required data-i18n-placeholder="footer.emailPlaceholder">
+                <button type="submit" data-i18n="footer.subscribe">Subscribe</button>
             </form>
         </div>
 
         <div class="footer-right">
             <div class="social-wrapper">
-                <h4 class="footer-title">Follow Us</h4>
+                <h4 class="footer-title" data-i18n="footer.followUs">Follow Us</h4>
                 <ul class="footer-follow-icons">
                     <li class="footer-follow-item">
                         <a href="#" aria-label="Facebook" data-platform="facebook" class="footer-follow-link">
@@ -56,11 +56,11 @@ window.sunbookComponents.footer = `
 
     <div class="footer-bottom-modern">
         <ul class="policy-row">
-            <li><a href="policies.html#privacy">Privacy Policy</a></li>
-            <li><a href="policies.html#terms">Terms of Service</a></li>
-            <li><a href="policies.html#refund">Refund Policy</a></li>
+            <li><a href="policies.html#privacy" data-i18n="footer.privacy">Privacy Policy</a></li>
+            <li><a href="policies.html#terms" data-i18n="footer.terms">Terms of Service</a></li>
+            <li><a href="policies.html#refund" data-i18n="footer.refund">Refund Policy</a></li>
         </ul>
-        <p class="copyright">© 2026 The Sun Book. All rights reserved.</p>
+        <p class="copyright" data-i18n="footer.copyright">© 2026 The Sun Book. All rights reserved.</p>
     </div>
 </footer>
 `;
