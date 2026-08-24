@@ -87,7 +87,7 @@
         },
         ar: {
             // ------- Header -------
-            'header.promoText': '✨ اشترك عضويتك دلوقتي واحصل على خصم 5% على كل الكتب والجلسات الخاصة!',
+            'header.promoText': '✨ اشترك في العضوية الآن واحصل على خصم 5% على جميع الكتب والجلسات الخاصة!',
             'header.promoLink': 'اشترك الآن',
             'header.searchPlaceholder': 'ابحث في المجموعة...',
             'header.signIn': 'تسجيل الدخول / حساب جديد',
@@ -128,11 +128,11 @@
             // ------- Booking modal -------
             'modal.bookMeeting': 'احجز جلسة مدتها 30 دقيقة',
             'modal.quantity': 'الكمية 1',
-            'modal.whatTime': 'إيه الميعاد الأنسب لك؟',
+            'modal.whatTime': 'ما هو الموعد الأنسب لك؟',
             'modal.cairoTime': 'بتوقيت القاهرة',
-            'modal.cancellationPolicy': 'إلغاء مجاني حتى 4 ساعات قبل الجلسة. بعد كده الحجز يبقى نهائي.',
+            'modal.cancellationPolicy': 'إلغاء مجاني حتى 4 ساعات قبل الجلسة، وبعد ذلك يصبح الحجز نهائيًا.',
             'modal.confirmBook': 'تأكيد الحجز',
-            'modal.booking': 'جاري الحجز...',
+            'modal.booking': 'جارٍ الحجز...',
 
             // ------- Product card microcopy -------
             'product.price': 'السعر',
@@ -141,7 +141,7 @@
             'product.egyptOnly': 'داخل مصر فقط',
             'product.noOffers': 'لا توجد عروض حاليًا.',
             'product.noProducts': 'لا توجد منتجات بعد.',
-            'product.loadError': 'تعذّر تحميل المنتجات. برجاء تحديث الصفحة.',
+            'product.loadError': 'تعذّر تحميل المنتجات. يُرجى تحديث الصفحة.',
 
             // ------- Calendar / booking JS -------
             'calendar.fullyBooked': 'محجوز بالكامل',
@@ -149,7 +149,7 @@
             // ------- Toasts -------
             'toast.selectDateTime': 'من فضلك اختر التاريخ والوقت',
             'toast.signInFirst': 'من فضلك سجّل الدخول أولاً',
-            'toast.redirecting': 'جاري تحويلك لصفحة الدفع...',
+            'toast.redirecting': 'جارٍ تحويلك إلى صفحة الدفع...',
             'toast.bookedSuccess': 'تم الحجز بنجاح!'
         }
     };
@@ -163,7 +163,7 @@
         },
         ar: {
             months: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
-            weekdaysShort: ['إث', 'ثل', 'أر', 'خم', 'جم', 'سب', 'أح'],
+            weekdaysShort: ['إثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت', 'أحد'],
             dayNamesShort: ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت']
         }
     };
