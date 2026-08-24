@@ -124,8 +124,9 @@ function renderProductNotFound() {
     const titleEl = document.getElementById('product-title');
     const descEl = document.getElementById('product-desc');
     const priceEl = document.getElementById('product-price');
-    if (titleEl) titleEl.innerText = 'Product Not Found';
-    if (descEl) descEl.innerText = 'This book is no longer available.';
+    const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
+    if (titleEl) titleEl.innerText = tr('product.notFound', 'Product Not Found');
+    if (descEl) descEl.innerText = tr('product.notFoundDesc', 'This book is no longer available.');
     if (priceEl) priceEl.innerText = '';
 }
 
@@ -177,7 +178,7 @@ async function loadSingleProductPage() {
             if (normalized.available === false) {
                 const overlay = document.createElement('div');
                 overlay.className = 'out-of-stock-overlay';
-                overlay.innerText = 'Out of Stock';
+                overlay.innerText = window.SunBookI18n ? window.SunBookI18n.t('product.outOfStock') : 'Out of Stock';
                 galleryEl.prepend(overlay);
             }
         }
@@ -186,13 +187,14 @@ async function loadSingleProductPage() {
         const mobileBuyBarBtnEl = document.getElementById('mobileBuyBarBtn');
         if (addToCartLargeEl) {
             if (normalized.available === false) {
+                const outOfStockLabel = window.SunBookI18n ? window.SunBookI18n.t('product.outOfStock') : 'Out of Stock';
                 addToCartLargeEl.disabled = true;
-                addToCartLargeEl.innerText = 'Out of Stock';
+                addToCartLargeEl.innerText = outOfStockLabel;
                 addToCartLargeEl.style.opacity = '0.5';
                 addToCartLargeEl.style.cursor = 'not-allowed';
                 if (mobileBuyBarBtnEl) {
                     mobileBuyBarBtnEl.disabled = true;
-                    mobileBuyBarBtnEl.innerText = 'Out of Stock';
+                    mobileBuyBarBtnEl.innerText = outOfStockLabel;
                     mobileBuyBarBtnEl.style.opacity = '0.5';
                     mobileBuyBarBtnEl.style.cursor = 'not-allowed';
                 }
@@ -717,7 +719,7 @@ function addToCart(id, qty = 1) {
 
     localStorage.setItem('sunbook_cart', JSON.stringify(cartItems));
     updateCartBadge();
-    showToast('Product successfully added to cart!');
+    showToast(window.SunBookI18n ? window.SunBookI18n.t('product.addedToCart') : 'Product successfully added to cart!');
 }
 
 // تفعيل زراير الكمية في صفحة المنتج
@@ -834,6 +836,12 @@ function initProductReadMore() {
     const btn = document.getElementById('readMoreBtn');
     if (!wrapper || !descEl || !btn) return;
 
+    const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
+    const syncButtonText = () => {
+        btn.innerText = wrapper.classList.contains('expanded') ? tr('product.readLess', 'Read Less') : tr('product.readMore', 'Read More');
+    };
+    syncButtonText();
+
     // بنستنى شوية عشان الوصف يتحط فعليًا من الـ API قبل ما نقيس ارتفاعه
     const checkOverflow = () => {
         const isOverflowing = descEl.scrollHeight > descEl.clientHeight + 2;
@@ -842,11 +850,13 @@ function initProductReadMore() {
 
     btn.addEventListener('click', () => {
         wrapper.classList.toggle('expanded');
-        btn.innerText = wrapper.classList.contains('expanded') ? 'Read Less' : 'Read More';
+        syncButtonText();
     });
 
     setTimeout(checkOverflow, 600);
     window.addEventListener('resize', checkOverflow);
+
+    document.addEventListener('sunbook:langChanged', syncButtonText);
 }
 initProductReadMore();
 
@@ -884,15 +894,17 @@ function renderReviewsList(reviews) {
     if (!listEl) return;
 
     if (!reviews.length) {
-        listEl.innerHTML = '<div class="empty-state" id="reviewsEmptyState"><p>No reviews yet. Be the first to share your opinion about this book!</p></div>';
+        const emptyMsg = window.SunBookI18n ? window.SunBookI18n.t('product.noReviewsYet') : 'No reviews yet. Be the first to share your opinion about this book!';
+        listEl.innerHTML = `<div class="empty-state" id="reviewsEmptyState"><p>${emptyMsg}</p></div>`;
         return;
     }
 
+    const dateLocale = (window.SunBookI18n && window.SunBookI18n.getLang() === 'ar') ? 'ar-EG' : 'en-US';
     listEl.innerHTML = reviews.map((r) => `
         <div class="review-item">
             <div class="review-item-header">
                 <span class="review-item-name">${r.userName}</span>
-                <span class="review-item-date">${new Date(r.createdAt).toLocaleDateString()}</span>
+                <span class="review-item-date">${new Date(r.createdAt).toLocaleDateString(dateLocale)}</span>
             </div>
             <div class="review-item-stars">${starsToText(r.rating)}</div>
             <p class="review-item-comment">${r.comment}</p>
@@ -915,8 +927,19 @@ function renderReviewsSummary(count, averageRating) {
     summaryEl.hidden = false;
     if (scoreEl) scoreEl.innerText = averageRating.toFixed(1);
     if (starsEl) starsEl.innerText = starsToText(averageRating);
-    if (countEl) countEl.innerText = `${count} review${count === 1 ? '' : 's'}`;
+    if (countEl) countEl.innerText = window.SunBookI18n ? window.SunBookI18n.formatReviewCount(count) : `${count} review${count === 1 ? '' : 's'}`;
 }
+
+// إعادة رسم قائمة المراجعات والملخص لما اللغة تتبدل (عشان صيغة العدّ ونص "لا توجد مراجعات" يتحدثوا فورًا)
+let lastLoadedReviews = null;
+let lastReviewsCount = 0;
+let lastReviewsAverage = 0;
+document.addEventListener('sunbook:langChanged', () => {
+    if (lastLoadedReviews !== null) {
+        renderReviewsList(lastLoadedReviews);
+        renderReviewsSummary(lastReviewsCount, lastReviewsAverage);
+    }
+});
 
 async function loadProductReviews() {
     const token = localStorage.getItem('sunbook_token');
@@ -946,6 +969,9 @@ async function loadProductReviews() {
 
     try {
         const { data: reviews, count, averageRating } = await api.getProductReviews(productId);
+        lastLoadedReviews = reviews;
+        lastReviewsCount = count;
+        lastReviewsAverage = averageRating;
         renderReviewsList(reviews);
         renderReviewsSummary(count, averageRating);
 
@@ -974,22 +1000,23 @@ function initProductReviewForm() {
         e.preventDefault();
         const commentInput = document.getElementById('reviewCommentInput');
         const comment = commentInput ? commentInput.value.trim() : '';
+        const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
 
         if (!selectedReviewRating) {
-            if (typeof showToast === 'function') showToast('Please select a star rating first', 'error');
+            if (typeof showToast === 'function') showToast(tr('product.selectStarFirst', 'Please select a star rating first'), 'error');
             return;
         }
         if (!comment) {
-            if (typeof showToast === 'function') showToast('Please write a short comment', 'error');
+            if (typeof showToast === 'function') showToast(tr('product.writeCommentFirst', 'Please write a short comment'), 'error');
             return;
         }
 
         try {
             await api.submitReview(productId, selectedReviewRating, comment);
-            if (typeof showToast === 'function') showToast('Thanks for your review!');
+            if (typeof showToast === 'function') showToast(tr('product.thanksReview', 'Thanks for your review!'));
             loadProductReviews();
         } catch (err) {
-            if (typeof showToast === 'function') showToast(err.message || 'Could not submit review', 'error');
+            if (typeof showToast === 'function') showToast(err.message || tr('product.couldNotSubmitReview', 'Could not submit review'), 'error');
         }
     });
 
@@ -997,6 +1024,7 @@ function initProductReviewForm() {
         deleteBtn.addEventListener('click', async () => {
             const reviewId = deleteBtn.dataset.reviewId;
             if (!reviewId) return;
+            const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
             try {
                 await api.deleteReview(reviewId);
                 selectedReviewRating = 0;
@@ -1005,10 +1033,10 @@ function initProductReviewForm() {
                 const starInput = document.getElementById('starInput');
                 if (starInput) renderStars(starInput, 0);
                 deleteBtn.hidden = true;
-                if (typeof showToast === 'function') showToast('Review deleted');
+                if (typeof showToast === 'function') showToast(tr('product.reviewDeleted', 'Review deleted'));
                 loadProductReviews();
             } catch (err) {
-                if (typeof showToast === 'function') showToast(err.message || 'Could not delete review', 'error');
+                if (typeof showToast === 'function') showToast(err.message || tr('product.couldNotDeleteReview', 'Could not delete review'), 'error');
             }
         });
     }

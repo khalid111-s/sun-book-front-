@@ -76,6 +76,44 @@
             'product.noProducts': 'No products yet.',
             'product.loadError': 'Could not load products. Please refresh the page.',
 
+            // ------- Product detail page (product.html) -------
+            'product.loadingTitle': 'Loading...',
+            'product.loadingDesc': "Loading the book's details and the mysteries within...",
+            'product.readMore': 'Read More',
+            'product.readLess': 'Read Less',
+            'product.previewBook': 'Preview book',
+            'product.closePreview': 'Close preview',
+            'product.previewComingSoon': 'Full page preview — coming soon',
+            'product.tabDetails': 'Edition Details',
+            'product.tabReviews': 'Reader Reviews',
+            'product.status': 'Status',
+            'product.tba': 'To be announced soon',
+            'product.yourRating': 'Your rating',
+            'product.star1': '1 star',
+            'product.star2': '2 stars',
+            'product.star3': '3 stars',
+            'product.star4': '4 stars',
+            'product.star5': '5 stars',
+            'product.shareThoughts': 'Share your thoughts about this book...',
+            'product.submitReview': 'Submit Review',
+            'product.deleteReview': 'Delete my review',
+            'product.signInToReview': 'Sign in to leave a rating and share your opinion about this book.',
+            'product.signInLink': 'Sign In',
+            'product.noReviewsYet': 'No reviews yet. Be the first to share your opinion about this book!',
+            'product.relatedTitle': 'You Might Also Like',
+            'product.relatedSubtitle': 'More treasures from our collection worth exploring',
+            'product.prevBooks': 'Previous books',
+            'product.nextBooks': 'Next books',
+            'product.notFound': 'Product Not Found',
+            'product.notFoundDesc': 'This book is no longer available.',
+            'product.selectStarFirst': 'Please select a star rating first',
+            'product.writeCommentFirst': 'Please write a short comment',
+            'product.thanksReview': 'Thanks for your review!',
+            'product.couldNotSubmitReview': 'Could not submit review',
+            'product.reviewDeleted': 'Review deleted',
+            'product.couldNotDeleteReview': 'Could not delete review',
+            'product.addedToCart': 'Product successfully added to cart!',
+
             // ------- Calendar / booking JS -------
             'calendar.fullyBooked': 'Fully booked',
 
@@ -143,6 +181,44 @@
             'product.noProducts': 'لا توجد منتجات بعد.',
             'product.loadError': 'تعذّر تحميل المنتجات. يُرجى تحديث الصفحة.',
 
+            // ------- Product detail page (product.html) -------
+            'product.loadingTitle': 'جارٍ التحميل...',
+            'product.loadingDesc': 'جارٍ تحميل تفاصيل الكتاب وأسراره...',
+            'product.readMore': 'اقرأ المزيد',
+            'product.readLess': 'عرض أقل',
+            'product.previewBook': 'معاينة الكتاب',
+            'product.closePreview': 'إغلاق المعاينة',
+            'product.previewComingSoon': 'معاينة الصفحات الكاملة — قريبًا',
+            'product.tabDetails': 'تفاصيل الطبعة',
+            'product.tabReviews': 'آراء القرّاء',
+            'product.status': 'الحالة',
+            'product.tba': 'سيُعلن عنها قريبًا',
+            'product.yourRating': 'تقييمك',
+            'product.star1': 'نجمة واحدة',
+            'product.star2': 'نجمتان',
+            'product.star3': '3 نجوم',
+            'product.star4': '4 نجوم',
+            'product.star5': '5 نجوم',
+            'product.shareThoughts': 'شاركنا رأيك في هذا الكتاب...',
+            'product.submitReview': 'إرسال التقييم',
+            'product.deleteReview': 'حذف تقييمي',
+            'product.signInToReview': 'سجّل الدخول لإضافة تقييم ومشاركة رأيك في هذا الكتاب.',
+            'product.signInLink': 'تسجيل الدخول',
+            'product.noReviewsYet': 'لا توجد تقييمات بعد. كن أول من يشارك رأيه في هذا الكتاب!',
+            'product.relatedTitle': 'قد يعجبك أيضًا',
+            'product.relatedSubtitle': 'كنوز أخرى من مجموعتنا تستحق الاستكشاف',
+            'product.prevBooks': 'الكتب السابقة',
+            'product.nextBooks': 'الكتب التالية',
+            'product.notFound': 'المنتج غير موجود',
+            'product.notFoundDesc': 'هذا الكتاب لم يعد متاحًا.',
+            'product.selectStarFirst': 'يُرجى اختيار تقييم بالنجوم أولاً',
+            'product.writeCommentFirst': 'يُرجى كتابة تعليق قصير',
+            'product.thanksReview': 'شكرًا لك على تقييمك!',
+            'product.couldNotSubmitReview': 'تعذّر إرسال التقييم',
+            'product.reviewDeleted': 'تم حذف التقييم',
+            'product.couldNotDeleteReview': 'تعذّر حذف التقييم',
+            'product.addedToCart': 'تمت إضافة المنتج إلى السلة بنجاح!',
+
             // ------- Calendar / booking JS -------
             'calendar.fullyBooked': 'محجوز بالكامل',
 
@@ -183,6 +259,18 @@
 
     function getCalendarNames() {
         return calendarNames[getLang()] || calendarNames.en;
+    }
+
+    // العربية بتفرّق بين واحد/اتنين/جمع قليل/جمع كتير في العدّ، عكس الإنجليزي
+    // اللي بس بيفرّق بين مفرد وجمع. الدالة دي بترجع الصياغة الصح حسب العدد.
+    function formatReviewCount(count) {
+        if (getLang() === 'ar') {
+            if (count === 1) return 'تقييم واحد';
+            if (count === 2) return 'تقييمان';
+            if (count >= 3 && count <= 10) return `${count} تقييمات`;
+            return `${count} تقييمًا`;
+        }
+        return `${count} review${count === 1 ? '' : 's'}`;
     }
 
     function setDocumentDirection() {
@@ -274,6 +362,7 @@
         t: t,
         getLang: getLang,
         getCalendarNames: getCalendarNames,
+        formatReviewCount: formatReviewCount,
         setLanguage: function (lang) {
             localStorage.setItem(STORAGE_KEY, lang === 'ar' ? 'ar' : 'en');
             refresh();

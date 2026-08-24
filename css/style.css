@@ -5943,3 +5943,14 @@ html[dir="rtl"] .booking-arrow {
     display: inline-block;
     transform: scaleX(-1);
 }
+
+/* عداد الكمية (- / +) - بيفضل بنفس ترتيبه العالمي المعتاد (ناقص شمال، زائد يمين)
+   حتى في العربي، لأن العلامات الرياضية مش جزء من اتجاه القراءة */
+html[dir="rtl"] .modern-qty {
+    direction: ltr;
+}
+
+/* أسهم كاروسيل "قد يعجبك أيضًا" - نفس مبدأ أسهم التقويم بالظبط */
+html[dir="rtl"] .related-carousel-arrow svg {
+    transform: scaleX(-1);
+}
