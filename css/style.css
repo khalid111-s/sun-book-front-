@@ -5926,6 +5926,7 @@ html[dir="rtl"] #nextMonth svg {
    حتى في وضع العربي - هو مش محتوى بيتترجم، فمينفعش الفليكس يقلب ترتيبه */
 html[dir="rtl"] .logo {
     direction: ltr;
+    justify-content: flex-end;
 }
 
 /* زرار إغلاق مودال الحجز - في الإنجليزي بيبقى في الركن العلوي اليمين
