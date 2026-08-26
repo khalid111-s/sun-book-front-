@@ -503,6 +503,7 @@ function renderCartItemsNow() {
 
     if (cartItems.length === 0) {
         if (summaryBox) summaryBox.style.display = 'none';
+        const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
         container.innerHTML = `
             <div class="cart-empty-state">
                 <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold-color)" stroke-width="2" class="cart-empty-icon">
@@ -510,9 +511,9 @@ function renderCartItemsNow() {
                     <circle cx="20" cy="21" r="1"></circle>
                     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                 </svg>
-                <h2 class="cart-empty-title">Your cart is empty</h2>
-                <p class="cart-empty-text">Looks like you haven't added any books yet. Explore our collection of ancient wisdom and find your next great read.</p>
-                <a href="index.html#all-products" class="btn-shop cart-empty-btn">Browse Books</a>
+                <h2 class="cart-empty-title">${tr('cart.emptyTitle', 'Your cart is empty')}</h2>
+                <p class="cart-empty-text">${tr('cart.emptyText', "Looks like you haven't added any books yet. Explore our collection of ancient wisdom and find your next great read.")}</p>
+                <a href="index.html#all-products" class="btn-shop cart-empty-btn">${tr('cart.browseBooks', 'Browse Books')}</a>
             </div>
         `;
         updateOrderSummary(0);
@@ -522,13 +523,15 @@ function renderCartItemsNow() {
     if (summaryBox) summaryBox.style.display = 'block';
 
     let totalPrice = 0;
+    const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
     cartItems.forEach((item, index) => {
+        const typeLabel = item.type === 'digital' ? tr('cart.typeDigital', 'Digital (PDF)') : item.type === 'booking' ? tr('cart.typeSession', 'Session') : tr('cart.typePhysical', 'Physical Book');
         const itemHTML = `
             <div class="cart-item reveal active">
                 <img src="${item.image}" alt="Book" class="cart-item-img">
                 <div class="cart-item-info">
                     <h3 class="cart-item-title">${item.title}</h3>
-                    <span style="font-size: 0.75rem; color: ${item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)'}; border: 1px solid ${item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)'}; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 5px;">${item.type === 'digital' ? 'Digital (PDF)' : item.type === 'booking' ? 'Session' : 'Physical Book'}</span>
+                    <span style="font-size: 0.75rem; color: ${item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)'}; border: 1px solid ${item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)'}; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 5px;">${typeLabel}</span>
                 </div>
                 <div class="cart-item-actions">
                     <p class="cart-item-price">${item.price}</p>
@@ -540,7 +543,7 @@ function renderCartItemsNow() {
                             <button class="qty-btn plus-btn" onclick="updateQty(${index}, 1)">+</button>
                            </div>`
                     }
-                    <button class="remove-btn" onclick="removeItem(${index})">🗑️ Remove</button>
+                    <button class="remove-btn" onclick="removeItem(${index})">🗑️ ${tr('cart.remove', 'Remove')}</button>
                 </div>
             </div>
         `;
@@ -576,17 +579,19 @@ function updateOrderSummary(total) {
     }
 
     let summaryHTML = `
-        <h3 class="summary-title">Order Summary</h3>
+        <h3 class="summary-title" data-i18n="cart.orderSummary">Order Summary</h3>
         <div class="summary-row">
-            <span>Subtotal</span>
+            <span data-i18n="cart.subtotal">Subtotal</span>
             <span>LE ${total.toFixed(2)}</span>
         </div>
     `;
 
+    const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
+
     if (discount > 0) {
         summaryHTML += `
         <div class="summary-row" style="color: var(--gold-color); font-weight: bold;">
-            <span>Member Discount (5%)</span>
+            <span>${tr('cart.memberDiscount', 'Member Discount (5%)')}</span>
             <span>-LE ${discount.toFixed(2)}</span>
         </div>
         `;
@@ -595,7 +600,7 @@ function updateOrderSummary(total) {
     if (storedPromo && promoDiscount > 0) {
         summaryHTML += `
         <div class="summary-row" style="color: #34A853; font-weight: bold;">
-            <span>Promo "${storedPromo.code}" <a href="#" id="removePromoLink" style="color: var(--text-gray); font-weight: normal; text-decoration: underline; font-size: 0.75rem;">(remove)</a></span>
+            <span>${tr('cart.promoLabel', 'Promo')} "${storedPromo.code}" <a href="#" id="removePromoLink" style="color: var(--text-gray); font-weight: normal; text-decoration: underline; font-size: 0.75rem;">(${tr('cart.remove', 'Remove').toLowerCase()})</a></span>
             <span>-LE ${promoDiscount.toFixed(2)}</span>
         </div>
         `;
@@ -603,16 +608,16 @@ function updateOrderSummary(total) {
 
     summaryHTML += `
         <div class="promo-code-container">
-            <input type="text" placeholder="Enter code" class="promo-input" id="cartPromoInput" ${storedPromo ? 'disabled' : ''} value="${storedPromo ? storedPromo.code : ''}">
-            <button class="apply-btn" id="cartApplyPromoBtn" ${storedPromo ? 'disabled' : ''}>${storedPromo ? 'Applied' : 'Apply'}</button>
+            <input type="text" placeholder="${tr('cart.promoPlaceholder', 'Enter code')}" class="promo-input" id="cartPromoInput" ${storedPromo ? 'disabled' : ''} value="${storedPromo ? storedPromo.code : ''}">
+            <button class="apply-btn" id="cartApplyPromoBtn" ${storedPromo ? 'disabled' : ''}>${storedPromo ? tr('cart.applied', 'Applied') : tr('cart.apply', 'Apply')}</button>
         </div>
         <p id="cartPromoMsg" style="font-size: 0.8rem; margin: -8px 0 12px; min-height: 14px;"></p>
         <hr class="summary-divider">
         <div class="summary-row total-row">
-            <span>Total</span>
+            <span data-i18n="cart.total">Total</span>
             <span>LE ${finalTotal.toFixed(2)}</span>
         </div>
-        <a href="checkout.html" class="btn-shop checkout-btn" style="text-align: center; text-decoration: none; display: block;" id="mainCheckoutBtn">Proceed to Checkout</a>
+        <a href="checkout.html" class="btn-shop checkout-btn" style="text-align: center; text-decoration: none; display: block;" id="mainCheckoutBtn">${tr('cart.proceedCheckout', 'Proceed to Checkout')}</a>
     `;
 
     summaryBox.innerHTML = summaryHTML;
@@ -629,21 +634,22 @@ function attachPromoEvents(rawTotal) {
 
     if (applyBtn && promoInput && !getStoredPromo()) {
         applyBtn.addEventListener('click', async () => {
+            const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
             const code = promoInput.value.trim();
             if (!code) {
-                if (promoMsg) { promoMsg.style.color = '#e05252'; promoMsg.innerText = 'Please enter a code.'; }
+                if (promoMsg) { promoMsg.style.color = '#e05252'; promoMsg.innerText = tr('cart.enterCode', 'Please enter a code.'); }
                 return;
             }
             applyBtn.disabled = true;
-            applyBtn.innerText = 'Checking...';
+            applyBtn.innerText = tr('cart.checking', 'Checking...');
             try {
                 const { data } = await api.validatePromoCode(code);
                 setStoredPromo(data);
                 renderCartItemsNow();
             } catch (err) {
-                if (promoMsg) { promoMsg.style.color = '#e05252'; promoMsg.innerText = err.message || 'Invalid promo code.'; }
+                if (promoMsg) { promoMsg.style.color = '#e05252'; promoMsg.innerText = err.message || tr('cart.invalidCode', 'Invalid promo code.'); }
                 applyBtn.disabled = false;
-                applyBtn.innerText = 'Apply';
+                applyBtn.innerText = tr('cart.apply', 'Apply');
             }
         });
     }
@@ -803,6 +809,9 @@ initGalleryPreviewLightbox();
 // لأن الكروت دلوقتي بتتحقن ديناميكيًا من الـ API بعد ما الصفحة تحمّل.
 
 renderCart();
+document.addEventListener('sunbook:langChanged', () => {
+    if (document.getElementById('cart-container')) renderCartItemsNow();
+});
 updateCartBadge();
 
 /* =========================================
@@ -1418,10 +1427,12 @@ function applyLoginState() {
             const firstLetter = loggedInUser.charAt(0).toUpperCase();
             container.innerHTML = `<a href="profile.html" class="user-avatar" title="${loggedInUser}">${firstLetter}</a>`;
         } else {
+            const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
+            const signInLabel = tr('header.signIn', 'Sign In / Register');
             if (container.closest('.sidebar-footer')) {
-                container.innerHTML = `<a href="login.html" class="btn-shop" style="display: block; width: 100%;">Sign In / Register</a>`;
+                container.innerHTML = `<a href="login.html" class="btn-shop" style="display: block; width: 100%;" data-i18n="header.signIn">${signInLabel}</a>`;
             } else {
-                container.innerHTML = `<a href="login.html" class="btn-shop">Sign In / Register</a>`;
+                container.innerHTML = `<a href="login.html" class="btn-shop" data-i18n="header.signIn">${signInLabel}</a>`;
             }
         }
         
@@ -1456,16 +1467,17 @@ function attachCheckoutEvent(finalAmount) {
     if (!checkoutBtn) return;
 
     checkoutBtn.addEventListener('click', (e) => {
+        const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
         if (cartItems.length === 0) {
             e.preventDefault();
-            if (typeof showToast === 'function') showToast('Your cart is empty!');
+            if (typeof showToast === 'function') showToast(tr('cart.emptyCart', 'Your cart is empty!'));
             return;
         }
 
         const loggedInUser = localStorage.getItem('sunbook_username');
         if (!loggedInUser) {
             e.preventDefault();
-            if (typeof showToast === 'function') showToast('Please sign in to complete your order!', 'error');
+            if (typeof showToast === 'function') showToast(tr('cart.signInToCheckout', 'Please sign in to complete your order!'), 'error');
             localStorage.setItem('sunbook_redirect_after_login', 'checkout.html');
             setTimeout(() => { window.location.href = 'login.html'; }, 2000);
             return;
