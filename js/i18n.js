@@ -480,6 +480,106 @@
         }
     };
 
+    // أسماء الأحياء والمراكز المصرية - أسماء أماكن حقيقية، القيمة (value) بتفضل
+    // إنجليزي زي ما هي عشان متتأثرش بمنطق ربط المحافظة بالحي، والعربي ده للعرض بس
+    var districtNamesAr = {
+        // القاهرة
+        "Nasr City": "مدينة نصر", "Maadi": "المعادي", "Heliopolis": "مصر الجديدة",
+        "5th Settlement": "التجمع الخامس", "Downtown": "وسط البلد", "Garden City": "جاردن سيتي",
+        "Zamalek": "الزمالك", "Mokattam": "المقطم", "Helwan": "حلوان", "Shubra": "شبرا",
+        // الإسكندرية
+        "Agami": "العجمي", "Shatby": "الشاطبي", "Sidi Bishr": "سيدي بشر", "Smouha": "سموحة",
+        "Raml Station": "محطة الرمل", "Roushdy": "رشدي", "Stanley": "ستانلي", "Montaza": "المنتزه",
+        "Asafra": "العصافرة", "Glim": "جليم",
+        // الجيزة
+        "Dokki": "الدقي", "Mohandessin": "المهندسين", "Agouza": "العجوزة", "Imbaba": "إمبابة",
+        "Faisal": "فيصل", "Haram Gardens": "حدائق الأهرام", "Sheikh Zayed": "الشيخ زايد",
+        "6th of October": "السادس من أكتوبر", "Hawamdiya": "الحوامدية", "Badrshein": "البدرشين",
+        // الشرقية
+        "Zagazig": "الزقازيق", "10th of Ramadan": "العاشر من رمضان", "Minya El Qamh": "منيا القمح",
+        "Belbeis": "بلبيس", "Faqous": "فاقوس", "Abu Hammad": "أبو حماد", "Diyarb Negm": "ديرب نجم",
+        "Hihya": "ههيا", "El Qurein": "القرين", "Olad Saqr": "أولاد صقر",
+        // البحيرة
+        "Damanhour": "دمنهور", "Kafr El Dawwar": "كفر الدوار", "Rashid": "رشيد",
+        "Etay El Barud": "إيتاي البارود", "Abu El Matamir": "أبو المطامير", "Mahmoudiyah": "المحمودية",
+        "Shabrakhit": "شبراخيت", "Kom Hamada": "كوم حمادة", "Delengat": "الدلنجات",
+        "Wadi El Natrun": "وادي النطرون",
+        // القليوبية
+        "Benha": "بنها", "Shubra El Kheima": "شبرا الخيمة", "Qalyub": "قليوب", "Khanka": "الخانكة",
+        "Khusus": "الخصوص", "Obour": "العبور", "Qanater": "القناطر الخيرية", "Toukh": "طوخ",
+        "Kafr Shukr": "كفر شكر", "El Bagour": "الباجور",
+        // المنوفية
+        "Shebin El Kom": "شبين الكوم", "Sadat City": "مدينة السادات", "Menouf": "منوف",
+        "Ashmoun": "أشمون", "Berket El Sab": "بركة السبع", "Tala": "تلا", "Quesna": "قويسنا",
+        "El Shohada": "الشهداء", "Sers El Lyan": "سرس الليان",
+        // الغربية
+        "Tanta": "طنطا", "El Mahalla": "المحلة الكبرى", "Kafr El Zayat": "كفر الزيات",
+        "Zifta": "زفتى", "Samanoud": "سمنود", "Kotour": "قطور", "Basyoun": "بسيون",
+        // الدقهلية
+        "Mansoura": "المنصورة", "Mit Ghamr": "ميت غمر", "Talkha": "طلخا", "Aga": "أجا",
+        "Dikirnis": "دكرنس", "Belqas": "بلقاس", "Sherbin": "شربين", "El Manzala": "المنزلة",
+        "El Matareya": "المطرية", "Gamasa": "جمصة",
+        // كفر الشيخ
+        "Kafr El Sheikh": "كفر الشيخ", "Desouk": "دسوق", "Fouh": "فوة", "Baltim": "بلطيم",
+        "Metoubes": "مطوبس", "El Hamool": "الحامول", "Riyadh": "الرياض", "Sidi Salem": "سيدي سالم",
+        // دمياط
+        "Damietta": "دمياط", "New Damietta": "دمياط الجديدة", "Ras El Bar": "رأس البر",
+        "Fareskur": "فارسكور", "Kafr Saad": "كفر سعد", "El Zarqa": "الزرقا",
+        // بورسعيد
+        "Port Fouad": "بورفؤاد", "Al Arab": "العرب", "Al Ganoub": "الجنوب", "Al Zohour": "الزهور",
+        "Al Manakh": "المناخ",
+        // السويس
+        "Al Arbaeen": "الأربعين", "Al Ganayen": "الجناين", "Attaka": "عتاقة", "Ganoub Suez": "جنوب السويس",
+        // الإسماعيلية
+        "Ismailia City": "مدينة الإسماعيلية", "Fayed": "فايد", "Kantara": "القنطرة",
+        "Abu Swear": "أبو صوير", "El Tal El Kebir": "التل الكبير",
+        // الفيوم
+        "Faiyum City": "مدينة الفيوم", "Tamiya": "طامية", "Senorus": "سنورس",
+        "Ibsheway": "إبشواي", "Yusuf El Sediaq": "يوسف الصديق",
+        // بني سويف
+        "Beni Suef City": "مدينة بني سويف", "Nasser": "ناصر", "Ihnasya": "إهناسيا",
+        "Beba": "ببا", "Fashn": "الفشن", "Al Wasta": "الواسطى",
+        // المنيا
+        "Minya City": "مدينة المنيا", "Mallawi": "ملوي", "Samalut": "سمالوط",
+        "Beni Mazar": "بني مزار", "Maghagha": "مغاغة", "Adwa": "أدوة", "Matay": "مطاي",
+        // أسيوط
+        "Asyut City": "مدينة أسيوط", "Dairut": "ديروط", "Manfalut": "منفلوط", "Qusiya": "القوصية",
+        "Abnoub": "أبنوب", "El Badari": "البداري", "Sahel Selim": "ساحل سليم", "El Ghanayem": "الغنايم",
+        // سوهاج
+        "Sohag City": "مدينة سوهاج", "Akhmim": "أخميم", "Gerga": "جرجا", "Tama": "طما",
+        "Tahta": "طهطا", "Baliana": "البلينا", "El Maragha": "المراغة", "Monsha'a": "المنشأة",
+        // قنا
+        "Qena City": "مدينة قنا", "Nag Hammadi": "نجع حمادي", "Qus": "قوص", "Dishna": "دشنا",
+        "Farshout": "فرشوط", "Abu Tesht": "أبوتشت", "Naqada": "نقادة",
+        // الأقصر
+        "Luxor City": "مدينة الأقصر", "Armant": "أرمنت", "Esna": "إسنا", "Tod": "الطود",
+        "Al Bayadiya": "البياضية",
+        // أسوان
+        "Aswan City": "مدينة أسوان", "Kom Ombo": "كوم أمبو", "Edfu": "إدفو", "Daraw": "دراو",
+        "Nasr El Nuba": "نصر النوبة", "Al Basilia": "البصيلية",
+        // البحر الأحمر
+        "Hurghada": "الغردقة", "El Gouna": "الجونة", "Safaga": "سفاجا", "Marsa Alam": "مرسى علم",
+        "Ras Gharib": "رأس غارب", "Quseer": "القصير",
+        // مطروح
+        "Marsa Matrouh": "مرسى مطروح", "El Hamam": "الحمام", "Alamein": "العلمين", "Siwa": "سيوة",
+        "Dabaa": "الضبعة", "Sidi Barrani": "سيدي براني",
+        // شمال سيناء
+        "El Arish": "العريش", "Sheikh Zuweid": "الشيخ زويد", "Rafah": "رفح", "Bir El Abd": "بئر العبد",
+        "Hassana": "حسنة", "Nakhl": "نخل",
+        // جنوب سيناء
+        "Sharm El Sheikh": "شرم الشيخ", "Dahab": "دهب", "Taba": "طابا", "Nuweiba": "نويبع",
+        "Saint Catherine": "سانت كاترين", "Tor Sinai": "طور سيناء",
+        // الوادي الجديد
+        "Kharga": "الخارجة", "Dakhla": "الداخلة", "Farafra": "الفرافرة", "Baris": "باريس", "Balat": "بلاط"
+    };
+
+    function getDistrictLabel(englishName) {
+        if (getLang() === 'ar' && Object.prototype.hasOwnProperty.call(districtNamesAr, englishName)) {
+            return districtNamesAr[englishName];
+        }
+        return englishName;
+    }
+
     function getLang() {
         var stored = localStorage.getItem(STORAGE_KEY);
         return stored === 'ar' || stored === 'en' ? stored : 'en';
@@ -599,6 +699,7 @@
         getLang: getLang,
         getCalendarNames: getCalendarNames,
         formatReviewCount: formatReviewCount,
+        getDistrictLabel: getDistrictLabel,
         setLanguage: function (lang) {
             localStorage.setItem(STORAGE_KEY, lang === 'ar' ? 'ar' : 'en');
             refresh();

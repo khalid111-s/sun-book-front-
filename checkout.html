@@ -627,7 +627,7 @@
                 governorateData[selectedGov].forEach(district => {
                     const option = document.createElement('option');
                     option.value = district;
-                    option.textContent = district;
+                    option.textContent = window.SunBookI18n ? window.SunBookI18n.getDistrictLabel(district) : district;
                     districtSelect.appendChild(option);
                 });
                 districtSelect.disabled = false;
@@ -729,9 +729,15 @@
     setupCustomDropdown(govSelect);
     setupCustomDropdown(districtSelect);
 
-    // لما اللغة تتبدل، لازم نعيد رسم القايمة المخصصة (مش الـ <select> الأصلي بس)
-    // عشان النص الظاهر فعليًا للمستخدم يتحدث فورًا
+    // لما اللغة تتبدل، لازم نعيد تسمية خيارات "الحي" اللي كانت اتبنت قبل كده
+    // (مش بس نعيد قراءتها) لأنها بتتبني ديناميكيًا من غير data-i18n، وبعدين
+    // نعيد رسم القايمة المخصصة عشان النص الظاهر فعليًا للمستخدم يتحدث فورًا
     document.addEventListener('sunbook:langChanged', () => {
+        if (districtSelect && window.SunBookI18n) {
+            Array.from(districtSelect.options).forEach(opt => {
+                if (opt.value) opt.textContent = window.SunBookI18n.getDistrictLabel(opt.value);
+            });
+        }
         if (govSelect && govSelect._refreshCustomDropdown) govSelect._refreshCustomDropdown();
         if (districtSelect && districtSelect._refreshCustomDropdown) districtSelect._refreshCustomDropdown();
     });
