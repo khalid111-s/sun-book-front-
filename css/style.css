@@ -5954,3 +5954,22 @@ html[dir="rtl"] .modern-qty {
 html[dir="rtl"] .related-carousel-arrow svg {
     transform: scaleX(-1);
 }
+
+/* سهم القوايم المنسدلة في صفحة الدفع (المحافظة/الحي) - المسافة المحجوزة
+   له كانت على اليمين دايمًا، فلازم تتحول للشمال في العربي عشان النص
+   والسهم يتوزعوا صح جوه الصندوق */
+html[dir="rtl"] .select-wrapper .custom-select,
+html[dir="rtl"] .custom-select-display {
+    padding: 14px 15px 14px 40px;
+}
+
+html[dir="rtl"] .select-arrow {
+    right: auto;
+    left: 12px;
+}
+
+/* رقم الموبايل بيفضل بيتقرا شمال-لليمين دايمًا (زي أي رقم)، بغض النظر
+   عن اتجاه الصفحة - فكود الدولة "+20" يفضل قبل الرقم مش بعده */
+html[dir="rtl"] .phone-input-wrapper {
+    direction: ltr;
+}

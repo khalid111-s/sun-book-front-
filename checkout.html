@@ -6,6 +6,9 @@
     <title>Secure Checkout - The Sun Book</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/png" href="assets/sun-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
 <div data-include="components/header.html"></div>
@@ -26,99 +29,99 @@
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                     </svg>
-                    <h4>Instant Digital Delivery</h4>
-                    <p>No shipping needed. Your books will be available for download immediately after payment.</p>
+                    <h4 data-i18n="checkout.instantDigitalTitle">Instant Digital Delivery</h4>
+                    <p data-i18n="checkout.instantDigitalText">No shipping needed. Your books will be available for download immediately after payment.</p>
                 </div>
 
                 <!-- قسم الشحن (هيتخفى تلقائي لو السلة كلها ديجيتال) -->
                 <div id="shipping-section" class="checkout-box">
-                    <h3 class="checkout-title">Shipping Address</h3>
+                    <h3 class="checkout-title" data-i18n="checkout.shippingAddress">Shipping Address</h3>
 
                     <div class="input-grid two-cols">
-                        <input type="text" id="ship-firstname" class="contact-input" placeholder="First Name" required dir="auto" pattern="[\u0600-\u06FFa-zA-Z\s]{2,}">
-                        <input type="text" id="ship-lastname" class="contact-input" placeholder="Last Name" required dir="auto" pattern="[\u0600-\u06FFa-zA-Z\s]{2,}">
+                        <input type="text" id="ship-firstname" class="contact-input" placeholder="First Name" required dir="auto" pattern="[\u0600-\u06FFa-zA-Z\s]{2,}" data-i18n-placeholder="checkout.firstName">
+                        <input type="text" id="ship-lastname" class="contact-input" placeholder="Last Name" required dir="auto" pattern="[\u0600-\u06FFa-zA-Z\s]{2,}" data-i18n-placeholder="checkout.lastName">
                     </div>
 
-                    <input type="text" id="ship-address" class="contact-input full-width-row" placeholder="Full Address (Street, Building, Apt)" required dir="auto">
+                    <input type="text" id="ship-address" class="contact-input full-width-row" placeholder="Full Address (Street, Building, Apt)" required dir="auto" data-i18n-placeholder="checkout.fullAddress">
 
                     <div class="input-grid three-cols">
                         <div class="select-wrapper">
                             <select id="governorate" class="contact-input custom-select" required>
-                                <option value="" disabled selected>Select Governorate</option>
-                                <option value="Cairo">Cairo</option>
-                                <option value="Alexandria">Alexandria</option>
-                                <option value="Giza">Giza</option>
-                                <option value="Sharqia">Sharqia</option>
-                                <option value="Beheira">Beheira</option>
-                                <option value="Qalyubia">Qalyubia</option>
-                                <option value="Monufia">Monufia</option>
-                                <option value="Gharbia">Gharbia</option>
-                                <option value="Dakahlia">Dakahlia</option>
-                                <option value="Kafr El Sheikh">Kafr El Sheikh</option>
-                                <option value="Damietta">Damietta</option>
-                                <option value="Port Said">Port Said</option>
-                                <option value="Suez">Suez</option>
-                                <option value="Ismailia">Ismailia</option>
-                                <option value="Faiyum">Faiyum</option>
-                                <option value="Beni Suef">Beni Suef</option>
-                                <option value="Minya">Minya</option>
-                                <option value="Asyut">Asyut</option>
-                                <option value="Sohag">Sohag</option>
-                                <option value="Qena">Qena</option>
-                                <option value="Luxor">Luxor</option>
-                                <option value="Aswan">Aswan</option>
-                                <option value="Red Sea">Red Sea</option>
-                                <option value="Matrouh">Matrouh</option>
-                                <option value="North Sinai">North Sinai</option>
-                                <option value="South Sinai">South Sinai</option>
-                                <option value="New Valley">New Valley</option>
+                                <option value="" disabled selected data-i18n="checkout.selectGovernorate">Select Governorate</option>
+                                <option value="Cairo" data-i18n="checkout.gov.Cairo">Cairo</option>
+                                <option value="Alexandria" data-i18n="checkout.gov.Alexandria">Alexandria</option>
+                                <option value="Giza" data-i18n="checkout.gov.Giza">Giza</option>
+                                <option value="Sharqia" data-i18n="checkout.gov.Sharqia">Sharqia</option>
+                                <option value="Beheira" data-i18n="checkout.gov.Beheira">Beheira</option>
+                                <option value="Qalyubia" data-i18n="checkout.gov.Qalyubia">Qalyubia</option>
+                                <option value="Monufia" data-i18n="checkout.gov.Monufia">Monufia</option>
+                                <option value="Gharbia" data-i18n="checkout.gov.Gharbia">Gharbia</option>
+                                <option value="Dakahlia" data-i18n="checkout.gov.Dakahlia">Dakahlia</option>
+                                <option value="Kafr El Sheikh" data-i18n="checkout.gov.KafrElSheikh">Kafr El Sheikh</option>
+                                <option value="Damietta" data-i18n="checkout.gov.Damietta">Damietta</option>
+                                <option value="Port Said" data-i18n="checkout.gov.PortSaid">Port Said</option>
+                                <option value="Suez" data-i18n="checkout.gov.Suez">Suez</option>
+                                <option value="Ismailia" data-i18n="checkout.gov.Ismailia">Ismailia</option>
+                                <option value="Faiyum" data-i18n="checkout.gov.Faiyum">Faiyum</option>
+                                <option value="Beni Suef" data-i18n="checkout.gov.BeniSuef">Beni Suef</option>
+                                <option value="Minya" data-i18n="checkout.gov.Minya">Minya</option>
+                                <option value="Asyut" data-i18n="checkout.gov.Asyut">Asyut</option>
+                                <option value="Sohag" data-i18n="checkout.gov.Sohag">Sohag</option>
+                                <option value="Qena" data-i18n="checkout.gov.Qena">Qena</option>
+                                <option value="Luxor" data-i18n="checkout.gov.Luxor">Luxor</option>
+                                <option value="Aswan" data-i18n="checkout.gov.Aswan">Aswan</option>
+                                <option value="Red Sea" data-i18n="checkout.gov.RedSea">Red Sea</option>
+                                <option value="Matrouh" data-i18n="checkout.gov.Matrouh">Matrouh</option>
+                                <option value="North Sinai" data-i18n="checkout.gov.NorthSinai">North Sinai</option>
+                                <option value="South Sinai" data-i18n="checkout.gov.SouthSinai">South Sinai</option>
+                                <option value="New Valley" data-i18n="checkout.gov.NewValley">New Valley</option>
                             </select>
                             <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                         </div>
 
                         <div class="select-wrapper">
                             <select id="district" class="contact-input custom-select" required disabled>
-                                <option value="" disabled selected>Select District</option>
+                                <option value="" disabled selected data-i18n="checkout.selectDistrict">Select District</option>
                             </select>
                             <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                         </div>
 
                         <div class="phone-input-wrapper">
                             <span class="country-code">+20</span>
-                            <input type="tel" id="phoneNumber" class="contact-input phone-field" placeholder="1XX XXX XXXX" required maxlength="11" pattern="^01[0-2,5]{1}[0-9]{8}$" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11); if(this.value.length > 0 && !this.value.startsWith('0')) this.value = '0' + this.value;">
+                            <input type="tel" id="phoneNumber" class="contact-input phone-field" placeholder="1XX XXX XXXX" required maxlength="11" pattern="^01[0-2,5]{1}[0-9]{8}$" dir="ltr" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11); if(this.value.length > 0 && !this.value.startsWith('0')) this.value = '0' + this.value;">
                         </div>
                     </div>
                 </div>
 
                 <!-- قسم الدفع -->
                 <div class="checkout-box">
-                    <h3 class="checkout-title">Payment Method</h3>
+                    <h3 class="checkout-title" data-i18n="checkout.paymentMethod">Payment Method</h3>
 
                     <!-- بيانات الدفع بتتاخد بأمان من صفحة PayTabs الرسمية بعد الضغط على الزرار تحت -->
                     <div id="card-form" class="pay-form active">
-                        <p style="color: var(--text-gray); font-size: 0.9rem;">
+                        <p style="color: var(--text-gray); font-size: 0.9rem;" data-i18n="checkout.securePaymentNotice">
                             You'll be redirected to our secure payment page to enter your card or mobile wallet details safely.
                         </p>
                     </div>
                 </div>
 
-                <button class="book-now-btn checkout-submit-btn" id="confirmPaymentBtn" onclick="return validateCheckoutForm(event);">Pay Now & Complete Order</button>
+                <button class="book-now-btn checkout-submit-btn" id="confirmPaymentBtn" onclick="return validateCheckoutForm(event);" data-i18n="checkout.payNowComplete">Pay Now & Complete Order</button>
 
             </div>
 
             <!-- الجزء الأيمن: ملخص الطلب -->
             <div class="checkout-summary-area">
                 <div class="checkout-box">
-                    <h3 class="checkout-title">Order Summary</h3>
+                    <h3 class="checkout-title" data-i18n="cart.orderSummary">Order Summary</h3>
                     <div id="checkout-items-list" class="checkout-items-list"></div>
                     <hr class="summary-divider">
 
                     <div class="summary-row" id="promoDiscountRow" style="display:none; color:#34A853;">
-                        <span id="promoDiscountLabel">Discount</span>
+                        <span id="promoDiscountLabel" data-i18n="checkout.discount">Discount</span>
                         <span id="promoDiscountAmount">- LE 0.00</span>
                     </div>
                     <div class="summary-row total-row">
-                        <span>Total to pay</span>
+                        <span data-i18n="checkout.totalToPay">Total to pay</span>
                         <span id="checkout-total-price">LE 0.00</span>
                     </div>
                 </div>
@@ -136,15 +139,15 @@
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
             <polyline points="22 4 12 14.01 9 11.01"></polyline>
         </svg>
-        <h2 style="color: var(--gold-color); font-family: var(--font-logo); font-size: 2rem; margin-bottom: 10px;">Payment Successful!</h2>
-        <p id="success-message" style="color: var(--text-gray); margin-bottom: 30px;">Your order has been placed securely.</p>
+        <h2 style="color: var(--gold-color); font-family: var(--font-logo); font-size: 2rem; margin-bottom: 10px;" data-i18n="checkout.paymentSuccessful">Payment Successful!</h2>
+        <p id="success-message" style="color: var(--text-gray); margin-bottom: 30px;" data-i18n="checkout.orderPlacedSecurely">Your order has been placed securely.</p>
 
         <div id="download-links-container" style="width: 100%; display: none; margin-bottom: 30px;">
-            <div class="download-section-title">Your Digital Library</div>
+            <div class="download-section-title" data-i18n="checkout.yourDigitalLibrary">Your Digital Library</div>
             <!-- زراير التحميل هتظهر هنا -->
         </div>
 
-        <button onclick="window.location.href='profile.html?tab=sessions'" class="btn-shop" style="width: 100%;">Go to My Profile</button>
+        <button onclick="window.location.href='profile.html?tab=sessions'" class="btn-shop" style="width: 100%;" data-i18n="checkout.goToProfile">Go to My Profile</button>
     </div>
 </div>
 
@@ -152,6 +155,7 @@
 <div data-include="components/footer.html"></div>
 
 <script src="components/loader.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
 <script src="js/script.js"></script>
 <script>
@@ -192,15 +196,17 @@
             const titleEl = modal ? modal.querySelector('h2') : null;
             const msgEl = document.getElementById('success-message');
             const iconEl = modal ? modal.querySelector('svg') : null;
+            const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
 
             if (order.status === 'paid') {
-                if (msgEl) msgEl.innerText = `Payment confirmed — order #${order._id.slice(-6).toUpperCase()} is on its way.`;
+                const template = tr('checkout.paymentConfirmedOrder', 'Payment confirmed — order #{orderNum} is on its way.');
+                if (msgEl) msgEl.innerText = template.replace('{orderNum}', order._id.slice(-6).toUpperCase());
                 localStorage.removeItem('sunbook_cart');
                 if (typeof updateCartCount === 'function') updateCartCount();
             } else {
                 // الدفع فشل أو اتلغى (أو لسه معلّق بعد كل المحاولات)
-                if (titleEl) titleEl.innerText = 'Payment Not Completed';
-                if (msgEl) msgEl.innerText = "We couldn't confirm your payment. Your cart is still saved — please try again.";
+                if (titleEl) titleEl.innerText = tr('checkout.paymentNotCompleted', 'Payment Not Completed');
+                if (msgEl) msgEl.innerText = tr('checkout.couldNotConfirmPayment', "We couldn't confirm your payment. Your cart is still saved — please try again.");
                 if (iconEl) {
                     iconEl.style.stroke = '#e05252';
                     iconEl.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>';
@@ -217,8 +223,9 @@
 <script>
     async function processPayment() {
         const confirmBtn = document.getElementById('confirmPaymentBtn');
+        const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
         if (confirmBtn) {
-            confirmBtn.innerText = 'Processing...';
+            confirmBtn.innerText = tr('checkout.processing', 'Processing...');
             confirmBtn.disabled = true;
         }
 
@@ -240,10 +247,10 @@
             const token = localStorage.getItem('sunbook_token');
             if (!token || token === 'social_dummy_token') {
                 if (typeof showToast === 'function') {
-                    showToast('Please sign in with your account to book a session.', 'error');
+                    showToast(tr('checkout.signInToBookSession', 'Please sign in with your account to book a session.'), 'error');
                 }
                 if (confirmBtn) {
-                    confirmBtn.innerText = 'Pay & Confirm Session';
+                    confirmBtn.innerText = tr('checkout.payConfirmSession', 'Pay & Confirm Session');
                     confirmBtn.disabled = false;
                 }
                 return;
@@ -267,12 +274,12 @@
                 }
             } catch (err) {
                 if (typeof showToast === 'function') {
-                    showToast(err.message || 'Booking failed', 'error');
+                    showToast(err.message || tr('checkout.bookingFailed', 'Booking failed'), 'error');
                 } else {
-                    alert(err.message || 'Booking failed');
+                    alert(err.message || tr('checkout.bookingFailed', 'Booking failed'));
                 }
                 if (confirmBtn) {
-                    confirmBtn.innerText = 'Pay & Confirm Session';
+                    confirmBtn.innerText = tr('checkout.payConfirmSession', 'Pay & Confirm Session');
                     confirmBtn.disabled = false;
                 }
                 return;
@@ -348,12 +355,12 @@
                 }
             } catch (err) {
                 if (typeof showToast === 'function') {
-                    showToast(err.message || 'Order failed', 'error');
+                    showToast(err.message || tr('checkout.orderFailed', 'Order failed'), 'error');
                 } else {
-                    alert(err.message || 'Order failed');
+                    alert(err.message || tr('checkout.orderFailed', 'Order failed'));
                 }
                 if (confirmBtn) {
-                    confirmBtn.innerText = 'Pay Now & Complete Order';
+                    confirmBtn.innerText = tr('checkout.payNowComplete', 'Pay Now & Complete Order');
                     confirmBtn.disabled = false;
                 }
                 return;
@@ -393,35 +400,35 @@
                                 </svg>
                                 <span>${book.title}</span>
                             </div>
-                            <span class="dl-badge" id="dl-badge-${book.id}">3 Downloads left</span>
+                            <span class="dl-badge" id="dl-badge-${book.id}">${tr('checkout.downloadsLeft', '{n} Downloads left').replace('{n}', 3)}</span>
                         </a>
                     `;
                 });
-                dlContainer.innerHTML = '<div class="download-section-title">Your Digital Library</div>' + btnsHTML;
+                dlContainer.innerHTML = `<div class="download-section-title">${tr('checkout.yourDigitalLibrary', 'Your Digital Library')}</div>` + btnsHTML;
             }
 
             if (successMsg) {
                 if (physicalBooks.length > 0 || bookingItems.length > 0) {
-                    let msg = 'Your digital books are ready for download. ';
-                    if (bookingItems.length > 0) msg += 'Your session has been confirmed. ';
-                    if (physicalBooks.length > 0) msg += 'Physical items will be shipped to your address.';
+                    let msg = tr('checkout.digitalReadyPrefix', 'Your digital books are ready for download. ');
+                    if (bookingItems.length > 0) msg += tr('checkout.sessionConfirmedFragment', 'Your session has been confirmed. ');
+                    if (physicalBooks.length > 0) msg += tr('checkout.physicalShippedFragment', 'Physical items will be shipped to your address.');
                     successMsg.innerText = msg;
                 } else {
-                    successMsg.innerText = 'Your digital books are ready! Click below to download.';
+                    successMsg.innerText = tr('checkout.digitalReadyOnly', 'Your digital books are ready! Click below to download.');
                 }
             }
         } else if (bookingItems.length > 0) {
             if (dlContainer) dlContainer.style.display = 'none';
             if (successMsg) {
                 if (physicalBooks.length > 0) {
-                    successMsg.innerText = 'Your session has been booked successfully! Physical items will be shipped to your address.';
+                    successMsg.innerText = tr('checkout.sessionBookedPhysical', 'Your session has been booked successfully! Physical items will be shipped to your address.');
                 } else {
-                    successMsg.innerText = 'Your session has been booked successfully! Check your profile for details.';
+                    successMsg.innerText = tr('checkout.sessionBookedOnly', 'Your session has been booked successfully! Check your profile for details.');
                 }
             }
         } else {
             if (dlContainer) dlContainer.style.display = 'none';
-            if (successMsg) successMsg.innerText = 'Your order has been placed securely. A receipt has been sent to your email.';
+            if (successMsg) successMsg.innerText = tr('checkout.orderPlacedGeneric', 'Your order has been placed securely. A receipt has been sent to your email.');
         }
 
         localStorage.removeItem('sunbook_cart');
@@ -431,6 +438,7 @@
 
     // ====== دالة التحميل (محاكاة) ======
     function handleDownload(bookId, btnElement) {
+        const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
         let library = JSON.parse(localStorage.getItem('sunbook_library')) || [];
         const bookIndex = library.findIndex(b => b.id == bookId);
 
@@ -438,7 +446,7 @@
 
         const book = library[bookIndex];
         if (book.downloadsLeft <= 0) {
-            if (typeof showToast === 'function') showToast('Download limit reached for this book.', 'error');
+            if (typeof showToast === 'function') showToast(tr('checkout.downloadLimitReached', 'Download limit reached for this book.'), 'error');
             return;
         }
 
@@ -450,9 +458,9 @@
         // تحديث العداد في الزر
         const badge = document.getElementById('dl-badge-' + bookId);
         if (badge) {
-            badge.innerText = book.downloadsLeft + ' Downloads left';
+            badge.innerText = tr('checkout.downloadsLeft', '{n} Downloads left').replace('{n}', book.downloadsLeft);
             if (book.downloadsLeft === 0) {
-                badge.innerText = 'Limit reached';
+                badge.innerText = tr('checkout.limitReached', 'Limit reached');
                 badge.style.borderColor = '#ff4d4d';
                 badge.style.color = '#ff4d4d';
                 btnElement.style.opacity = '0.5';
@@ -461,7 +469,7 @@
         }
 
         // محاكاة تحميل الملف
-        if (typeof showToast === 'function') showToast('Downloading: ' + book.title);
+        if (typeof showToast === 'function') showToast(tr('checkout.downloadingPrefix', 'Downloading: ') + book.title);
 
         // إنشاء رابط تحميل وهمي (PDF)
         setTimeout(() => {
@@ -476,6 +484,7 @@
         e.preventDefault();
         e.stopPropagation();
 
+        const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
         const loggedInUser = localStorage.getItem('sunbook_username');
         if (!loggedInUser) {
             localStorage.setItem('sunbook_redirect_after_login', 'checkout.html');
@@ -501,7 +510,7 @@
                     field.style.borderColor = 'rgba(255, 77, 77, 0.6)';
                     const errorMsg = document.createElement('div');
                     errorMsg.className = 'field-error show';
-                    errorMsg.textContent = 'This field is required';
+                    errorMsg.textContent = tr('checkout.fieldRequired', 'This field is required');
                     field.parentNode.appendChild(errorMsg);
                     if (!firstError) firstError = field;
                 } else {
@@ -517,7 +526,7 @@
                     phoneField.parentNode.style.borderColor = 'rgba(255, 77, 77, 0.6)';
                     const errorMsg = document.createElement('div');
                     errorMsg.className = 'field-error show';
-                    errorMsg.textContent = 'Please enter a valid Egyptian number (11 digits starting with 01)';
+                    errorMsg.textContent = tr('checkout.invalidEgyptianPhone', 'Please enter a valid Egyptian number (11 digits starting with 01)');
                     phoneField.parentNode.parentNode.appendChild(errorMsg);
                     if (!firstError) firstError = phoneField;
                 }
@@ -534,7 +543,7 @@
                     field.style.borderColor = 'rgba(255, 77, 77, 0.6)';
                     const errorMsg = document.createElement('div');
                     errorMsg.className = 'field-error show';
-                    errorMsg.textContent = 'This field is required';
+                    errorMsg.textContent = tr('checkout.fieldRequired', 'This field is required');
                     field.parentNode.appendChild(errorMsg);
                     if (!firstError) firstError = field;
                 } else {
@@ -552,7 +561,7 @@
                     field.style.borderColor = 'rgba(255, 77, 77, 0.6)';
                     const errorMsg = document.createElement('div');
                     errorMsg.className = 'field-error show';
-                    errorMsg.textContent = 'This field is required';
+                    errorMsg.textContent = tr('checkout.fieldRequired', 'This field is required');
                     field.parentNode.appendChild(errorMsg);
                     if (!firstError) firstError = field;
                 } else {
@@ -564,7 +573,7 @@
         if (!isValid) {
             if (firstError) firstError.focus();
             if (typeof showToast === 'function') {
-                showToast('Please fill in all required fields correctly.', 'error');
+                showToast(tr('checkout.fillAllFields', 'Please fill in all required fields correctly.'), 'error');
             }
             return false;
         }
@@ -612,7 +621,8 @@
     if (govSelect && districtSelect) {
         govSelect.addEventListener('change', function() {
             const selectedGov = this.value;
-            districtSelect.innerHTML = '<option value="" disabled selected>Select District</option>';
+            const districtPlaceholder = window.SunBookI18n ? window.SunBookI18n.t('checkout.selectDistrict') : 'Select District';
+            districtSelect.innerHTML = `<option value="" disabled selected>${districtPlaceholder}</option>`;
             if (governorateData[selectedGov]) {
                 governorateData[selectedGov].forEach(district => {
                     const option = document.createElement('option');
@@ -653,7 +663,7 @@
 
         function currentPlaceholder() {
             const ph = selectEl.querySelector('option[value=""]');
-            return ph ? ph.textContent : 'Select';
+            return ph ? ph.textContent : (window.SunBookI18n ? window.SunBookI18n.t('checkout.select') : 'Select');
         }
 
         function refresh() {
@@ -719,6 +729,13 @@
     setupCustomDropdown(govSelect);
     setupCustomDropdown(districtSelect);
 
+    // لما اللغة تتبدل، لازم نعيد رسم القايمة المخصصة (مش الـ <select> الأصلي بس)
+    // عشان النص الظاهر فعليًا للمستخدم يتحدث فورًا
+    document.addEventListener('sunbook:langChanged', () => {
+        if (govSelect && govSelect._refreshCustomDropdown) govSelect._refreshCustomDropdown();
+        if (districtSelect && districtSelect._refreshCustomDropdown) districtSelect._refreshCustomDropdown();
+    });
+
 function initSmartCheckout() {
     const loggedInUser = localStorage.getItem('sunbook_username');
     if (!loggedInUser) return;
@@ -741,6 +758,7 @@ function initSmartCheckout() {
     const hasBooking = cart.some(item => item.type === 'booking');
 
     // ========== منطق الرسائل الذكي ==========
+    const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
 
     if (!hasPhysical && !hasDigital && hasBooking) {
         // 🎯 سيكشن بس
@@ -751,12 +769,12 @@ function initSmartCheckout() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path>
                 </svg>
-                <h4>Session Booking</h4>
-                <p>Your one-on-one session will be confirmed immediately after payment. No shipping required.</p>
+                <h4>${tr('checkout.sessionBookingTitle', 'Session Booking')}</h4>
+                <p>${tr('checkout.sessionBookingText', 'Your one-on-one session will be confirmed immediately after payment. No shipping required.')}</p>
             `;
         }
         if (noticeSection) noticeSection.style.display = 'none';
-        confirmBtn.innerText = 'Pay & Confirm Session';
+        confirmBtn.innerText = tr('checkout.payConfirmSession', 'Pay & Confirm Session');
 
     } else if (!hasPhysical && hasDigital && !hasBooking) {
         // 📥 ديجيتال بس
@@ -769,12 +787,12 @@ function initSmartCheckout() {
                     <polyline points="7 10 12 15 17 10"></polyline>
                     <line x1="12" y1="15" x2="12" y2="3"></line>
                 </svg>
-                <h4>Instant Digital Delivery</h4>
-                <p>No shipping needed. Your books will be available for download immediately after payment.</p>
+                <h4>${tr('checkout.instantDigitalTitle', 'Instant Digital Delivery')}</h4>
+                <p>${tr('checkout.instantDigitalText', 'No shipping needed. Your books will be available for download immediately after payment.')}</p>
             `;
         }
         if (noticeSection) noticeSection.style.display = 'none';
-        confirmBtn.innerText = 'Pay & Download Now';
+        confirmBtn.innerText = tr('checkout.payDownloadNow', 'Pay & Download Now');
 
     } else if (hasPhysical && !hasDigital && !hasBooking) {
         // 📦 فيزيكال بس
@@ -782,9 +800,9 @@ function initSmartCheckout() {
         if (digitalBanner) digitalBanner.style.display = 'none';
         if (noticeSection) {
             noticeSection.style.display = 'block';
-            noticeSection.innerHTML = `<strong>Physical Order:</strong> Please provide your shipping address below. Your books will be delivered to your door.`;
+            noticeSection.innerHTML = tr('checkout.physicalOrderNotice', '<strong>{label}:</strong> Please provide your shipping address below. Your books will be delivered to your door.').replace('{label}', tr('checkout.physicalOrderLabel', 'Physical Order'));
         }
-        confirmBtn.innerText = 'Pay Now & Complete Order';
+        confirmBtn.innerText = tr('checkout.payNowComplete', 'Pay Now & Complete Order');
 
     } else if (!hasPhysical && hasDigital && hasBooking) {
         // 📥 ديجيتال + سيكشن
@@ -797,12 +815,12 @@ function initSmartCheckout() {
                     <polyline points="7 10 12 15 17 10"></polyline>
                     <line x1="12" y1="15" x2="12" y2="3"></line>
                 </svg>
-                <h4>Instant Delivery & Session</h4>
-                <p>Your digital books will be available for download and your session will be confirmed immediately after payment.</p>
+                <h4>${tr('checkout.instantDeliverySessionTitle', 'Instant Delivery & Session')}</h4>
+                <p>${tr('checkout.instantDeliverySessionText', 'Your digital books will be available for download and your session will be confirmed immediately after payment.')}</p>
             `;
         }
         if (noticeSection) noticeSection.style.display = 'none';
-        confirmBtn.innerText = 'Pay Now & Complete Order';
+        confirmBtn.innerText = tr('checkout.payNowComplete', 'Pay Now & Complete Order');
 
     } else if (hasPhysical && !hasDigital && hasBooking) {
         // 📦 فيزيكال + سيكشن (اللي ظهر في الصورة الأولى)
@@ -810,9 +828,9 @@ function initSmartCheckout() {
         if (digitalBanner) digitalBanner.style.display = 'none';
         if (noticeSection) {
             noticeSection.style.display = 'block';
-            noticeSection.innerHTML = `<strong>Order Summary:</strong> Your session will be confirmed after payment. Physical books will be shipped to your address below.`;
+            noticeSection.innerHTML = tr('checkout.summaryPhysicalSessionNotice', '<strong>{label}:</strong> Your session will be confirmed after payment. Physical books will be shipped to your address below.').replace('{label}', tr('checkout.orderSummaryLabel', 'Order Summary'));
         }
-        confirmBtn.innerText = 'Pay Now & Complete Order';
+        confirmBtn.innerText = tr('checkout.payNowComplete', 'Pay Now & Complete Order');
 
     } else if (hasPhysical && hasDigital && !hasBooking) {
         // 📦 فيزيكال + ديجيتال
@@ -820,9 +838,9 @@ function initSmartCheckout() {
         if (digitalBanner) digitalBanner.style.display = 'none';
         if (noticeSection) {
             noticeSection.style.display = 'block';
-            noticeSection.innerHTML = `<strong>Mixed Order:</strong> Digital files will be available for instant download. Physical books will be shipped to your address below.`;
+            noticeSection.innerHTML = tr('checkout.mixedDigitalPhysicalNotice', '<strong>{label}:</strong> Digital files will be available for instant download. Physical books will be shipped to your address below.').replace('{label}', tr('checkout.mixedOrderLabel', 'Mixed Order'));
         }
-        confirmBtn.innerText = 'Pay Now & Complete Order';
+        confirmBtn.innerText = tr('checkout.payNowComplete', 'Pay Now & Complete Order');
 
     } else if (hasPhysical && hasDigital && hasBooking) {
         // الكل مع بعض
@@ -830,9 +848,9 @@ function initSmartCheckout() {
         if (digitalBanner) digitalBanner.style.display = 'none';
         if (noticeSection) {
             noticeSection.style.display = 'block';
-            noticeSection.innerHTML = `<strong>Mixed Order:</strong> Your session will be confirmed and digital files will be available for download. Physical books will be shipped to your address below.`;
+            noticeSection.innerHTML = tr('checkout.mixedAllNotice', '<strong>{label}:</strong> Your session will be confirmed and digital files will be available for download. Physical books will be shipped to your address below.').replace('{label}', tr('checkout.mixedOrderLabel', 'Mixed Order'));
         }
-        confirmBtn.innerText = 'Pay Now & Complete Order';
+        confirmBtn.innerText = tr('checkout.payNowComplete', 'Pay Now & Complete Order');
     }
 
     // ========== رسم ملخص الطلب ==========
@@ -841,7 +859,7 @@ function initSmartCheckout() {
     if (listContainer) {
         listContainer.innerHTML = '';
         cart.forEach(item => {
-            const typeLabel = item.type === 'digital' ? 'Digital (PDF)' : item.type === 'booking' ? 'Session' : 'Physical Book';
+            const typeLabel = item.type === 'digital' ? tr('cart.typeDigital', 'Digital (PDF)') : item.type === 'booking' ? tr('cart.typeSession', 'Session') : tr('cart.typePhysical', 'Physical Book');
             const typeColor = item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)';
             const priceNum = parseFloat(item.price.replace(/[^0-9.]/g, ''));
             totalPrice += (priceNum * item.qty);
@@ -893,7 +911,7 @@ function initSmartCheckout() {
             : Math.min(storedPromo.discountValue, finalTotal);
         finalTotal = Math.max(0, finalTotal - discount);
         if (promoDiscountRow) promoDiscountRow.style.display = 'flex';
-        if (promoDiscountLabelEl) promoDiscountLabelEl.innerText = `Promo "${storedPromo.code}"`;
+        if (promoDiscountLabelEl) promoDiscountLabelEl.innerText = `${tr('cart.promoLabel', 'Promo')} "${storedPromo.code}"`;
         if (promoDiscountAmountEl) promoDiscountAmountEl.innerText = `- LE ${discount.toFixed(2)}`;
     } else if (promoDiscountRow) {
         promoDiscountRow.style.display = 'none';
@@ -941,6 +959,9 @@ function initSmartCheckout() {
     document.addEventListener("DOMContentLoaded", function() {
         initSmartCheckout();
         autoFillCheckoutData();
+    });
+    document.addEventListener('sunbook:langChanged', () => {
+        if (document.getElementById('confirmPaymentBtn')) initSmartCheckout();
     });
 </script>
 </body>
