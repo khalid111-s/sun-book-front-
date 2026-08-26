@@ -115,7 +115,7 @@ body {
 }
 
 .auth-action-row {
-    text-align: right;
+    text-align: end;
 }
 
 .auth-submit-btn {

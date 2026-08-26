@@ -139,6 +139,17 @@
             'cart.checking': 'Checking...',
             'cart.invalidCode': 'Invalid promo code.',
 
+            // ------- Auth page (login.html) -------
+            'auth.signIn': 'Sign In',
+            'auth.register': 'Register',
+            'auth.emailAddress': 'Email Address',
+            'auth.password': 'Password',
+            'auth.forgotPassword': 'Forgot Password?',
+            'auth.fullName': 'Full Name',
+            'auth.createAccount': 'Create Account',
+            'auth.orContinueWith': 'or continue with',
+            'auth.facebookNotConfigured': 'Facebook login is not configured yet.',
+
             // ------- Calendar / booking JS -------
             'calendar.fullyBooked': 'Fully booked',
 
@@ -268,6 +279,17 @@
             'cart.enterCode': 'يُرجى إدخال كود الخصم.',
             'cart.checking': 'جارٍ التحقق...',
             'cart.invalidCode': 'كود الخصم غير صالح.',
+
+            // ------- Auth page (login.html) -------
+            'auth.signIn': 'تسجيل الدخول',
+            'auth.register': 'حساب جديد',
+            'auth.emailAddress': 'البريد الإلكتروني',
+            'auth.password': 'كلمة المرور',
+            'auth.forgotPassword': 'نسيت كلمة المرور؟',
+            'auth.fullName': 'الاسم الكامل',
+            'auth.createAccount': 'إنشاء حساب',
+            'auth.orContinueWith': 'أو تابع باستخدام',
+            'auth.facebookNotConfigured': 'تسجيل الدخول عبر فيسبوك غير مُفعّل حاليًا.',
 
             // ------- Calendar / booking JS -------
             'calendar.fullyBooked': 'محجوز بالكامل',

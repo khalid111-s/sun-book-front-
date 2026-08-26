@@ -6,6 +6,9 @@
     <title>Sign In - The Sun Book</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/png" href="assets/sun-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- تسجيل الدخول بجوجل -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- تسجيل الدخول بفيسبوك -->
@@ -30,30 +33,30 @@
         
         <!-- أزرار التبديل -->
         <div class="auth-tabs">
-            <div class="auth-tab active" onclick="switchTab('signin')">Sign In</div>
-            <div class="auth-tab" onclick="switchTab('register')">Register</div>
+            <div class="auth-tab active" onclick="switchTab('signin')" data-i18n="auth.signIn">Sign In</div>
+            <div class="auth-tab" onclick="switchTab('register')" data-i18n="auth.register">Register</div>
         </div>
 
         <!-- فورم تسجيل الدخول -->
         <form id="signinForm" class="auth-form active" onsubmit="handleAuth(event, 'signin')">
-            <input type="email" class="auth-input" placeholder="Email Address" required>
-            <input type="password" class="auth-input" placeholder="Password" required>
+            <input type="email" class="auth-input" placeholder="Email Address" required data-i18n-placeholder="auth.emailAddress">
+            <input type="password" class="auth-input" placeholder="Password" required data-i18n-placeholder="auth.password">
             <div class="auth-action-row">
-                <a href="forgot-password.html" class="inline-link-clean" style="color: var(--gold-color); font-size: 0.85rem;">Forgot Password?</a>
+                <a href="forgot-password.html" class="inline-link-clean" style="color: var(--gold-color); font-size: 0.85rem;" data-i18n="auth.forgotPassword">Forgot Password?</a>
             </div>
-            <button type="submit" class="btn-shop auth-submit-btn">Sign In</button>
+            <button type="submit" class="btn-shop auth-submit-btn" data-i18n="auth.signIn">Sign In</button>
         </form>
 
         <!-- فورم إنشاء الحساب -->
         <form id="registerForm" class="auth-form" onsubmit="handleAuth(event, 'register')">
-            <input type="text" id="registerName" class="auth-input" placeholder="Full Name" required>
-            <input type="email" class="auth-input" placeholder="Email Address" required>
-            <input type="password" class="auth-input" placeholder="Password" required>
-            <button type="submit" class="btn-shop auth-submit-btn">Create Account</button>
+            <input type="text" id="registerName" class="auth-input" placeholder="Full Name" required data-i18n-placeholder="auth.fullName">
+            <input type="email" class="auth-input" placeholder="Email Address" required data-i18n-placeholder="auth.emailAddress">
+            <input type="password" class="auth-input" placeholder="Password" required data-i18n-placeholder="auth.password">
+            <button type="submit" class="btn-shop auth-submit-btn" data-i18n="auth.createAccount">Create Account</button>
         </form>
 
         <!-- الفاصل وطرق السوشيال ميديا -->
-        <div class="social-divider"><span>or continue with</span></div>
+        <div class="social-divider"><span data-i18n="auth.orContinueWith">or continue with</span></div>
         
         <div class="social-login-container">
 
@@ -93,6 +96,7 @@
 <div data-include="components/footer.html"></div>
 
 <script src="components/loader.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/script.js"></script>
 <script src="js/api.js"></script>
 <script>
@@ -192,7 +196,7 @@ if (GOOGLE_CLIENT_ID.includes('.apps.googleusercontent.com') && !GOOGLE_CLIENT_I
 
 function facebookSignIn() {
   if (typeof FB === 'undefined' || FACEBOOK_APP_ID.startsWith('YOUR_')) {
-    const msg = 'Facebook login is not configured yet.';
+    const msg = window.SunBookI18n ? window.SunBookI18n.t('auth.facebookNotConfigured') : 'Facebook login is not configured yet.';
     if (typeof showToast === 'function') showToast(msg, 'error'); else alert(msg);
     return;
   }
