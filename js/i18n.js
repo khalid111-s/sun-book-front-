@@ -232,6 +232,21 @@
             'checkout.gov.SouthSinai': 'South Sinai',
             'checkout.gov.NewValley': 'New Valley',
 
+            // ------- Booking details page (booking-details.html) -------
+            'bookingDetails.taxIncluded': 'Tax included.',
+            'bookingDetails.tagline': 'A private 30-minute one-on-one zoom session with Ahmed Salem for personalized guidance and insight.',
+            'bookingDetails.p1': 'Sometimes You Don’t Need More Information. You Need Clarity from Someone Who Actually Gets It.',
+            'bookingDetails.p2': 'You’ve evolved too far to settle for surface-level advice, but not far enough to unlock the next level alone.',
+            'bookingDetails.p3': 'That’s where Seeking Advice comes in; a real 1-on-1 conversation with Ahmed Salem to sort through the noise and find what truly matters.',
+            'bookingDetails.notTherapy': 'Not therapy. Not coaching.',
+            'bookingDetails.p4': 'But a direct transmission of clarity, personal insight, and decoded truth drawn from ancient systems, depth psychology, symbolism, and occultism.',
+            'bookingDetails.chanceTo': 'It’s your chance to:',
+            'bookingDetails.li1': 'Ask the real questions.',
+            'bookingDetails.li2': 'See what’s been in front of you the whole time.',
+            'bookingDetails.li3': 'Make connections no one else could help you make.',
+            'bookingDetails.p5': "I don't usually offer this but I'm opening a limited window for one-on-one sessions. One 30 minute call can save you years of wasted time, confusion, and misaligned choices.",
+            'bookingDetails.p6': 'Feel free to book your session today.',
+
             // ------- Calendar / booking JS -------
             'calendar.fullyBooked': 'Fully booked',
 
@@ -454,6 +469,21 @@
             'checkout.gov.NorthSinai': 'شمال سيناء',
             'checkout.gov.SouthSinai': 'جنوب سيناء',
             'checkout.gov.NewValley': 'الوادي الجديد',
+
+            // ------- Booking details page (booking-details.html) -------
+            'bookingDetails.taxIncluded': 'شامل الضريبة.',
+            'bookingDetails.tagline': 'جلسة خاصة عبر الزوم لمدة 30 دقيقة مع أحمد سالم، لتوجيه شخصي ورؤية أعمق.',
+            'bookingDetails.p1': 'أحيانًا لا تحتاج إلى مزيد من المعلومات، بل تحتاج إلى وضوح من شخص يفهم الأمر فعلًا.',
+            'bookingDetails.p2': 'لقد تجاوزت مرحلة الاكتفاء بالنصائح السطحية، لكنك لم تصل بعد إلى القدرة على الانتقال للمستوى التالي وحدك.',
+            'bookingDetails.p3': 'وهنا يأتي دور "طلب الاستشارة"؛ محادثة حقيقية فردية مع أحمد سالم لتصفية الضجيج والوصول إلى ما يهم فعلًا.',
+            'bookingDetails.notTherapy': 'ليست علاجًا نفسيًا. وليست تدريبًا.',
+            'bookingDetails.p4': 'بل نقل مباشر للوضوح والرؤية الشخصية والحقيقة المفكوكة رموزها، مستمدة من الأنظمة القديمة وعلم النفس التحليلي والرمزية وعلوم الغيب.',
+            'bookingDetails.chanceTo': 'إنها فرصتك لكي:',
+            'bookingDetails.li1': 'تطرح الأسئلة الحقيقية.',
+            'bookingDetails.li2': 'ترى ما كان أمامك طوال الوقت.',
+            'bookingDetails.li3': 'تكتشف روابط ما كان أحد ليساعدك على إدراكها.',
+            'bookingDetails.p5': 'لا أقدّم هذا عادةً، لكنني أفتح نافذة محدودة لجلسات فردية. مكالمة واحدة مدتها 30 دقيقة قد توفّر عليك سنوات من الوقت الضائع والحيرة والقرارات الخاطئة.',
+            'bookingDetails.p6': 'لا تتردد في حجز جلستك اليوم.',
 
             // ------- Calendar / booking JS -------
             'calendar.fullyBooked': 'محجوز بالكامل',
