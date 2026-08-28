@@ -331,6 +331,77 @@
             'profile.status.pending': 'Pending',
             'profile.status.paid': 'Paid',
 
+            // ------- About page (about.html) -------
+            'about.ourStory': 'Our Story',
+            'about.storyText': 'Welcome to <strong>The Sun Book</strong>, a sanctuary for seekers of truth and ancient wisdom. We traverse the boundaries of time to bring you the most profound esoteric literature, hidden knowledge, and forgotten rituals.',
+            'about.ourMission': 'Our Mission',
+            'about.missionText': 'For centuries, the wisdom of the ancients has been guarded by secret societies and lost in the sands of time. Our mission is to curate and preserve these mystical texts, making them accessible to modern scholars, occultists, and those who dare to look beyond the veil.',
+
+            // ------- FAQ page (faq.html) -------
+            'faq.title': 'Frequently Asked Questions',
+            'faq.subtitle': 'Everything you need to know about orders, digital books, sessions, and payments',
+            'faq.stillNeedHelp': 'Still have a question?',
+            'faq.cat.shipping': 'Orders &amp; Shipping',
+            'faq.shipping.q1': 'Do you ship physical books outside Egypt?',
+            'faq.shipping.a1': "Right now, physical book delivery is available across Egypt only — from Cairo and Alexandria to every governorate in the country. If you're outside Egypt, you can still enjoy our Digital (PDF) editions or book a live one-on-one session instantly, from anywhere in the world.",
+            'faq.shipping.q2': 'How much does shipping cost?',
+            'faq.shipping.a2': 'Shipping is free on every physical order across Egypt — the price you see at checkout is the price you pay, with no extra delivery fees added.',
+            'faq.shipping.q3': 'How long will my order take to arrive?',
+            'faq.shipping.a3': "Delivery times vary slightly by governorate, with Cairo and Alexandria usually arriving fastest. You can follow your order's progress anytime from your Profile — if it's taking longer than expected, message us on WhatsApp and we'll check on it for you.",
+            'faq.shipping.q4': 'Can I track my order?',
+            'faq.shipping.a4': 'Yes — open your Profile and check the "Physical Orders &amp; Tracking" section. Each order shows its current status: Processing, Shipped, or Delivered.',
+            'faq.shipping.q5': 'What does the "Egypt Only" label on a book mean?',
+            'faq.shipping.a5': 'Some rare or limited titles are marked "Egypt Only" on their product page. This means that specific edition can only be delivered within Egypt and isn\'t available for international shipping, even as part of a mixed cart.',
+            'faq.cat.digital': 'Digital Books',
+            'faq.digital.q1': "What's the difference between a Physical and a Digital book?",
+            'faq.digital.a1': 'A Physical book is the real printed copy, shipped to your door anywhere in Egypt. A Digital book is a PDF edition you can download and read instantly on any device — no shipping required, and available to anyone, anywhere in the world.',
+            'faq.digital.q2': 'Where do I find my digital books after buying them?',
+            'faq.digital.a2': 'Right after payment, your download links appear directly on the confirmation screen. From then on, every digital book you\'ve bought stays saved in "My Digital Library" inside your Profile, ready to download anytime.',
+            'faq.digital.q3': 'Can I re-download a digital book if I lose the file?',
+            'faq.digital.a3': 'Yes — your digital books live permanently in "My Digital Library" in your Profile, so you can come back and download them again anytime without paying for them twice.',
+            'faq.cat.payments': 'Payments &amp; Pricing',
+            'faq.payments.q1': 'What payment methods do you accept?',
+            'faq.payments.a1': "We accept credit/debit cards and mobile wallets. At checkout, you'll be redirected to our secure payment page to enter your details safely.",
+            'faq.payments.q2': 'Is it safe to pay on The Sun Book?',
+            'faq.payments.a2': 'Yes. We never see or store your card details ourselves — every payment is processed through a secure, encrypted payment gateway, the same kind of technology used by major online stores.',
+            'faq.payments.q3': 'Why do I see prices in Euros (€) instead of Egyptian Pounds?',
+            'faq.payments.a3': 'Prices are shown in Egyptian Pounds (LE) for visitors browsing from Egypt, and in Euros (€) for visitors from other countries — detected automatically based on your location, so you always see a currency that makes sense for you.',
+            'faq.payments.q4': 'Do you offer any discounts?',
+            'faq.payments.a4': 'Yes — creating a free account gets you an automatic 5% member discount on every order. We also feature limited-time deals on select titles in our "Best Offers" section.',
+            'faq.payments.q5': 'How do I use a promo code?',
+            'faq.payments.a5': 'Enter your code in the "Enter code" box in your Cart and press Apply. The discount is calculated automatically before you pay — no need to contact us.',
+            'faq.cat.sessions': 'One-on-One Sessions',
+            'faq.sessions.q1': 'How do the one-on-one sessions work?',
+            'faq.sessions.a1': 'One-on-one sessions are live video sessions with a mentor, held in a secure video room. Once you\'ve paid, your session is confirmed instantly and appears under "Upcoming Sessions" in your Profile, with a "Join" button that activates at your scheduled time.',
+            'faq.sessions.q2': 'Can I reschedule or cancel a session?',
+            'faq.sessions.a2': 'Yes. Each session can be rescheduled once, or cancelled for a full refund — both up to 4 hours before your scheduled time, right from "Upcoming Sessions" in your Profile. After that window, sessions can no longer be changed.',
+            'faq.sessions.q3': 'What happens if I miss my scheduled session?',
+            'faq.sessions.a3': "If you miss a session without cancelling at least 4 hours beforehand, it's marked as missed and isn't automatically refunded. Reach out to us on WhatsApp and we'll review it with you.",
+            'faq.cat.account': 'Returns, Refunds &amp; Account',
+            'faq.account.q1': 'What is your return and refund policy?',
+            'faq.account.a1': 'Physical orders can be cancelled for a full refund anytime before they ship, right from your Profile. Once an order has shipped, our standard 14-day return policy applies instead — see our full <a href="policies.html#refund">Refund Policy</a> for details. Digital books can\'t be cancelled or refunded, since the files are delivered to you immediately after payment.',
+            'faq.account.q2': 'Do I need to create an account to buy something?',
+            'faq.account.a2': 'Yes, a free account is required at checkout. This keeps your order history, digital library, and session bookings all in one place, and lets you track everything from your Profile.',
+            'faq.account.q3': 'How do I delete my account?',
+            'faq.account.a3': "You can permanently delete your account and all its data anytime from your Profile → Account Settings → Delete Account. This action is permanent and can't be undone.",
+            'faq.account.q4': 'Is my personal information safe?',
+            'faq.account.a4': 'Absolutely. We only collect the minimum data needed to process your orders and never sell or share your personal information — see our full <a href="policies.html#privacy">Privacy Policy</a> for details.',
+
+            // ------- Contact page (contact.html) -------
+            'contact.getInTouch': 'Get in Touch',
+            'contact.subtitle': 'Reach out to us for any inquiries about our ancient collections, esoteric knowledge, or seeking wisdom.',
+            'contact.info': 'Contact Information',
+            'contact.emailUs': 'Email Us',
+            'contact.whatsappPhone': 'WhatsApp & Phone',
+            'contact.workingHours': 'Working Hours',
+            'contact.workingHoursValue': 'Mon - Fri: 9:00 AM - 6:00 PM<br>Cairo Time (EEST)',
+            'contact.yourName': 'Your Name',
+            'contact.yourEmail': 'Your Email',
+            'contact.subject': 'Subject',
+            'contact.yourMessage': 'Your Message...',
+            'contact.sendMessage': 'Send Message',
+            'contact.messageSent': 'Message sent successfully! We will get back to you soon.',
+
             // ------- Calendar / booking JS -------
             'calendar.fullyBooked': 'Fully booked',
 
@@ -653,6 +724,77 @@
             'profile.status.pending': 'قيد الانتظار',
             'profile.status.paid': 'مدفوعة',
 
+            // ------- About page (about.html) -------
+            'about.ourStory': 'قصتنا',
+            'about.storyText': 'مرحبًا بك في <strong>The Sun Book</strong>، ملاذ الباحثين عن الحقيقة والحكمة القديمة. نعبر حدود الزمن لنقدّم لك أعمق النصوص الباطنية، والمعرفة الخفية، والطقوس المنسية.',
+            'about.ourMission': 'رسالتنا',
+            'about.missionText': 'على مدى قرون، ظلّت حكمة القدماء محفوظة لدى الجمعيات السرية، وضاع بعضها بين رمال الزمن. رسالتنا هي جمع هذه النصوص الغامضة وحفظها، وإتاحتها للباحثين المعاصرين، ودارسي علوم الغيب، ولكل من يجرؤ على النظر خلف الحجاب.',
+
+            // ------- FAQ page (faq.html) -------
+            'faq.title': 'الأسئلة الشائعة',
+            'faq.subtitle': 'كل ما تحتاج معرفته عن الطلبات والكتب الرقمية والجلسات والدفع',
+            'faq.stillNeedHelp': 'لا يزال لديك سؤال؟',
+            'faq.cat.shipping': 'الطلبات والشحن',
+            'faq.shipping.q1': 'هل تشحنون الكتب الورقية خارج مصر؟',
+            'faq.shipping.a1': 'حاليًا، التوصيل للكتب الورقية متاح داخل مصر فقط — من القاهرة والإسكندرية إلى كل محافظات الجمهورية. لو كنت خارج مصر، يمكنك الاستمتاع بنسخنا الرقمية (PDF) أو حجز جلسة فردية مباشرة فورًا من أي مكان في العالم.',
+            'faq.shipping.q2': 'كام تكلفة الشحن؟',
+            'faq.shipping.a2': 'الشحن مجاني على كل طلب ورقي داخل مصر — السعر اللي بتشوفه عند الدفع هو السعر النهائي، من غير أي رسوم توصيل إضافية.',
+            'faq.shipping.q3': 'هيوصل طلبي في قد إيه؟',
+            'faq.shipping.a3': 'مدة التوصيل تختلف قليلًا حسب المحافظة، وعادة القاهرة والإسكندرية بيوصلوا أسرع. تقدر تتابع حالة طلبك في أي وقت من صفحة حسابك — ولو الطلب اتأخر أكتر من المتوقع، راسلنا على واتساب وهنتابعه معاك.',
+            'faq.shipping.q4': 'أقدر أتابع طلبي؟',
+            'faq.shipping.a4': 'أيوه — افتح صفحة حسابك وشوف قسم "الطلبات الورقية وتتبعها". كل طلب بيوضح حالته الحالية: قيد التجهيز، تم الشحن، أو تم التسليم.',
+            'faq.shipping.q5': 'إيه معنى علامة "داخل مصر فقط" اللي بتظهر على بعض الكتب؟',
+            'faq.shipping.a5': 'بعض الإصدارات النادرة أو المحدودة بتتحط عليها علامة "داخل مصر فقط" في صفحة المنتج. ده معناه إن النسخة دي بالذات متاحة للتوصيل داخل مصر بس ومش متاحة للشحن الدولي، حتى لو كانت جزء من سلة فيها كتب تانية.',
+            'faq.cat.digital': 'الكتب الرقمية',
+            'faq.digital.q1': 'إيه الفرق بين الكتاب الورقي والكتاب الرقمي؟',
+            'faq.digital.a1': 'الكتاب الورقي هو النسخة المطبوعة الحقيقية، بتوصلك لباب بيتك في أي مكان داخل مصر. أما الكتاب الرقمي فهو نسخة PDF تقدر تحمّلها وتقرأها فورًا على أي جهاز — من غير أي شحن، ومتاح لأي شخص في أي مكان في العالم.',
+            'faq.digital.q2': 'هلاقي كتبي الرقمية فين بعد ما أشتريها؟',
+            'faq.digital.a2': 'فور إتمام الدفع، هتظهر روابط التحميل مباشرة على شاشة التأكيد. وبعد كده، كل كتاب رقمي اشتريته بيفضل محفوظ في "مكتبتي الرقمية" داخل صفحة حسابك، جاهز للتحميل في أي وقت.',
+            'faq.digital.q3': 'أقدر أعيد تحميل كتاب رقمي لو ضيّعت الملف؟',
+            'faq.digital.a3': 'أيوه — كتبك الرقمية بتفضل محفوظة بشكل دائم في "مكتبتي الرقمية" داخل صفحة حسابك، فتقدر ترجع وتحمّلها تاني في أي وقت من غير ما تدفع تاني.',
+            'faq.cat.payments': 'الدفع والأسعار',
+            'faq.payments.q1': 'إيه طرق الدفع المتاحة؟',
+            'faq.payments.a1': 'بنقبل البطاقات الائتمانية وبطاقات الخصم والمحافظ الإلكترونية. عند إتمام الطلب، هيتم تحويلك لصفحة الدفع الآمنة عشان تدخل بياناتك بأمان.',
+            'faq.payments.q2': 'هل الدفع على The Sun Book آمن؟',
+            'faq.payments.a2': 'أيوه. إحنا مش بنشوف أو نخزن بيانات بطاقتك أبدًا — كل عملية دفع بتتم من خلال بوابة دفع آمنة ومشفّرة، بنفس التقنية اللي بتستخدمها المتاجر الإلكترونية الكبرى.',
+            'faq.payments.q3': 'ليه بشوف الأسعار باليورو (€) بدل الجنيه المصري؟',
+            'faq.payments.a3': 'الأسعار بتظهر بالجنيه المصري للزوار من داخل مصر، وباليورو (€) للزوار من دول تانية — وده بيتحدد تلقائيًا حسب موقعك، عشان دايمًا تشوف العملة اللي تناسبك.',
+            'faq.payments.q4': 'فيه خصومات متاحة؟',
+            'faq.payments.a4': 'أيوه — إنشاء حساب مجاني بيديك خصم أعضاء تلقائي 5% على كل طلب. وكمان بنعرض عروض محدودة على مجموعة مختارة من الكتب في قسم "أفضل العروض".',
+            'faq.payments.q5': 'إزاي أستخدم كود الخصم؟',
+            'faq.payments.a5': 'اكتب الكود في خانة "أدخل الكود" في سلتك واضغط "تطبيق". الخصم بيتحسب تلقائيًا قبل ما تدفع — من غير أي حاجة تانية منك.',
+            'faq.cat.sessions': 'الجلسات الفردية',
+            'faq.sessions.q1': 'إزاي بتشتغل الجلسات الفردية؟',
+            'faq.sessions.a1': 'الجلسات الفردية عبارة عن جلسات فيديو مباشرة مع أحد المرشدين، بتتم في غرفة فيديو آمنة. بعد إتمام الدفع، بيتأكد حجزك فورًا ويظهر تحت "الجلسات القادمة" في صفحة حسابك، مع زرار "انضمام" بيتفعّل في الموعد المحدد.',
+            'faq.sessions.q2': 'أقدر أعيد جدولة أو ألغي جلسة؟',
+            'faq.sessions.a2': 'أيوه. كل جلسة تقدر تعيد جدولتها مرة واحدة، أو تلغيها واسترداد كامل المبلغ — الاتنين متاحين حتى 4 ساعات قبل الموعد، من "الجلسات القادمة" في صفحة حسابك. بعد المدة دي، مش هتقدر تغيّر في الجلسة.',
+            'faq.sessions.q3': 'هيحصل إيه لو فوّت جلستي؟',
+            'faq.sessions.a3': 'لو فوّت جلسة من غير إلغاء قبلها بـ 4 ساعات على الأقل، بتتسجل كجلسة فايتة ومش بترجعلك فلوسها تلقائيًا. تواصل معانا على واتساب وهنراجعها معاك.',
+            'faq.cat.account': 'الاسترجاع والحساب',
+            'faq.account.q1': 'إيه سياسة الاسترجاع والاسترداد عندكم؟',
+            'faq.account.a1': 'الطلبات الورقية تقدر تلغيها واسترداد كامل المبلغ في أي وقت قبل ما تُشحن، من صفحة حسابك مباشرة. بعد ما الطلب يتشحن، بتنطبق سياسة الاسترجاع القياسية لمدة 14 يوم بدلًا من كده — راجع <a href="policies.html#refund">سياسة الاسترجاع</a> كاملة للتفاصيل. الكتب الرقمية مينفعش تتلغي أو تسترد فلوسها، لأن الملفات بتوصلك فورًا بعد الدفع.',
+            'faq.account.q2': 'لازم أعمل حساب عشان أشتري حاجة؟',
+            'faq.account.a2': 'أيوه، لازم حساب مجاني عند إتمام الطلب. ده بيخلي كل تاريخ طلباتك ومكتبتك الرقمية وحجوزاتك في مكان واحد، وتقدر تتابع كل حاجة من صفحة حسابك.',
+            'faq.account.q3': 'إزاي أحذف حسابي؟',
+            'faq.account.a3': 'تقدر تحذف حسابك وكل بياناته نهائيًا في أي وقت من صفحة حسابك ← إعدادات الحساب ← حذف الحساب. الإجراء ده نهائي ومينفعش نرجع فيه.',
+            'faq.account.q4': 'بياناتي الشخصية آمنة؟',
+            'faq.account.a4': 'بالتأكيد. إحنا بناخد بس الحد الأدنى من البيانات اللازمة لمعالجة طلباتك، ومبنبيعش أو نشارك بياناتك الشخصية أبدًا — راجع <a href="policies.html#privacy">سياسة الخصوصية</a> كاملة للتفاصيل.',
+
+            // ------- Contact page (contact.html) -------
+            'contact.getInTouch': 'تواصل معنا',
+            'contact.subtitle': 'راسلنا لأي استفسار عن مجموعاتنا القديمة أو المعرفة الباطنية أو رحلتك في طلب الحكمة.',
+            'contact.info': 'بيانات التواصل',
+            'contact.emailUs': 'راسلنا عبر البريد الإلكتروني',
+            'contact.whatsappPhone': 'واتساب والهاتف',
+            'contact.workingHours': 'ساعات العمل',
+            'contact.workingHoursValue': 'من الإثنين إلى الجمعة: 9:00 ص - 6:00 م<br>بتوقيت القاهرة (EEST)',
+            'contact.yourName': 'اسمك',
+            'contact.yourEmail': 'بريدك الإلكتروني',
+            'contact.subject': 'الموضوع',
+            'contact.yourMessage': 'رسالتك...',
+            'contact.sendMessage': 'إرسال الرسالة',
+            'contact.messageSent': 'تم إرسال رسالتك بنجاح! سنتواصل معك قريبًا.',
+
             // ------- Calendar / booking JS -------
             'calendar.fullyBooked': 'محجوز بالكامل',
 
@@ -824,6 +966,14 @@
             var el = nodes[i];
             var val = t(el.getAttribute('data-i18n'));
             if (el.textContent !== val) el.textContent = val;
+        }
+
+        // نفس الفكرة بس للنصوص اللي محتاجة تحتفظ بتاج HTML جواها (زي <strong> حوالين اسم الموقع)
+        var htmlNodes = document.querySelectorAll('[data-i18n-html]');
+        for (var h = 0; h < htmlNodes.length; h++) {
+            var hEl = htmlNodes[h];
+            var hVal = t(hEl.getAttribute('data-i18n-html'));
+            if (hEl.innerHTML !== hVal) hEl.innerHTML = hVal;
         }
 
         var placeholders = document.querySelectorAll('[data-i18n-placeholder]');

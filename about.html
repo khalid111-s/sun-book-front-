@@ -6,6 +6,9 @@
     <title>About Us - The Sun Book</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/png" href="assets/sun-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
 <div data-include="components/header.html"></div>
@@ -15,9 +18,9 @@
     <div class="container policies-content about-intro">
         
         <img src="assets/sun-icon.png" alt="Sun Symbol" class="about-hero-icon">
-        <h1 class="policy-title">Our Story</h1>
+        <h1 class="policy-title" data-i18n="about.ourStory">Our Story</h1>
         
-        <p class="policy-text about-story-text">
+        <p class="policy-text about-story-text" data-i18n-html="about.storyText">
             Welcome to <strong>The Sun Book</strong>, a sanctuary for seekers of truth and ancient wisdom. 
             We traverse the boundaries of time to bring you the most profound esoteric literature, hidden knowledge, and forgotten rituals.
         </p>
@@ -34,8 +37,8 @@
             <div class="divider-line-right"></div>
         </div>
 
-        <h1 class="policy-title about-mission-title">Our Mission</h1>
-        <p class="policy-text">
+        <h1 class="policy-title about-mission-title" data-i18n="about.ourMission">Our Mission</h1>
+        <p class="policy-text" data-i18n="about.missionText">
             For centuries, the wisdom of the ancients has been guarded by secret societies and lost in the sands of time. 
             Our mission is to curate and preserve these mystical texts, making them accessible to modern scholars, occultists, and those who dare to look beyond the veil.
         </p>
@@ -70,6 +73,7 @@
 </a>
 
 <script src="components/loader.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
 <script src="js/script.js"></script>
 </body>
