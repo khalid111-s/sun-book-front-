@@ -402,6 +402,35 @@
             'contact.sendMessage': 'Send Message',
             'contact.messageSent': 'Message sent successfully! We will get back to you soon.',
 
+            // ------- Policies page (policies.html) -------
+            'policies.privacyTitle': 'Privacy Policy',
+            'policies.privacyText1': 'At <strong>The Sun Book</strong>, we are committed to protecting your privacy. We collect minimal personal data required to process your orders and improve your shopping experience.',
+            'policies.privacyText2': 'We do not sell, trade, or rent your personal identification information to others. Any data collected through our newsletter or checkout process is securely encrypted.',
+            'policies.termsTitle': 'Terms of Service',
+            'policies.termsText1': 'By using <strong>The Sun Book</strong> website, you agree to be bound by these terms. All content, including books, descriptions, and designs, is intellectual property.',
+            'policies.termsText2': 'We reserve the right to modify prices, discontinue products, or update these terms at any time without prior notice.',
+            'policies.refundTitle': 'Refund Policy',
+            'policies.refundText1': 'We want you to be completely satisfied with your mystery books. If you are not happy with your purchase, you may return it within <strong>14 days</strong> of delivery.',
+            'policies.refundText2': 'Items must be returned in their original, unused condition. Shipping costs for returns are the responsibility of the customer unless the item arrived damaged.',
+
+            // ------- Forgot/Reset password pages -------
+            'forgotPw.title': 'Forgot Password?',
+            'forgotPw.subtitle': "Enter your email and we'll send you a link to reset your password.",
+            'forgotPw.sendResetLink': 'Send Reset Link',
+            'forgotPw.backToSignIn': '← Back to Sign In',
+            'forgotPw.sending': 'Sending...',
+            'forgotPw.linkSentIfExists': 'If an account with that email exists, a reset link has been sent.',
+            'forgotPw.somethingWentWrong': 'Something went wrong. Please try again.',
+            'resetPw.title': 'Set a New Password',
+            'resetPw.subtitle': 'Choose a new password for your account.',
+            'resetPw.resetPassword': 'Reset Password',
+            'resetPw.invalidLink': 'This reset link is invalid. Please request a new one from the sign-in page.',
+            'resetPw.tooShort': 'Password must be at least 6 characters.',
+            'resetPw.noMatch': 'Passwords do not match.',
+            'resetPw.resetting': 'Resetting...',
+            'resetPw.updatedRedirecting': 'Password updated! Redirecting...',
+            'resetPw.invalidOrExpired': 'This link is invalid or has expired.',
+
             // ------- Calendar / booking JS -------
             'calendar.fullyBooked': 'Fully booked',
 
@@ -794,6 +823,35 @@
             'contact.yourMessage': 'رسالتك...',
             'contact.sendMessage': 'إرسال الرسالة',
             'contact.messageSent': 'تم إرسال رسالتك بنجاح! سنتواصل معك قريبًا.',
+
+            // ------- Policies page (policies.html) -------
+            'policies.privacyTitle': 'سياسة الخصوصية',
+            'policies.privacyText1': 'في <strong>The Sun Book</strong>، نلتزم بحماية خصوصيتك. نجمع الحد الأدنى فقط من البيانات الشخصية اللازمة لمعالجة طلباتك وتحسين تجربتك في التسوق.',
+            'policies.privacyText2': 'لا نبيع بياناتك الشخصية أو نتاجر بها أو نؤجرها لأي طرف آخر. أي بيانات يتم جمعها من خلال نشرتنا البريدية أو عملية الدفع يتم تشفيرها بأمان.',
+            'policies.termsTitle': 'شروط الخدمة',
+            'policies.termsText1': 'باستخدامك لموقع <strong>The Sun Book</strong>، فإنك توافق على الالتزام بهذه الشروط. جميع المحتويات، بما في ذلك الكتب والأوصاف والتصاميم، هي ملكية فكرية محفوظة.',
+            'policies.termsText2': 'نحتفظ بالحق في تعديل الأسعار، أو إيقاف منتجات، أو تحديث هذه الشروط في أي وقت من غير إشعار مسبق.',
+            'policies.refundTitle': 'سياسة الاسترجاع',
+            'policies.refundText1': 'نريدك أن تكون راضيًا تمامًا عن كتبك الغامضة. لو لم تكن راضيًا عن مشترياتك، يمكنك إرجاعها خلال <strong>14 يومًا</strong> من تاريخ الاستلام.',
+            'policies.refundText2': 'يجب إرجاع المنتجات في حالتها الأصلية وغير المستخدمة. تكاليف الشحن الخاصة بالإرجاع تقع على عاتق العميل، إلا إذا وصل المنتج تالفًا.',
+
+            // ------- Forgot/Reset password pages -------
+            'forgotPw.title': 'نسيت كلمة المرور؟',
+            'forgotPw.subtitle': 'أدخل بريدك الإلكتروني وسنرسل لك رابطًا لإعادة تعيين كلمة المرور.',
+            'forgotPw.sendResetLink': 'إرسال رابط إعادة التعيين',
+            'forgotPw.backToSignIn': '→ العودة لتسجيل الدخول',
+            'forgotPw.sending': 'جارٍ الإرسال...',
+            'forgotPw.linkSentIfExists': 'إذا كان هناك حساب مرتبط بهذا البريد الإلكتروني، فسيتم إرسال رابط إعادة التعيين إليه.',
+            'forgotPw.somethingWentWrong': 'حدث خطأ ما. يُرجى المحاولة مرة أخرى.',
+            'resetPw.title': 'تعيين كلمة مرور جديدة',
+            'resetPw.subtitle': 'اختر كلمة مرور جديدة لحسابك.',
+            'resetPw.resetPassword': 'إعادة تعيين كلمة المرور',
+            'resetPw.invalidLink': 'رابط إعادة التعيين هذا غير صالح. يُرجى طلب رابط جديد من صفحة تسجيل الدخول.',
+            'resetPw.tooShort': 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',
+            'resetPw.noMatch': 'كلمتا المرور غير متطابقتين.',
+            'resetPw.resetting': 'جارٍ إعادة التعيين...',
+            'resetPw.updatedRedirecting': 'تم تحديث كلمة المرور! جارٍ التحويل...',
+            'resetPw.invalidOrExpired': 'هذا الرابط غير صالح أو منتهي الصلاحية.',
 
             // ------- Calendar / booking JS -------
             'calendar.fullyBooked': 'محجوز بالكامل',

@@ -6,6 +6,9 @@
     <title>Policies - The Sun Book</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/png" href="assets/sun-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
 <div data-include="components/header.html"></div>
@@ -16,9 +19,9 @@
         
         <!-- سياسة الخصوصية -->
         <div id="privacy" class="policy-block">
-            <h1 class="policy-title">Privacy Policy</h1>
-            <p class="policy-text">At <strong>The Sun Book</strong>, we are committed to protecting your privacy. We collect minimal personal data required to process your orders and improve your shopping experience.</p>
-            <p class="policy-text">We do not sell, trade, or rent your personal identification information to others. Any data collected through our newsletter or checkout process is securely encrypted.</p>
+            <h1 class="policy-title" data-i18n="policies.privacyTitle">Privacy Policy</h1>
+            <p class="policy-text" data-i18n-html="policies.privacyText1">At <strong>The Sun Book</strong>, we are committed to protecting your privacy. We collect minimal personal data required to process your orders and improve your shopping experience.</p>
+            <p class="policy-text" data-i18n="policies.privacyText2">We do not sell, trade, or rent your personal identification information to others. Any data collected through our newsletter or checkout process is securely encrypted.</p>
         </div>
 
 <!-- الخط الفاصل الأنيق بين الأقسام -->
@@ -36,9 +39,9 @@
 
         <!-- شروط الخدمة -->
         <div id="terms" class="policy-block">
-            <h1 class="policy-title">Terms of Service</h1>
-            <p class="policy-text">By using <strong>The Sun Book</strong> website, you agree to be bound by these terms. All content, including books, descriptions, and designs, is intellectual property.</p>
-            <p class="policy-text">We reserve the right to modify prices, discontinue products, or update these terms at any time without prior notice.</p>
+            <h1 class="policy-title" data-i18n="policies.termsTitle">Terms of Service</h1>
+            <p class="policy-text" data-i18n-html="policies.termsText1">By using <strong>The Sun Book</strong> website, you agree to be bound by these terms. All content, including books, descriptions, and designs, is intellectual property.</p>
+            <p class="policy-text" data-i18n="policies.termsText2">We reserve the right to modify prices, discontinue products, or update these terms at any time without prior notice.</p>
         </div>
 
 <!-- الخط الفاصل الأنيق بين الأقسام -->
@@ -55,9 +58,9 @@
 </div>
         <!-- سياسة الاسترجاع -->
         <div id="refund" class="policy-block">
-            <h1 class="policy-title">Refund Policy</h1>
-            <p class="policy-text">We want you to be completely satisfied with your mystery books. If you are not happy with your purchase, you may return it within <strong>14 days</strong> of delivery.</p>
-            <p class="policy-text">Items must be returned in their original, unused condition. Shipping costs for returns are the responsibility of the customer unless the item arrived damaged.</p>
+            <h1 class="policy-title" data-i18n="policies.refundTitle">Refund Policy</h1>
+            <p class="policy-text" data-i18n-html="policies.refundText1">We want you to be completely satisfied with your mystery books. If you are not happy with your purchase, you may return it within <strong>14 days</strong> of delivery.</p>
+            <p class="policy-text" data-i18n="policies.refundText2">Items must be returned in their original, unused condition. Shipping costs for returns are the responsibility of the customer unless the item arrived damaged.</p>
         </div>
 
     </div>
@@ -86,6 +89,7 @@
 </a>
 
 <script src="components/loader.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
 <script src="js/script.js"></script>
 </body>
