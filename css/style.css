@@ -1848,7 +1848,7 @@ ul.footer-follow-icons {
     }
 
     .product-card {
-        min-height: 420px; /* بلاش نجبر 480px القديم، بس نديها حد أدنى معقول مع الصورة الأكبر */
+        min-height: 0; /* من غير الوصف، الكارت ياخد طول محتواه الطبيعي بس */
         border-radius: 14px;
     }
 
