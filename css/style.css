@@ -212,7 +212,7 @@ body {
 
 /* مسافات قسم الحجز عشان ما يلزقش في حواف الموبايل */
 .booking-cta-section {
-    padding: 40px 5% 80px;
+    padding: 40px 5% 40px;
     background-color: var(--bg-dark);
 }
 
@@ -782,7 +782,7 @@ body {
     align-items: center;
     justify-content: center;
     min-height: calc(100vh - 90px);
-    padding: 40px 5% 60px;
+    padding: 40px 5% 40px;
     background: radial-gradient(circle at top, rgba(216, 176, 86, 0.12), transparent 45%), #000;
 }
 
@@ -821,7 +821,7 @@ body {
     .hero-section {
         justify-content: center;
         text-align: center;
-        padding: 20px 5% 30px;
+        padding: 20px 5% 40px;
         min-height: auto;
         background: radial-gradient(circle at top, rgba(216, 176, 86, 0.15), transparent 55%), #000;
     }
@@ -967,7 +967,7 @@ body {
     .hero-section {
         justify-content: center;
         text-align: center;
-        padding: 20px 5% 30px;
+        padding: 20px 5% 40px;
         min-height: auto;
         background: radial-gradient(circle at top, rgba(216, 176, 86, 0.15), transparent 55%), #000;
     }
@@ -1094,8 +1094,7 @@ body {
 .best-offers-section,
 .all-products-section { /* ضفنا القسم هنا عشان ياخد مسافة الـ 5% من الجوانب ومايلزقش */
     background-color: #030406;
-    padding: 20px 5% 70px;
-    margin-top: -10px;
+    padding: 40px 5% 40px;
     color: #fff;
     font-family: var(--font-main); /* شيلنا خط أريال عشان يمشي مع ستايل الموقع */
 }
