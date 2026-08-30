@@ -2275,11 +2275,17 @@ ul.footer-follow-icons {
         gap: 20px;
     }
 
-    .product-gallery {
+    .product-gallery,
+    .sticky-product-gallery {
         flex: none;
         width: 100%;
         padding: 20px;
-        position: static; /* نلغي الالتصاق (sticky) في الموبايل */
+        align-self: stretch;
+        /* نلغي الالتصاق (sticky) في الموبايل - لازم !important هنا لأن فيه
+           قاعدة تانية بعديها في الملف بتفعّل الـ sticky من غير شرط شاشة،
+           وكانت بتكسب على القاعدة دي وتلغي تأثيرها */
+        position: static !important;
+        top: auto !important;
     }
 
     .product-gallery img {
