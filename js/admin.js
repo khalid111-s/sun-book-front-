@@ -185,6 +185,7 @@ function resetForm() {
     document.getElementById('fieldBadges').value = '';
     document.getElementById('fieldOrder').value = 0;
     document.getElementById('fieldDescription').value = '';
+    document.getElementById('fieldDescriptionAr').value = '';
     document.getElementById('fieldFeatured').checked = false;
     document.getElementById('fieldInStock').checked = true;
     document.getElementById('fieldEgyptOnly').checked = false;
@@ -208,6 +209,7 @@ function fillFormForEdit(product) {
     document.getElementById('fieldBadges').value = (product.badges || []).join(', ');
     document.getElementById('fieldOrder').value = product.order ?? 0;
     document.getElementById('fieldDescription').value = product.description || '';
+    document.getElementById('fieldDescriptionAr').value = product.descriptionAr || '';
     document.getElementById('fieldFeatured').checked = !!product.featured;
     document.getElementById('fieldInStock').checked = product.inStock !== false;
     document.getElementById('fieldEgyptOnly').checked = !!product.egyptOnly;
@@ -233,6 +235,7 @@ function readFormData() {
         badges: badgesRaw ? badgesRaw.split(',').map(b => b.trim()).filter(Boolean) : [],
         order: parseInt(document.getElementById('fieldOrder').value) || 0,
         description: document.getElementById('fieldDescription').value.trim(),
+        descriptionAr: document.getElementById('fieldDescriptionAr').value.trim(),
         featured: document.getElementById('fieldFeatured').checked,
         inStock: document.getElementById('fieldInStock').checked,
         egyptOnly: document.getElementById('fieldEgyptOnly').checked,

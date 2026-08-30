@@ -109,12 +109,22 @@ function normalizeProduct(p) {
         price: displayPriceFor(p.price, p.priceEUR),
         image: p.image,
         description: p.description,
+        descriptionAr: p.descriptionAr || '',
         type: p.type,
         badges: p.badges || [],
         featured: !!p.featured,
         egyptOnly: !!p.egyptOnly,
         available,
     };
+}
+
+// بيرجع وصف المنتج بلغة الموقع الحالية - لو مفيش وصف عربي متسجل، بيرجع
+// الإنجليزي بدل ما يفضل فاضي (زي أي محتوى من الداتابيز، عنوان الكتاب نفسه
+// بيفضل زي ما هو دايمًا، الوصف بس هو اللي ليه نسخة عربية اختيارية)
+function localizedDescription(product) {
+    const isArabic = window.SunBookI18n && window.SunBookI18n.getLang() === 'ar';
+    if (isArabic && product.descriptionAr) return product.descriptionAr;
+    return product.description;
 }
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -145,10 +155,11 @@ async function loadSingleProductPage() {
             return;
         }
         const normalized = normalizeProduct(product);
+        window.__currentProduct = normalized;
         if (imgEl) imgEl.src = normalized.image;
         if (titleEl) titleEl.innerText = normalized.title;
         if (priceEl) priceEl.innerText = normalized.price;
-        if (descEl) descEl.innerText = normalized.description;
+        if (descEl) descEl.innerText = localizedDescription(normalized);
 
         // معاينة الغلاف (لايت بوكس): نحدث الصورة اللي هتتفتح
         const lightboxImgEl = document.getElementById('lightbox-img');
@@ -244,7 +255,7 @@ function productCardHTML(product) {
                     <h3 class="card-title">${product.title}</h3>
                 </a>
                 <div class="card-badges">${badgesHTML}</div>
-                <p class="card-desc">${product.description}</p>
+                <p class="card-desc">${localizedDescription(product)}</p>
                 <div class="card-bottom">
                     <div class="price-block">
                         <span class="price-label">${tr('product.price', 'PRICE')}</span>
@@ -346,6 +357,10 @@ async function loadHomepageProducts() {
 // وأي حاجة تانية محتاجة تتحدث فورًا من غير ما نستنى إعادة تحميل الصفحة
 document.addEventListener('sunbook:langChanged', () => {
     renderHomepageProductGrids();
+    if (window.__currentProduct) {
+        const descEl = document.getElementById('product-desc');
+        if (descEl) descEl.innerText = localizedDescription(window.__currentProduct);
+    }
 });
 
 // قسم "كتب تانية ممكن تعجبك" في صفحة المنتج: بيعرض منتجات تانية غير المنتج الحالي
