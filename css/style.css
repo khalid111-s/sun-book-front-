@@ -4337,7 +4337,7 @@ ul.footer-follow-icons {
     border: 1px solid rgba(216, 176, 86, 0.4);
     border-radius: 10px;
     color: #fff;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: var(--font-main);
     font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -5275,7 +5275,7 @@ html {
         border-radius: 8px;
         color: #d8b056 !important;
         font-size: 0.95rem;
-        font-family: 'Segoe UI', sans-serif;
+        font-family: var(--font-main);
         outline: none;
         transition: all 0.3s ease;
         -webkit-appearance: none;
@@ -5311,7 +5311,7 @@ html {
         border-radius: 8px;
         color: #d8b056 !important;
         font-size: 0.95rem;
-        font-family: 'Segoe UI', sans-serif;
+        font-family: var(--font-main);
         cursor: pointer;
         outline: none;
         -webkit-appearance: none;
@@ -5469,7 +5469,7 @@ html {
         border: 1px solid rgba(216, 176, 86, 0.4);
         border-radius: 10px;
         color: #fff;
-        font-family: 'Segoe UI', sans-serif;
+        font-family: var(--font-main);
         font-size: 0.95rem;
         cursor: pointer;
         transition: all 0.3s ease;
@@ -5867,6 +5867,13 @@ html[dir="rtl"] {
 }
 
 /* زرار تبديل اللغة - نفس روح أزرار الموقع التانية */
+/* ملحوظة مهمة: الزرار ده دايمًا بيعرض كلمة اللغة "التانية" (العربية وانت إنجليزي/
+   English وانت عربي) - يعني مش زي باقي الأزرار اللي بتتبع لغة الصفحة الحالية.
+   عشان كده مينفعش نستخدم var(--font-main) هنا (كان بيرجع Segoe UI وقت ما الصفحة
+   إنجليزي، ومفيهوش حروف عربي، فالمتصفح كان مضطر يستبدل الفونت لعرض "العربية" بس
+   من غير ما يستبدل مقاسات السطر (line-height) بتاعته - فالنص كان بيبان طايح لفوق
+   جوه الزرار مش في النص). الحل: فونت ثابت فيه دعم عربي كامل دايمًا (بغض النظر عن
+   اتجاه الصفحة)، + توسيط بالـ flexbox بدل ما نعتمد على مقاسات الفونت للتوسيط الرأسي */
 .lang-toggle-btn {
     background: transparent;
     border: 1px solid rgba(216, 176, 86, 0.35);
@@ -5875,7 +5882,11 @@ html[dir="rtl"] {
     border-radius: 6px;
     font-size: 0.85rem;
     font-weight: 600;
-    font-family: var(--font-main);
+    font-family: 'Tajawal', 'Segoe UI', sans-serif;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     transition: all 0.3s;
     white-space: nowrap;
