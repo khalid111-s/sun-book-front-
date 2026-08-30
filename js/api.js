@@ -315,4 +315,13 @@ const api = {
 
   deleteReview: (reviewId) =>
     api.request(`/reviews/${reviewId}`, { method: 'DELETE' }),
+
+  // ---- Site Content (النصوص القابلة للتعديل من الأدمن بالعربي والإنجليزي) ----
+  getSiteContent: () => api.request('/site-content'),
+
+  updateSiteContent: (items) =>
+    api.request('/site-content', {
+      method: 'PUT',
+      body: JSON.stringify({ items }),
+    }),
 };

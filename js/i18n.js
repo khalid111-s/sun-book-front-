@@ -978,6 +978,37 @@
         return englishName;
     }
 
+    // النصوص "المحتوى" اللي ممكن الأدمن يعدّلها من لوحة التحكم (زي الأسئلة
+    // الشائعة والسياسات) - بتتجاب من السيرفر وتنطبق فوق القاموس الأساسي فوق،
+    // من غير ما تلمس النصوص التقنية التانية (رسايل الأخطاء، حالات الأزرار...)
+    var contentOverrides = { en: {}, ar: {} };
+
+    function getSiteContentApiUrl() {
+        var host = window.location.hostname;
+        var isLocal = host === 'localhost' || host === '127.0.0.1' || host === '';
+        return (isLocal ? 'http://localhost:5000/api' : 'https://sunbook.vercel.app/api') + '/site-content';
+    }
+
+    function loadContentOverrides() {
+        fetch(getSiteContentApiUrl())
+            .then(function (res) { return res.json(); })
+            .then(function (json) {
+                if (!json || !json.success || !Array.isArray(json.data)) return;
+                var newEn = {};
+                var newAr = {};
+                json.data.forEach(function (item) {
+                    if (typeof item.en === 'string') newEn[item.key] = item.en;
+                    if (typeof item.ar === 'string') newAr[item.key] = item.ar;
+                });
+                contentOverrides.en = newEn;
+                contentOverrides.ar = newAr;
+                refresh(); // إعادة تطبيق الترجمة فور ما نص الأدمن يوصل، فوق أي حاجة اتعرضت قبل كده
+            })
+            .catch(function () {
+                // السيرفر نايم أو الشبكة اتقطعت - نفضل نستخدم النصوص الافتراضية في الكود، وده طبيعي تمامًا
+            });
+    }
+
     function getLang() {
         var stored = localStorage.getItem(STORAGE_KEY);
         return stored === 'ar' || stored === 'en' ? stored : 'en';
@@ -985,6 +1016,8 @@
 
     function t(key) {
         var lang = getLang();
+        var overrideTable = contentOverrides[lang] || {};
+        if (Object.prototype.hasOwnProperty.call(overrideTable, key)) return overrideTable[key];
         var table = dict[lang] || dict.en;
         if (Object.prototype.hasOwnProperty.call(table, key)) return table[key];
         if (Object.prototype.hasOwnProperty.call(dict.en, key)) return dict.en[key];
@@ -1092,6 +1125,7 @@
     function start() {
         refresh();
         observer.observe(document.body, { childList: true, subtree: true });
+        loadContentOverrides();
     }
 
     if (document.body) {

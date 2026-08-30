@@ -702,6 +702,7 @@ const tabPanelIds = {
     users: 'tabUsers',
     promocodes: 'tabPromoCodes',
     archives: 'tabArchives',
+    content: 'tabSiteContent',
 };
 
 // كل تاب من التابات دي بيتحمّل أول مرة بس تفتحه، مش من أول ما الصفحة تفتح
@@ -710,6 +711,7 @@ const tabLoaders = {
     users: () => loadUsersTable(),
     promocodes: () => loadPromoCodesTable(),
     archives: () => loadArchivesList(),
+    content: () => loadSiteContentTab(),
 };
 const loadedTabs = new Set();
 
@@ -1250,3 +1252,89 @@ async function buildArchivePdf(data) {
 
     doc.save(`sunbook-report-${data.year}-${String(data.month).padStart(2, '0')}.pdf`);
 }
+
+// ---------- تاب المحتوى: النصوص القابلة للتعديل بالعربي والإنجليزي ----------
+const groupDisplayNames = {
+    about: 'About Page',
+    faq: 'FAQ Page',
+    policies: 'Policies Page',
+    bookingDetails: 'Booking Details Page',
+};
+
+async function loadSiteContentTab() {
+    const wrap = document.getElementById('siteContentGroups');
+    wrap.innerHTML = '<p style="color: var(--text-gray); padding: 16px;">Loading...</p>';
+
+    try {
+        const { data } = await api.getSiteContent();
+
+        // نجمّع كل النصوص حسب القسم بتاعها (about / faq / policies / bookingDetails)
+        const groups = {};
+        data.forEach((item) => {
+            if (!groups[item.group]) groups[item.group] = [];
+            groups[item.group].push(item);
+        });
+
+        let html = '';
+        Object.keys(groups).forEach((groupKey) => {
+            const groupLabel = groupDisplayNames[groupKey] || groupKey;
+            html += `<details class="site-content-group"><summary>${groupLabel} (${groups[groupKey].length})</summary>`;
+            groups[groupKey].forEach((item) => {
+                html += `
+                <div class="site-content-item">
+                    <label>${item.label}</label>
+                    <div class="site-content-item-fields">
+                        <textarea data-key="${item.key}" data-lang="en" dir="ltr" placeholder="English">${escapeHtmlForTextarea(item.en)}</textarea>
+                        <textarea data-key="${item.key}" data-lang="ar" dir="rtl" placeholder="عربي">${escapeHtmlForTextarea(item.ar)}</textarea>
+                    </div>
+                </div>`;
+            });
+            html += `</details>`;
+        });
+
+        wrap.innerHTML = html || '<p style="color: var(--text-gray); padding: 16px;">No content items found.</p>';
+    } catch (err) {
+        wrap.innerHTML = `<p style="color: #ff4d4d; padding: 16px;">Failed to load content: ${err.message}</p>`;
+    }
+}
+
+// بنحول أي علامات < > جوه النص لصيغتها الآمنة عشان نعرضها جوه textarea
+// من غير ما تتفسر كتاج HTML حقيقي (النص ممكن يحتوي على <strong> مقصودة كنص)
+function escapeHtmlForTextarea(str) {
+    return (str || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+document.getElementById('siteContentSaveBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('siteContentSaveBtn');
+    const msgEl = document.getElementById('siteContentMsg');
+    const textareas = document.querySelectorAll('#siteContentGroups textarea[data-key]');
+
+    // بنجمّع كل textarea (إنجليزي وعربي) في عنصر واحد لكل key
+    const itemsByKey = {};
+    textareas.forEach((ta) => {
+        const key = ta.dataset.key;
+        const lang = ta.dataset.lang;
+        if (!itemsByKey[key]) itemsByKey[key] = { key };
+        // بنرجّع &lt; &gt; لعلامات < > الحقيقية قبل ما نبعتها للسيرفر
+        itemsByKey[key][lang] = ta.value.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+    });
+
+    const items = Object.values(itemsByKey);
+
+    btn.disabled = true;
+    btn.innerText = 'Saving...';
+    msgEl.style.color = '';
+    msgEl.innerText = '';
+
+    try {
+        await api.updateSiteContent(items);
+        msgEl.style.color = '#34A853';
+        msgEl.innerText = 'Saved successfully!';
+    } catch (err) {
+        msgEl.style.color = '#ff4d4d';
+        msgEl.innerText = err.message || 'Failed to save changes.';
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Save All Changes';
+    }
+});
