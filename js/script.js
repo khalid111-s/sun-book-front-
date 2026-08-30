@@ -148,6 +148,14 @@ async function loadSingleProductPage() {
     const descEl = document.getElementById('product-desc');
     const imgEl = document.getElementById('main-product-img');
 
+    // نص "جارٍ التحميل" بيتحط هنا يدويًا (مش عن طريق data-i18n) لأن نفس
+    // العنصر ده هيتغيّر بعد شوية لعنوان الكتاب الحقيقي - لو سبنا data-i18n
+    // عليه، محرك الترجمة هيرجعه "جارٍ التحميل" تاني أول ما يحس بأي تغيير
+    // تاني في الصفحة، ويفضل عالق كده للأبد (بالظبط المشكلة اللي ظهرت)
+    const trLoading = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
+    if (titleEl) titleEl.innerText = trLoading('product.loadingTitle', 'Loading...');
+    if (descEl) descEl.innerText = trLoading('product.loadingDesc', "Loading the book's details and the mysteries within...");
+
     try {
         const { data: product } = await api.getProduct(productId);
         if (!product) {
@@ -210,7 +218,10 @@ async function loadSingleProductPage() {
                     mobileBuyBarBtnEl.style.cursor = 'not-allowed';
                 }
             } else {
+                const addToCartLabel = window.SunBookI18n ? window.SunBookI18n.t('product.addToCart') : 'Add to Cart';
                 addToCartLargeEl.disabled = false;
+                addToCartLargeEl.innerText = addToCartLabel;
+                if (mobileBuyBarBtnEl) mobileBuyBarBtnEl.innerText = addToCartLabel;
             }
         }
 
@@ -360,6 +371,14 @@ document.addEventListener('sunbook:langChanged', () => {
     if (window.__currentProduct) {
         const descEl = document.getElementById('product-desc');
         if (descEl) descEl.innerText = localizedDescription(window.__currentProduct);
+
+        const addToCartLargeEl = document.querySelector('.add-to-cart-large');
+        const mobileBuyBarBtnEl = document.getElementById('mobileBuyBarBtn');
+        const label = window.__currentProduct.available === false
+            ? (window.SunBookI18n ? window.SunBookI18n.t('product.outOfStock') : 'Out of Stock')
+            : (window.SunBookI18n ? window.SunBookI18n.t('product.addToCart') : 'Add to Cart');
+        if (addToCartLargeEl) addToCartLargeEl.innerText = label;
+        if (mobileBuyBarBtnEl) mobileBuyBarBtnEl.innerText = label;
     }
 });
 
@@ -1575,106 +1594,6 @@ if (confirmBookingBtn && !document.body.classList.contains('use-api-booking')) {
         document.getElementById('bookingModal').classList.remove('active');
         window.location.href = 'cart.html';
     });
-}
-
-/* =========================================
-   نظام الدفع الذكي (Smart Checkout System) - محدث بالكامل
-   ========================================= */
-
-function switchPayment(type) {
-    document.querySelectorAll('.pay-tab').forEach(tab => tab.classList.remove('active'));
-    document.querySelectorAll('.pay-form').forEach(form => form.classList.remove('active'));
-
-    if (type === 'card') {
-        document.querySelectorAll('.pay-tab')[0].classList.add('active');
-        document.getElementById('card-form').classList.add('active');
-    } else {
-        document.querySelectorAll('.pay-tab')[1].classList.add('active');
-        document.getElementById('wallet-form').classList.add('active');
-    }
-}
-
-function initSmartCheckout() {
-    const loggedInUser = localStorage.getItem('sunbook_username');
-    if (!loggedInUser) return;
-
-    const confirmBtn = document.getElementById('confirmPaymentBtn');
-    if (!confirmBtn) return;
-
-    const shippingSection = document.getElementById('shipping-section');
-    const digitalBanner = document.getElementById('digital-banner');
-    const noticeSection = document.getElementById('smart-notice');
-
-    let cart = JSON.parse(localStorage.getItem('sunbook_cart')) || [];
-    if (cart.length === 0) {
-        window.location.href = 'cart.html';
-        return;
-    }
-
-        const hasPhysical = cart.some(item => item.type === 'physical');
-    const hasDigital = cart.some(item => item.type === 'digital');
-    const hasBooking = cart.some(item => item.type === 'booking');
-
-    // 1. التحكم في ظهور/اختفاء قسم الشحن والبنرات
-    if (shippingSection) {
-        if (!hasPhysical && (hasDigital || hasBooking)) {
-            // كلها ديجيتال أو حجز (مش محتاج شحن)
-            shippingSection.style.display = 'none';
-            if (digitalBanner) digitalBanner.style.display = 'block';
-            if (noticeSection) noticeSection.style.display = 'none';
-            confirmBtn.innerText = hasBooking ? 'Pay & Confirm Session' : 'Pay & Download Now';
-        } else if (hasPhysical && (hasDigital || hasBooking)) {
-            // مخلوطة
-            shippingSection.style.display = 'block';
-            if (digitalBanner) digitalBanner.style.display = 'none';
-            if (noticeSection) {
-                noticeSection.style.display = 'block';
-                let msg = '<strong>Mixed Order:</strong> Digital files will be available for instant download right after payment. ';
-                if (hasBooking) msg += 'Your session will be confirmed. ';
-                msg += 'Physical books will be shipped to the address provided below.';
-                noticeSection.innerHTML = msg;
-            }
-            confirmBtn.innerText = 'Pay Now & Complete Order';
-        } else {
-            // كلها فيزيكال
-            shippingSection.style.display = 'block';
-            if (digitalBanner) digitalBanner.style.display = 'none';
-            if (noticeSection) noticeSection.style.display = 'none';
-            confirmBtn.innerText = 'Pay Now & Complete Order';
-        }
-    }
-
-    // 2. رسم ملخص الطلب
-    let totalPrice = 0;
-    const listContainer = document.getElementById('checkout-items-list');
-    if (listContainer) {
-        listContainer.innerHTML = '';
-        cart.forEach(item => {
-            const typeLabel = item.type === 'digital' ? 'Digital (PDF)' : item.type === 'booking' ? 'Session' : 'Physical Book';
-            const typeColor = item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)';
-            const priceNum = parseFloat(item.price.replace(/[^0-9.]/g, ''));
-            totalPrice += (priceNum * item.qty);
-
-            listContainer.innerHTML += `
-                <div class="checkout-item-mini">
-                    <img src="${item.image}" alt="Book">
-                    <div class="checkout-item-info">
-                        <h4>${item.title} (x${item.qty})</h4>
-                        <span class="item-type-badge" style="color: ${typeColor}; border-color: ${typeColor};">${typeLabel}</span>
-                    </div>
-                    <p class="checkout-item-price">${item.price}</p>
-                </div>
-            `;
-        });
-    }
-
-    // 3. حساب الإجمالي
-    let finalTotal = totalPrice;
-    if (loggedInUser) {
-        finalTotal = totalPrice - (totalPrice * 0.05);
-    }
-    const totalPriceEl = document.getElementById('checkout-total-price');
-    if (totalPriceEl) totalPriceEl.innerText = `LE ${finalTotal.toFixed(2)}`;
 }
 
 /* =========================================

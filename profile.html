@@ -221,7 +221,7 @@
 
             <p id="rescheduleMsg" style="font-size: 0.85rem; min-height: 18px; margin-bottom: 12px;"></p>
 
-            <button id="confirmRescheduleBtn" class="btn-shop" style="width: 100%;" data-i18n="profile.confirmNewTime">Confirm New Time</button>
+            <button id="confirmRescheduleBtn" class="btn-shop" style="width: 100%;">Confirm New Time</button>
         </div>
     </div>
 </div>
@@ -238,7 +238,7 @@
 
             <p id="deleteAccountMsg" style="font-size: 0.85rem; min-height: 18px; margin-bottom: 8px;"></p>
 
-            <button id="confirmDeleteAccountBtn" class="profile-danger-btn" style="width: 100%;" onclick="confirmDeleteAccount()" data-i18n="profile.permanentlyDeleteBtn">Permanently Delete My Account</button>
+            <button id="confirmDeleteAccountBtn" class="profile-danger-btn" style="width: 100%;" onclick="confirmDeleteAccount()">Permanently Delete My Account</button>
         </div>
     </div>
 </div>
@@ -531,8 +531,15 @@
         const modal = document.getElementById('deleteAccountModal');
         const input = document.getElementById('deleteAccountConfirmInput');
         const msg = document.getElementById('deleteAccountMsg');
+        const btn = document.getElementById('confirmDeleteAccountBtn');
         if (input) input.value = '';
         if (msg) msg.innerText = '';
+        // نفس سبب زرار إعادة الجدولة - النص بيتغيّر مؤقتًا لـ "جارٍ الحذف..."
+        // فمينفعش يتحط عليه data-i18n ثابت
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = window.SunBookI18n ? window.SunBookI18n.t('profile.permanentlyDeleteBtn') : 'Permanently Delete My Account';
+        }
         if (modal) modal.classList.add('active');
     }
 
@@ -719,6 +726,15 @@ function openRescheduleModal(bookingId) {
         b.classList.remove('selected', 'booked');
         b.disabled = false;
     });
+
+    // النص الافتراضي بيتحط هنا يدويًا (مش data-i18n) عشان زرار التأكيد
+    // بيتغيّر نصه مؤقتًا لـ "جارٍ إعادة الجدولة..." أثناء الإرسال، ومينفعش
+    // نسيبه data-i18n ثابت وإلا أي تحديث تاني في الصفحة كان هيرجّعه غلط
+    const confirmBtn = document.getElementById('confirmRescheduleBtn');
+    if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.innerText = window.SunBookI18n ? window.SunBookI18n.t('profile.confirmNewTime') : 'Confirm New Time';
+    }
 
     modal.classList.add('active');
     refreshRescheduleAvailability();
