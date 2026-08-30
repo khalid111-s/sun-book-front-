@@ -1872,14 +1872,9 @@ ul.footer-follow-icons {
     }
 
     .card-desc {
-        margin-bottom: 10px;
-        font-size: 0.75rem;
-        line-height: 1.4;
-        /* بلاش الوصف الطويل يمد الكارت لتحت أوي، نكتفي بسطرين وبعدين "..." */
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+        /* شيلنا الوصف خالص من كارت المنتج في الموبايل عشان يقصّر الكارت -
+           البادجات والسعر والزرار كفاية */
+        display: none;
     }
 
     .card-badges {
