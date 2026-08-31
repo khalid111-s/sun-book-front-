@@ -1250,6 +1250,28 @@ body {
     border-bottom: 1px solid rgba(216, 176, 86, 0.1);
 }
 
+/* زخرفة قناع الفرعون الذهبي وراء الصورة - بيبان نصها بس ناحية أقصى اليمين، بلون الموقع الدهبي وشفافية خفيفة زي الظل */
+.card-image-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -22%; /* بتدفعها لبرا حدود الكارت عشان overflow:hidden يقص نصها ويسيب نصها الباين بس */
+    width: 75%;
+    height: 100%;
+    background-color: var(--gold-color);
+    -webkit-mask-image: url('../assets/pharaoh-decor.svg');
+    mask-image: url('../assets/pharaoh-decor.svg');
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    opacity: 0.08; /* شفافية خفيفة عشان تبان كظل هادي مش شكل واضح */
+    z-index: 0; /* لازم تفضل تحت صورة الكتاب دايمًا */
+    pointer-events: none;
+}
+
 .card-img {
     /* تمركز مضمون 100% جوه الـ wrapper (مش معتمد على flex) عشان الصورة متطلعش عالية ولا واطية */
     position: absolute;
@@ -1264,6 +1286,7 @@ body {
     object-fit: contain;
     filter: drop-shadow(0 15px 15px rgba(0,0,0,0.7));
     transition: transform 0.3s ease;
+    z-index: 1; /* عشان تفضل دايمًا فوق زخرفة قناع الفرعون اللي وراها */
 }
 
 .product-card:hover .card-img {
@@ -1289,14 +1312,11 @@ body {
 
 /* تكبير صورة "Trio Wisdom Bundle" الجديدة بس (لسه متمركزة زي باقي الكروت، مش محتاجة قاعدة هوفر خاصة) */
 .card-img[src*="akdj.png"] {
-    max-width: 520px;
-    max-height: 530px;
-    transform: translate(-50%, calc(-50% + 20px)); /* رقم موجب = تنزل تحت */
+    max-width: 420px;
+    max-height: 430px;
 }
 
-.product-card:hover .card-img[src*="akdj.png"] {
-    transform: translate(-50%, calc(-50% + 20px)) scale(1.06);
-}
+
 
 /* 2. الجزء السفلي (التفاصيل) */
 .card-info-wrapper {
