@@ -1279,6 +1279,7 @@ body {
     max-width: 420px;
     max-height: 430px;
     object-position: bottom;
+    transform-origin: bottom center;
 }
 
 
