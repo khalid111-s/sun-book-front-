@@ -1250,24 +1250,17 @@ body {
     border-bottom: 1px solid rgba(216, 176, 86, 0.1);
 }
 
-/* زخرفة قناع الفرعون الذهبي وراء الصورة - بيبان نصها بس ناحية أقصى اليمين، بلون الموقع الدهبي وشفافية خفيفة زي الظل */
+/* توهج ذهبي ناعم وراء صورة المنتج، يبرزها زي إضاءة سبوت لايت خفيفة */
 .card-image-wrapper::after {
     content: '';
     position: absolute;
-    top: 0;
-    right: -22%; /* بتدفعها لبرا حدود الكارت عشان overflow:hidden يقص نصها ويسيب نصها الباين بس */
-    width: 75%;
-    height: 100%;
-    background-color: var(--gold-color);
-    -webkit-mask-image: url('../assets/pharaoh-decor.svg');
-    mask-image: url('../assets/pharaoh-decor.svg');
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    opacity: 0.08; /* شفافية خفيفة عشان تبان كظل هادي مش شكل واضح */
+    top: 50%;
+    left: 50%;
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, rgba(216, 176, 86, 0.45) 0%, rgba(216, 176, 86, 0.18) 45%, transparent 72%);
+    transform: translate(-50%, -50%);
+    filter: blur(20px);
     z-index: 0; /* لازم تفضل تحت صورة الكتاب دايمًا */
     pointer-events: none;
 }
