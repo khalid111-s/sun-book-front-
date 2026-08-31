@@ -1251,24 +1251,25 @@ body {
 }
 
 .card-img {
-    /* تمركز مضمون 100% جوه الـ wrapper (مش معتمد على flex) عشان الصورة متطلعش عالية ولا واطية */
+    /* اتمركزت أفقيًا بس، وبقت ملتصقة بأسفل الـ wrapper عشان بداية الصورة (الايد) تلامس خط الفاصل بينها وبين الكلام */
     position: absolute;
-    top: 50%;
+    bottom: 0;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
     width: auto;
     height: auto;
     /* سقف ثابت بالبكسل (مش نسبة %) عشان الصورة متكبرش عن الحجم ده أبدًا، أيًا كان حجم الكارت أو الشاشة */
-    max-width: 260px;
-    max-height: 300px;
+    max-width: 320px;
+    max-height: 330px;
     object-fit: contain;
+    object-position: bottom;
     filter: drop-shadow(0 15px 15px rgba(0,0,0,0.7));
     transition: transform 0.3s ease;
 }
 
 .product-card:hover .card-img {
-    /* بنحافظ على نفس التمركز (translate) وبنضيف الزووم بس، عشان الكتاب يكبر مكانه من غير ما "يرتفع" */
-    transform: translate(-50%, -50%) scale(1.06);
+    /* بنحافظ على نفس الالتصاق بالأسفل وبنضيف الزووم بس، عشان الكتاب يكبر مكانه من غير ما "يرتفع" */
+    transform: translateX(-50%) scale(1.06);
 }
 
 
@@ -1870,8 +1871,8 @@ ul.footer-follow-icons {
 
     .card-img {
         /* سقف ثابت أصغر يناسب ارتفاع الـ wrapper بتاع الموبايل (190px)، بنفس فكرة الديسكتوب */
-        max-width: 135px;
-        max-height: 160px;
+        max-width: 165px;
+        max-height: 190px;
     }
 
     .card-info-wrapper {
