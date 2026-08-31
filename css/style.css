@@ -1291,9 +1291,12 @@ body {
 .card-img[src*="akdj.png"] {
     max-width: 480px;
     max-height: 490px;
+    transform: translate(-50%, calc(-50% + 20px)); /* رقم موجب = تنزل تحت */
 }
 
-
+.product-card:hover .card-img[src*="akdj.png"] {
+    transform: translate(-50%, calc(-50% + 20px)) scale(1.06);
+}
 
 /* 2. الجزء السفلي (التفاصيل) */
 .card-info-wrapper {
