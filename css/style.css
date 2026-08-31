@@ -1258,7 +1258,7 @@ body {
     left: 50%;
     width: 280px;
     height: 280px;
-    background: radial-gradient(circle, rgba(216, 176, 86, 0.45) 0%, rgba(216, 176, 86, 0.18) 45%, transparent 72%);
+    background: radial-gradient(circle, rgba(216, 176, 86, 0.50) 0%, rgba(216, 176, 86, 0.18) 45%, transparent 72%);
     transform: translate(-50%, -50%);
     filter: blur(20px);
     z-index: 0; /* لازم تفضل تحت صورة الكتاب دايمًا */
