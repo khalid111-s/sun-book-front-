@@ -2419,9 +2419,11 @@ ul.footer-follow-icons {
        حدود الكتاب (الرفيع طولي). هنا بنحدد له مقاس ومكان ثابت في نص الصندوق
        بحجم قريب من نسبة الكتاب نفسه، بدل ما ياخد الصندوق كله */
     .product-gallery-glow {
-        inset: auto;
-        top: 50%;
-        left: 50%;
+        inset: auto !important;
+        top: 50% !important;
+        left: 50% !important;
+        right: auto !important;
+        bottom: auto !important;
         width: 230px;
         height: 280px;
         transform: translate(-50%, -50%);
