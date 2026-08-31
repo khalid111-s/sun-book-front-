@@ -1272,7 +1272,7 @@ body {
 }
 
 /* استثناء خاص بصورة "Book of Symbolism" (اليد) بس، من غير ما يأثر على باقي الكروت */
-.card-img[src*="book-symbolism"] {
+.card-img[src*="trew.png"] {
     top: auto;
     bottom: 0;
     transform: translateX(-50%);
