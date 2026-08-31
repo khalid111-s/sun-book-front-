@@ -1281,9 +1281,6 @@ body {
     object-position: bottom;
 }
 
-.product-card:hover .card-img[src*="book-symbolism"] {
-    transform: translateX(-50%) scale(1.06);
-}
 
 
 /* 2. الجزء السفلي (التفاصيل) */
