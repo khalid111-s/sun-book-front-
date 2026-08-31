@@ -1276,8 +1276,8 @@ body {
     top: auto;
     bottom: 0;
     transform: translateX(-50%);
-    max-width: 380px;
-    max-height: 390px;
+    max-width: 420px;
+    max-height: 430px;
     object-position: bottom;
 }
 
