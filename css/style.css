@@ -1312,8 +1312,8 @@ body {
 
 /* تكبير صورة "Trio Wisdom Bundle" الجديدة بس (لسه متمركزة زي باقي الكروت، مش محتاجة قاعدة هوفر خاصة) */
 .card-img[src*="akdj.png"] {
-    max-width: 420px;
-    max-height: 430px;
+    max-width: 520px;
+    max-height: 530px;
 }
 
 
