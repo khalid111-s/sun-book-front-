@@ -1312,8 +1312,8 @@ body {
 
 /* تكبير صورة "Trio Wisdom Bundle" الجديدة بس (لسه متمركزة زي باقي الكروت، مش محتاجة قاعدة هوفر خاصة) */
 .card-img[src*="akdj.png"] {
-    max-width: 520px;
-    max-height: 530px;
+    max-width: 560px;
+    max-height: 570px;
     transform: translate(-50%, calc(-50% + 20px)); /* رقم موجب = تنزل تحت */
 }
 
