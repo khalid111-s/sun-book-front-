@@ -1921,6 +1921,27 @@ ul.footer-follow-icons {
         max-height: 190px;
     }
 
+    /* توهج الخلفية كان بحجم ثابت (290x280) من الديسكتوب فبيبان ضخم وغير متناسب
+       جوه كارت الموبايل الأصغر (190px)، فبنصغّره هنا عشان يتناسب مع حجم الكارت */
+    .card-image-wrapper::after {
+        width: 150px;
+        height: 145px;
+        filter: blur(12px);
+    }
+
+    /* صورة "Trio Wisdom Bundle" (akdj.png) محتاجة سقف حجم وتمركز خاص بالموبايل
+       زيها زي trew.png بالظبط، وإلا بتفضل بحجمها الكبير بتاع الديسكتوب (520x530)
+       وتطلع مقطوعة/مكبرة جوه كارت الموبايل الصغير */
+    .card-img[src*="akdj.png"] {
+        max-width: 140px;
+        max-height: 165px;
+        transform: translate(-50%, calc(-50% + 8px));
+    }
+
+    .product-card:hover .card-img[src*="akdj.png"] {
+        transform: translate(-50%, calc(-50% + 8px)) scale(1.06);
+    }
+
     .card-info-wrapper {
         padding: 12px;
     }
