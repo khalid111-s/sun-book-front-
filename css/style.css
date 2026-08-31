@@ -2400,6 +2400,14 @@ ul.footer-follow-icons {
         top: auto !important;
     }
 
+    /* .product-gallery تحديدًا لازم تفضل "relative" مش "static"، عشان هي
+       الحاوية اللي بيتمركز جواها التوهج (position:absolute). لو قعدت static
+       زي فوق، التوهج بيفلت برة الصندوق ويتمركز بالنسبة لعنصر تاني في الصفحة
+       (زي اللي حصل بالظبط) بدل ما يفضل جوه صندوق الكتاب */
+    .product-gallery {
+        position: relative !important;
+    }
+
     .product-gallery img {
         max-height: 300px; /* تكبير الصورة في الموبايل بدل ما كانت صغيرة (200px) */
         margin: 0 auto;
