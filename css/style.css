@@ -5924,6 +5924,12 @@ html {
         font-size: 1.05rem;
         text-transform: capitalize;
     }
+
+    /* لو الموقع شغال بالعربي (html[dir="rtl"]) نستبدل النص بالعربي بدل ما يفضل إنجليزي */
+    html[dir="rtl"] .sidebar-footer .user-avatar::after {
+        content: ' الملف الشخصي';
+        text-transform: none;
+    }
     
     .sidebar-footer .user-avatar:hover {
         background: var(--gold-color);
