@@ -1282,6 +1282,11 @@ body {
     transform-origin: bottom center;
 }
 
+/* لازم قاعدة هوفر مخصوصة برضه، وإلا القاعدة العامة (اللي بتتمركز من النص) بتاخد الأولوية وتلغي وضعها من تحت */
+.product-card:hover .card-img[src*="trew.png"] {
+    transform: translateX(-50%) scale(1.06);
+}
+
 
 
 /* 2. الجزء السفلي (التفاصيل) */
@@ -1886,7 +1891,7 @@ ul.footer-follow-icons {
         max-height: 160px;
     }
 
-    .card-img[src*="book-symbolism"] {
+    .card-img[src*="trew.png"] {
         max-width: 165px;
         max-height: 190px;
     }
