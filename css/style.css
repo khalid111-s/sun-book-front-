@@ -1272,7 +1272,8 @@ body {
 }
 
 /* استثناء خاص بصورة "Book of Symbolism" (اليد) بس، من غير ما يأثر على باقي الكروت */
-.card-img[src*="trew.png"] {
+.card-img[src*="trew.png"],
+.card-img[src*="kfpc.png"] {
     top: auto;
     bottom: 0;
     transform: translateX(-50%);
@@ -1283,7 +1284,8 @@ body {
 }
 
 /* لازم قاعدة هوفر مخصوصة برضه، وإلا القاعدة العامة (اللي بتتمركز من النص) بتاخد الأولوية وتلغي وضعها من تحت */
-.product-card:hover .card-img[src*="trew.png"] {
+.product-card:hover .card-img[src*="trew.png"],
+.product-card:hover .card-img[src*="kfpc.png"] {
     transform: translateX(-50%) scale(1.06);
 }
 
@@ -1891,7 +1893,8 @@ ul.footer-follow-icons {
         max-height: 160px;
     }
 
-    .card-img[src*="trew.png"] {
+    .card-img[src*="trew.png"],
+    .card-img[src*="kfpc.png"] {
         max-width: 165px;
         max-height: 190px;
     }
