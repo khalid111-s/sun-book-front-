@@ -637,12 +637,12 @@ body {
     }
 
     .logo-icon {
-        height: 23px;
+        height: 30px;
     }
 
     .logo-text {
-        font-size: 0.74rem;
-        letter-spacing: 0.2px;
+        font-size: 0.95rem;
+        letter-spacing: 0.4px;
     }
 
     .search-wrapper {
