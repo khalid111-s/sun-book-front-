@@ -267,12 +267,17 @@ body {
 }
 
 .booking-slot-pill {
-    padding: 7px 14px;
+    height: 30px;
+    padding: 0 14px;
     border-radius: 6px;
     border: 1px solid rgba(255,255,255,0.08);
     color: rgba(255,255,255,0.25);
     font-size: 0.8rem;
     cursor: not-allowed;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 .booking-slot-pill--active {
@@ -374,7 +379,7 @@ body {
     }
 
     .booking-slot-pill {
-        padding: 5px 8px;
+        padding: 0 8px;
         font-size: 0.7rem;
     }
 
@@ -1294,10 +1299,15 @@ body {
     font-size: 0.7rem;
     color: var(--text-gray);
     border: 1px solid rgba(216, 176, 86, 0.3);
-    padding: 4px 8px;
+    height: 22px;
+    padding: 0 8px;
     border-radius: 6px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 /* شريط جانبي واضح على صورة المنتج بيقول إن الكتاب ده متاح في مصر بس */
@@ -1885,7 +1895,8 @@ ul.footer-follow-icons {
 
     .badge {
         font-size: 0.6rem;
-        padding: 2px 6px;
+        height: 20px;
+        padding: 0 6px;
     }
 
     .card-bottom {
@@ -5876,18 +5887,19 @@ html[dir="rtl"] {
     background: transparent;
     border: 1px solid rgba(216, 176, 86, 0.35);
     color: #d8b056;
-    padding: 8px 16px;
+    height: 36px;
+    padding: 0 16px;
     border-radius: 6px;
     font-size: 0.85rem;
     font-weight: 600;
     font-family: var(--font-main);
-    line-height: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s;
     white-space: nowrap;
+    box-sizing: border-box;
 }
 
 .lang-toggle-btn:hover {
