@@ -498,10 +498,6 @@ body {
     border-radius: 6px;
     font-weight: 600;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
 }
 
 .btn-shop:hover {
@@ -1411,9 +1407,6 @@ body {
     font-size: 0.95rem;
     cursor: pointer;
     transition: background 0.3s, transform 0.2s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .add-to-cart-new:hover {
@@ -1698,9 +1691,6 @@ body {
     font-weight: bold;
     cursor: pointer;
     transition: background 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .profile-danger-btn:hover {
@@ -3119,9 +3109,6 @@ ul.footer-follow-icons {
     cursor: pointer;
     font-weight: bold;
     transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
 }
 .apply-btn:hover {
     background: var(--gold-color);
@@ -3514,10 +3501,6 @@ ul.footer-follow-icons {
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
 }
 
 .book-now-btn:hover {
@@ -4354,7 +4337,7 @@ ul.footer-follow-icons {
     border: 1px solid rgba(216, 176, 86, 0.4);
     border-radius: 10px;
     color: #fff;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: var(--font-main);
     font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -5292,7 +5275,7 @@ html {
         border-radius: 8px;
         color: #d8b056 !important;
         font-size: 0.95rem;
-        font-family: 'Segoe UI', sans-serif;
+        font-family: var(--font-main);
         outline: none;
         transition: all 0.3s ease;
         -webkit-appearance: none;
@@ -5328,7 +5311,7 @@ html {
         border-radius: 8px;
         color: #d8b056 !important;
         font-size: 0.95rem;
-        font-family: 'Segoe UI', sans-serif;
+        font-family: var(--font-main);
         cursor: pointer;
         outline: none;
         -webkit-appearance: none;
@@ -5486,7 +5469,7 @@ html {
         border: 1px solid rgba(216, 176, 86, 0.4);
         border-radius: 10px;
         color: #fff;
-        font-family: 'Segoe UI', sans-serif;
+        font-family: var(--font-main);
         font-size: 0.95rem;
         cursor: pointer;
         transition: all 0.3s ease;
@@ -5884,6 +5867,11 @@ html[dir="rtl"] {
 }
 
 /* زرار تبديل اللغة - نفس روح أزرار الموقع التانية */
+/* ملحوظة: الزرار ده دايمًا بيعرض كلمة اللغة "التانية" (العربية وانت إنجليزي/
+   English وانت عربي)، عكس باقي الأزرار اللي بتتبع لغة الصفحة الحالية. فضّلنا
+   نسيب الفونت var(--font-main) زي ما كان (عشان ميتغيرش شكل/حجم الزرار)، والتوسيط
+   الرأسي بقى بالـ flexbox + line-height:1 بدل ما يعتمد على مقاسات السطر الافتراضية
+   (اللي كانت بتختلف حسب الفونت البديل اللي المتصفح بيستخدمه لما مفيش دعم عربي فيه) */
 .lang-toggle-btn {
     background: transparent;
     border: 1px solid rgba(216, 176, 86, 0.35);
@@ -5893,12 +5881,13 @@ html[dir="rtl"] {
     font-size: 0.85rem;
     font-weight: 600;
     font-family: var(--font-main);
-    cursor: pointer;
-    transition: all 0.3s;
-    white-space: nowrap;
+    line-height: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
 }
 
 .lang-toggle-btn:hover {
