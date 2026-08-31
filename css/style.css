@@ -273,6 +273,7 @@ body {
     border: 1px solid rgba(255,255,255,0.08);
     color: rgba(255,255,255,0.25);
     font-size: 0.8rem;
+    line-height: 1; /* نفس تعديل .badge: بيثبت الكلام في نص البادج بدل ما يطلع لفوق */
     cursor: not-allowed;
     display: inline-flex;
     align-items: center;
@@ -1297,6 +1298,7 @@ body {
 
 .badge {
     font-size: 0.7rem;
+    line-height: 1; /* بيمنع مسافة الـ leading الزيادة اللي بتخلي الكلام (خصوصًا العربي) يبان طالع لفوق جوه البادج */
     color: var(--text-gray);
     border: 1px solid rgba(216, 176, 86, 0.3);
     height: 22px;
