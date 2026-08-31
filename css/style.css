@@ -1255,7 +1255,7 @@ body {
     content: '';
     position: absolute;
     top: 0;
-    right: -35%; /* بتدفعها لبرا حدود الكارت عشان overflow:hidden يقص نصها ويسيب نصها الباين بس */
+    right: -32%; /* بتدفعها لبرا حدود الكارت عشان overflow:hidden يقص نصها ويسيب نصها الباين بس */
     width: 75%;
     height: 100%;
     background-color: var(--gold-color);
