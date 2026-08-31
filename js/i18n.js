@@ -1095,6 +1095,7 @@
     function updateToggleButton() {
         var buttons = document.querySelectorAll('.lang-toggle-btn');
         var label = getLang() === 'ar' ? 'English' : 'العربية';
+        var shortLabel = getLang() === 'ar' ? 'EN' : 'AR';
         // اتجاه الزرار لازم يطابق لغة الكلمة المكتوبة جواه (مش لغة الصفحة الحالية،
         // لأن الزرار بيعرض دايمًا اسم اللغة "التانية"). من غيرها، المتصفح كان بيحسب
         // توسيط النص أفقيًا بناءً على اتجاه الصفحة (ltr/rtl) مش اتجاه النص نفسه،
@@ -1103,6 +1104,7 @@
         for (var i = 0; i < buttons.length; i++) {
             var btn = buttons[i];
             if (btn.textContent !== label) btn.textContent = label;
+            if (btn.getAttribute('data-lang-short') !== shortLabel) btn.setAttribute('data-lang-short', shortLabel);
             if (btn.getAttribute('dir') !== btnDir) btn.setAttribute('dir', btnDir);
             if (btn.style.display === 'none') btn.style.display = '';
             if (!btn.dataset.bound) {
