@@ -97,7 +97,7 @@
                 <div class="checkout-box">
                     <h3 class="checkout-title" data-i18n="checkout.paymentMethod">Payment Method</h3>
 
-                    <!-- بيانات الدفع بتتاخد بأمان من صفحة PayTabs الرسمية بعد الضغط على الزرار تحت -->
+                    <!-- بيانات الدفع بتتاخد بأمان من صفحة Kashier الرسمية بعد الضغط على الزرار تحت -->
                     <div id="card-form" class="pay-form active">
                         <p style="color: var(--text-gray); font-size: 0.9rem;" data-i18n="checkout.securePaymentNotice">
                             You'll be redirected to our secure payment page to enter your card or mobile wallet details safely.
@@ -169,14 +169,14 @@
         }
     })();
 
-    // ====== لو العميل راجع من صفحة دفع PayTabs، نتأكد فعليًا من حالة الطلب من السيرفر ======
+    // ====== لو العميل راجع من صفحة دفع Kashier، نتأكد فعليًا من حالة الطلب من السيرفر ======
     // (مش بنثق في رجوع المتصفح لوحده كدليل إن الدفع نجح - بنسأل الباك اند صراحة،
-    // وهو بدوره بيسأل PayTabs مباشرة لو الحالة لسه معلّقة)
+    // وهو بدوره بيسأل Kashier مباشرة لو الحالة لسه معلّقة)
     function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-    async function checkPaytabsReturn() {
+    async function checkKashierReturn() {
         const params = new URLSearchParams(window.location.search);
-        if (params.get('paytabs_return') !== '1') return;
+        if (params.get('kashier_return') !== '1') return;
 
         const orderId = params.get('order');
         if (!orderId || typeof api === 'undefined') return;
@@ -215,10 +215,10 @@
 
             if (modal) modal.classList.add('active');
         } catch (err) {
-            console.error('Failed to confirm PayTabs return status:', err);
+            console.error('Failed to confirm Kashier return status:', err);
         }
     }
-    document.addEventListener('DOMContentLoaded', checkPaytabsReturn);
+    document.addEventListener('DOMContentLoaded', checkKashierReturn);
 </script>
 <script>
     async function processPayment() {
@@ -256,7 +256,7 @@
                 return;
             }
 
-            let paymobRedirectUrl = null;
+            let bookingPaymentUrl = null;
             try {
                 for (const item of bookingItems) {
                     if (!item.bookingDetails) continue;
@@ -267,9 +267,9 @@
                         price: parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 199,
                         notes: `Preferred time: ${item.bookingDetails.time}`,
                     });
-                    // لو Paymob جهز رابط دفع حقيقي، نحفظه عشان نوجه المستخدم ليه
+                    // لو Kashier جهز رابط دفع حقيقي، نحفظه عشان نوجه المستخدم ليه
                     if (bookingRes && bookingRes.data && bookingRes.data.paymentUrl) {
-                        paymobRedirectUrl = bookingRes.data.paymentUrl;
+                        bookingPaymentUrl = bookingRes.data.paymentUrl;
                     }
                 }
             } catch (err) {
@@ -285,9 +285,9 @@
                 return;
             }
 
-            // لو فيه رابط دفع حقيقي من Paymob، وديه هناك عشان يدخل بيانات الكارت الحقيقية
-            if (paymobRedirectUrl) {
-                window.location.href = paymobRedirectUrl;
+            // لو فيه رابط دفع حقيقي من Kashier، وديه هناك عشان يدخل بيانات الكارت/المحفظة الحقيقية
+            if (bookingPaymentUrl) {
+                window.location.href = bookingPaymentUrl;
                 return;
             }
         }
@@ -309,7 +309,7 @@
             localStorage.setItem('sunbook_library', JSON.stringify(userLibrary));
         }
 
-        // ─── تسجيل طلب الكتب (فيزيكال/ديجيتال) في الباك اند + الدفع عبر Paymob ───
+        // ─── تسجيل طلب الكتب (فيزيكال/ديجيتال) في الباك اند + الدفع عبر Kashier ───
         const bookItems = [...digitalBooks, ...physicalBooks];
         if (bookItems.length > 0) {
             try {
@@ -347,7 +347,7 @@
                     promoCode: (typeof getStoredPromo === 'function' && getStoredPromo()) ? getStoredPromo().code : undefined,
                 });
 
-                // لو Paymob جهز رابط دفع حقيقي (مفاتيح Test أو Live)، نوجّه العميل لصفحة الدفع فعليًا
+                // لو Kashier جهز رابط دفع حقيقي (مفاتيح Test أو Live)، نوجّه العميل لصفحة الدفع فعليًا
                 const bookPaymentUrl = orderRes?.data?.paymentUrl;
                 if (bookPaymentUrl) {
                     window.location.href = bookPaymentUrl;

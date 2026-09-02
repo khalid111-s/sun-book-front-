@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // نقفل المودال
       document.getElementById('bookingModal')?.classList.remove('active');
 
-      // ─── لو فيه رابط دفع (PayTabs)، نوديه هناك يكمّل الدفع ──
+      // ─── لو فيه رابط دفع (Kashier)، نوديه هناك يكمّل الدفع ──
       if (res.data.paymentUrl) {
         if (typeof showToast === 'function') showToast(tr('toast.redirecting', 'Redirecting to payment...'));
         window.location.href = res.data.paymentUrl;
