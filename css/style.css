@@ -767,14 +767,43 @@ body {
         display: none; /* هنخفي القائمة مؤقتاً في الموبايل لحد ما نبرمجها تفتح وتقفل بالـ JS */
     }
 
-    /* على الموبايل بره الشكل العايم، الهيدر وقت السكرول يفضل بار كامل بسيط
-       بس بخلفية شفافة زجاجية وخط سفلي رفيع، عشان المساحة الضيقة تفضل منظمة */
+    /* شكل عصري للموبايل: الناف بار نفسه بقى "كارت عايم" بحواف دائرية وخلفية
+       زجاجية طول الوقت (مش بس وقت السكرول)، والهيدر اللي وراه بقى شفاف بالكامل
+       عشان الكارت يبان واضح فوق خلفية الصفحة الغامقة */
+    .header {
+        background-color: transparent;
+    }
+
+    .header::after {
+        display: none; /* الخط اللامع تحت الهيدر مش لازم لما الشكل بقى كارت مستقل */
+    }
+
+    .navbar {
+        margin: 0 12px;
+        background-color: rgba(15, 13, 10, 0.72);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(216, 176, 86, 0.22);
+        border-radius: 20px;
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+        padding: 10px 14px;
+        transition: margin 0.3s ease, border-radius 0.3s ease, background-color 0.3s ease;
+    }
+
+    /* لما نعمل سكرول، الكارت يتثبت فوق ويلزق بحافة الشاشة (من غير هامش)
+       عشان يوفر مساحة أكتر للمحتوى وهو ثابت في مكانه */
     .header.scrolled {
-        background-color: rgba(3, 4, 6, 0.85);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-        border-bottom: 1px solid rgba(216, 176, 86, 0.25);
+        background-color: transparent;
+        box-shadow: none;
+    }
+
+    .header.scrolled .navbar {
+        margin: 0;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        border-top: none;
+        background-color: rgba(10, 9, 7, 0.9);
     }
 
     .mobile-toggle {
@@ -802,13 +831,16 @@ body {
     .search-wrapper.mobile-search-active {
         display: flex;
         position: absolute;
-        top: 100%;
+        top: calc(100% + 8px);
         left: 0;
         right: 0;
-        background: var(--bg-dark);
+        background-color: rgba(15, 13, 10, 0.92);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(216, 176, 86, 0.22);
+        border-radius: 18px;
         padding: 14px 16px;
-        border-bottom: 1px solid rgba(216, 176, 86, 0.25);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45);
         z-index: 999;
     }
 
@@ -832,6 +864,17 @@ body {
     .mobile-search-toggle:active {
         color: var(--gold-color);
         background-color: rgba(216, 176, 86, 0.1);
+    }
+
+    /* الشمس اللي بتلف طول الوقت شكلها مزعج في مساحة الموبايل الضيقة، فبنوقفها
+       ونسيبها ثابتة مع توهج خفيف بس بدل الحركة */
+    .logo-icon {
+        animation: none;
+        filter: drop-shadow(0 0 5px rgba(216, 176, 86, 0.35));
+    }
+
+    .logo:active .logo-icon {
+        filter: drop-shadow(0 0 8px rgba(216, 176, 86, 0.6));
     }
 
     .nav-actions {
@@ -3650,7 +3693,7 @@ html[dir="rtl"] .remove-btn {
     -webkit-backdrop-filter: blur(10px);
     transform: translateY(-150%);
     animation: slideInDownMobile 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
-               fadeOutUpMobile 0.4s 5.5s forwards;
+               fadeOutUpMobile 0.4s 2.7s forwards;
 }
 
 .custom-toast span:last-child {

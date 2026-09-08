@@ -762,7 +762,7 @@ function showToast(message, type = 'success') {
 
     setTimeout(() => {
         toast.remove();
-    }, 6000);
+    }, 3200);
 }
 
 function addToCart(id, qty = 1) {
