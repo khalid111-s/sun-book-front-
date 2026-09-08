@@ -722,10 +722,20 @@ function removeItem(index) {
     updateCartBadge();
 }
 
+let prevCartBadgeQty = null;
 function updateCartBadge() {
     const badges = document.querySelectorAll('.cart-badge');
     const totalQty = cartItems.reduce((sum, item) => sum + item.qty, 0);
-    badges.forEach(badge => badge.innerText = totalQty);
+    const shouldPulse = prevCartBadgeQty !== null && totalQty > prevCartBadgeQty;
+    badges.forEach(badge => {
+        badge.innerText = totalQty;
+        if (shouldPulse) {
+            badge.classList.remove('cart-badge-pulse');
+            void badge.offsetWidth; // إعادة تشغيل الأنيميشن من الصفر
+            badge.classList.add('cart-badge-pulse');
+        }
+    });
+    prevCartBadgeQty = totalQty;
 }
 
 function showToast(message, type = 'success') {

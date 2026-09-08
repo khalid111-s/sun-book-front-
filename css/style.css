@@ -48,7 +48,7 @@ body {
 /* تنسيق الـ Header الأساسي */
 .header {
     background-color: var(--bg-dark);
-    border-bottom: 1px solid rgba(216, 176, 86, 0.1);
+    position: relative;
     padding: 15px 0; 
     z-index: 1000; 
     width: 100%; 
@@ -56,17 +56,61 @@ body {
     transition: background-color 0.3s ease, padding 0.3s ease, box-shadow 0.3s ease; 
 }
 
-/* الكلاس اللي هيشتغل وقت السكرول */
-.header.scrolled {
+/* خط ذهبي رفيع بيلمع بهدوء تحت الهيدر بدل خط ثابت عادي */
+.header::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+        rgba(216, 176, 86, 0) 0%,
+        rgba(216, 176, 86, 0.15) 20%,
+        rgba(216, 176, 86, 0.55) 50%,
+        rgba(216, 176, 86, 0.15) 80%,
+        rgba(216, 176, 86, 0) 100%);
+    background-size: 200% 100%;
+    animation: headerShimmer 6s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes headerShimmer {
+    0% { background-position: 0% 0; }
+    50% { background-position: 100% 0; }
+    100% { background-position: 0% 0; }
+}
+
+/* الكلاس اللي هيشتغل وقت السكرول - شكل "عايم" (floating pill) بدل خط ثابت لاصق في الحافة */
+.header.scrolled { 
     position: fixed; 
     top: 0;
     left: 0;
-    padding: 10px 0; 
-    background-color: rgba(3, 4, 6, 0.75); 
-    backdrop-filter: blur(12px); 
-    -webkit-backdrop-filter: blur(12px); 
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); 
-    border-bottom: 1px solid rgba(216, 176, 86, 0.3); 
+    padding: 12px 0; 
+    background-color: transparent; 
+    box-shadow: none;
+}
+
+.header.scrolled::after {
+    opacity: 0;
+}
+
+.header.scrolled .navbar {
+    transition: background-color 0.35s ease, box-shadow 0.35s ease, border-radius 0.35s ease, padding 0.35s ease;
+}
+
+/* شكل الناف بار "العايم" (floating pill) بس على الديسكتوب - على الموبايل المساحة
+   ضيقة والشكل المضغوط ده كان هيلخبط توزيع الأيقونات، فسيبناه بار كامل بسيط */
+@media (min-width: 851px) {
+    .header.scrolled .navbar {
+        max-width: 1180px;
+        margin: 0 auto;
+        background-color: rgba(3, 4, 6, 0.78);
+        backdrop-filter: blur(14px); 
+        -webkit-backdrop-filter: blur(14px); 
+        border: 1px solid rgba(216, 176, 86, 0.25);
+        border-radius: 50px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55), 0 0 22px rgba(216, 176, 86, 0.06); 
+        padding: 6px 24px;
+    }
 }
 
 .navbar {
@@ -576,6 +620,17 @@ body {
 .logo-icon {
     height: 70px; /* اضبط هذا الرقم حسب حجم أيقونة الشمس اللي هتقصها */
     width: auto;
+    animation: logoSunSpin 30s linear infinite;
+    transition: filter 0.3s ease;
+}
+
+.logo:hover .logo-icon {
+    animation-duration: 3s;
+    filter: drop-shadow(0 0 6px rgba(216, 176, 86, 0.6));
+}
+
+@keyframes logoSunSpin {
+    to { transform: rotate(360deg); }
 }
 
 /* --- تنسيق الـ Navbar الأساسي --- */
@@ -621,6 +676,15 @@ body {
     cursor: pointer;
     display: flex;
     align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: background-color 0.25s ease;
+}
+
+.cart-container:hover {
+    background-color: rgba(216, 176, 86, 0.1);
 }
 
 .cart-icon {
@@ -636,8 +700,8 @@ body {
 
 .cart-badge {
     position: absolute;
-    top: -8px;
-    right: -10px;
+    top: 2px;
+    right: 2px;
     background-color: var(--gold-color);
     color: var(--text-dark);
     font-size: 0.75rem;
@@ -648,6 +712,17 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+/* نبضة صغيرة على بادچ السلة كل ما يتضاف منتج جديد */
+.cart-badge-pulse {
+    animation: cartBadgePulse 0.5s ease;
+}
+
+@keyframes cartBadgePulse {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.55); box-shadow: 0 0 0 6px rgba(216, 176, 86, 0.25); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(216, 176, 86, 0); }
 }
 
 /* تنسيق الزر الذهبي */
@@ -690,6 +765,16 @@ body {
 @media (max-width: 850px) {
     .nav-links {
         display: none; /* هنخفي القائمة مؤقتاً في الموبايل لحد ما نبرمجها تفتح وتقفل بالـ JS */
+    }
+
+    /* على الموبايل بره الشكل العايم، الهيدر وقت السكرول يفضل بار كامل بسيط
+       بس بخلفية شفافة زجاجية وخط سفلي رفيع، عشان المساحة الضيقة تفضل منظمة */
+    .header.scrolled {
+        background-color: rgba(3, 4, 6, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        border-bottom: 1px solid rgba(216, 176, 86, 0.25);
     }
 
     .mobile-toggle {
@@ -737,10 +822,16 @@ body {
         justify-content: center;
         cursor: pointer;
         color: #fff;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        transition: background-color 0.25s ease, color 0.25s ease;
     }
 
-    .mobile-search-toggle:hover {
+    .mobile-search-toggle:hover,
+    .mobile-search-toggle:active {
         color: var(--gold-color);
+        background-color: rgba(216, 176, 86, 0.1);
     }
 
     .nav-actions {
@@ -812,6 +903,8 @@ body {
 
     .cart-container {
         align-items: center;
+        width: 34px;
+        height: 34px;
     }
 
     .cart-icon {
@@ -823,8 +916,8 @@ body {
         width: 16px;
         height: 16px;
         font-size: 0.65rem;
-        top: -6px;
-        right: -8px;
+        top: 1px;
+        right: 1px;
     }
 
     .mobile-toggle {
@@ -6244,6 +6337,23 @@ html {
         padding: 25px;
         box-shadow: -10px 0 40px rgba(0, 0, 0, 0.9);
         transition: right 0.4s cubic-bezier(0.77, 0, 0.175, 1); 
+        overflow: hidden;
+    }
+
+    /* توهج ذهبي خافت فوق القائمة، لمسة بسيطة تكسر رتابة الخلفية السودا */
+    .mobile-sidebar::before {
+        content: '';
+        position: absolute;
+        top: -60px; 
+        inset-inline-end: -60px;
+        width: 220px; height: 220px;
+        background: radial-gradient(circle, rgba(216, 176, 86, 0.16) 0%, rgba(216, 176, 86, 0) 70%);
+        pointer-events: none;
+    }
+
+    .sidebar-header, .sidebar-links, .sidebar-footer {
+        position: relative;
+        z-index: 1;
     }
     
     .mobile-sidebar.active {
@@ -6271,20 +6381,39 @@ html {
     /* تنسيق الروابط */
     .sidebar-links {
         list-style: none; padding: 0; margin: 0; 
-        display: flex; flex-direction: column; gap: 25px; flex: 1;
+        display: flex; flex-direction: column; gap: 8px; flex: 1;
     }
     
     /* التعديل هنا: خلينا لون الكلام الأساسي ذهبي */
     .sidebar-links a {
         color: var(--gold-color); 
-        text-decoration: none; font-size: 1.2rem;
-        font-weight: 500; transition: color 0.3s, padding-left 0.3s;
-        display: block;
+        text-decoration: none; font-size: 1.05rem;
+        font-weight: 500; 
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border-inline-start: 2px solid transparent;
+        transition: color 0.3s, background-color 0.3s, border-color 0.3s;
+    }
+
+    .sidebar-link-icon {
+        width: 19px;
+        height: 19px;
+        flex-shrink: 0;
+        opacity: 0.85;
+        transition: opacity 0.3s;
     }
     
     .sidebar-links a:hover { 
-        color: #fff; /* بيقلب أبيض لما تقف عليه */
-        padding-left: 10px; 
+        color: #fff; 
+        background-color: rgba(216, 176, 86, 0.08);
+        border-inline-start-color: var(--gold-color);
+    }
+
+    .sidebar-links a:hover .sidebar-link-icon {
+        opacity: 1;
     }
 
     /* الفوتر (الدخول والحساب) */

@@ -73,11 +73,11 @@ window.sunbookComponents.header = `
             
             <!-- الروابط الأساسية -->
             <ul class="sidebar-links">
-                <li><a href="index.html" data-i18n="header.navHome">Home</a></li>
-                <li><a href="about.html" data-i18n="header.navAbout">About Us</a></li>
-                <li><a href="faq.html" data-i18n="header.navFaq">FAQ</a></li>
-                <li><a href="contact.html" data-i18n="header.navContact">Contact Us</a></li>
-                <li><a href="policies.html" data-i18n="header.navPolicies">Policies</a></li>
+                <li><a href="index.html"><svg class="sidebar-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg><span data-i18n="header.navHome">Home</span></a></li>
+                <li><a href="about.html"><svg class="sidebar-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="11"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg><span data-i18n="header.navAbout">About Us</span></a></li>
+                <li><a href="faq.html"><svg class="sidebar-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 1 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg><span data-i18n="header.navFaq">FAQ</span></a></li>
+                <li><a href="contact.html"><svg class="sidebar-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path><polyline points="22 6 12 13 2 6"></polyline></svg><span data-i18n="header.navContact">Contact Us</span></a></li>
+                <li><a href="policies.html"><svg class="sidebar-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg><span data-i18n="header.navPolicies">Policies</span></a></li>
             </ul>
             
             <!-- الفوتر بتاع القائمة (تسجيل الدخول / الحساب) -->
