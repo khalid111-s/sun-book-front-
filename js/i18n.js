@@ -5,7 +5,7 @@
    - Sets <html lang> + <html dir> so the browser and CSS both
      know the real reading direction (not a fake mirror effect)
    - Translates any element carrying data-i18n / data-i18n-placeholder /
-     data-i18n-aria-label
+     data-i18n-aria-label / data-i18n-title
    - Re-applies itself automatically whenever the header/footer
      (or any other part of the page) gets injected later, and
      whenever the language is toggled — safely, with no infinite
@@ -171,6 +171,12 @@
             'checkout.paymentSuccessful': 'Payment Successful!',
             'checkout.orderPlacedSecurely': 'Your order has been placed securely.',
             'checkout.yourDigitalLibrary': 'Your Digital Library',
+            'checkout.digitalBook': 'Digital Book',
+            'checkout.downloadAll': 'Download All',
+            'checkout.downloading': 'Downloading...',
+            'checkout.orderNumberLabel': 'Order Number',
+            'checkout.copyOrderNumber': 'Copy order number',
+            'checkout.copied': 'Copied!',
             'checkout.goToProfile': 'Go to My Profile',
             'checkout.paymentConfirmedOrder': 'Payment confirmed — order #{orderNum} is on its way.',
             'checkout.paymentNotCompleted': 'Payment Not Completed',
@@ -593,6 +599,12 @@
             'checkout.paymentSuccessful': 'تم الدفع بنجاح!',
             'checkout.orderPlacedSecurely': 'تم تسجيل طلبك بأمان.',
             'checkout.yourDigitalLibrary': 'مكتبتك الرقمية',
+            'checkout.digitalBook': 'كتاب رقمي',
+            'checkout.downloadAll': 'تحميل الكل',
+            'checkout.downloading': 'جارٍ التحميل...',
+            'checkout.orderNumberLabel': 'رقم الطلب',
+            'checkout.copyOrderNumber': 'نسخ رقم الطلب',
+            'checkout.copied': 'تم النسخ!',
             'checkout.goToProfile': 'الذهاب إلى حسابي',
             'checkout.paymentConfirmedOrder': 'تم تأكيد الدفع — الطلب رقم #{orderNum} في طريقه إليك.',
             'checkout.paymentNotCompleted': 'لم تكتمل عملية الدفع',
@@ -1087,6 +1099,13 @@
             var aEl = arias[k];
             var aVal = t(aEl.getAttribute('data-i18n-aria-label'));
             if (aEl.getAttribute('aria-label') !== aVal) aEl.setAttribute('aria-label', aVal);
+        }
+
+        var titles = document.querySelectorAll('[data-i18n-title]');
+        for (var tI = 0; tI < titles.length; tI++) {
+            var tEl = titles[tI];
+            var tVal = t(tEl.getAttribute('data-i18n-title'));
+            if (tEl.getAttribute('title') !== tVal) tEl.setAttribute('title', tVal);
         }
 
         // خلايا أيام الأسبوع في هيدر الكالندر (MO/TU/...) بتتبدل حسب index في مصفوفة weekdaysShort

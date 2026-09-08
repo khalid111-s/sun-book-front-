@@ -135,11 +135,26 @@
 <!-- نافذة النجاح والتحميل المباشر -->
 <div id="successModal" class="booking-modal-overlay">
     <div class="booking-modal-content checkout-success-content">
-        <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold-color)" stroke-width="2" style="width: 80px; height: 80px; margin-bottom: 20px;">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-        </svg>
-        <h2 style="color: var(--gold-color); font-family: var(--font-logo); font-size: 2rem; margin-bottom: 10px;" data-i18n="checkout.paymentSuccessful">Payment Successful!</h2>
+        <div class="success-icon-wrap">
+            <div class="success-icon-glow"></div>
+            <svg class="success-check-svg" viewBox="0 0 24 24" fill="none" stroke="var(--gold-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle class="success-check-circle" cx="12" cy="12" r="10"></circle>
+                <polyline class="success-check-mark" points="7.5 12.5 10.3 15.3 16.5 9"></polyline>
+            </svg>
+        </div>
+        <h2 class="success-title" data-i18n="checkout.paymentSuccessful">Payment Successful!</h2>
+
+        <div class="order-ref-chip" id="orderRefChip" style="display:none;">
+            <span data-i18n="checkout.orderNumberLabel">Order Number</span>
+            <span class="order-ref-number" id="orderRefNumber">#0000</span>
+            <button type="button" class="order-ref-copy" id="orderRefCopyBtn" onclick="copyOrderRef()" data-i18n-title="checkout.copyOrderNumber" title="Copy order number">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+            </button>
+        </div>
+
         <p id="success-message" style="color: var(--text-gray); margin-bottom: 30px;">Your order has been placed securely.</p>
 
         <div id="download-links-container" style="width: 100%; display: none; margin-bottom: 30px;">
@@ -195,22 +210,32 @@
             const modal = document.getElementById('successModal');
             const titleEl = modal ? modal.querySelector('h2') : null;
             const msgEl = document.getElementById('success-message');
-            const iconEl = modal ? modal.querySelector('svg') : null;
+            const iconEl = modal ? modal.querySelector('svg.success-check-svg') : null;
+            const glowEl = modal ? modal.querySelector('.success-icon-glow') : null;
+            const orderRefChip = document.getElementById('orderRefChip');
+            const orderRefNumber = document.getElementById('orderRefNumber');
             const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
 
             if (order.status === 'paid') {
+                const orderNum = order._id.slice(-6).toUpperCase();
                 const template = tr('checkout.paymentConfirmedOrder', 'Payment confirmed — order #{orderNum} is on its way.');
-                if (msgEl) msgEl.innerText = template.replace('{orderNum}', order._id.slice(-6).toUpperCase());
+                if (msgEl) msgEl.innerText = template.replace('{orderNum}', orderNum);
+                if (orderRefChip && orderRefNumber) {
+                    orderRefNumber.innerText = '#' + orderNum;
+                    orderRefChip.style.display = 'inline-flex';
+                }
                 localStorage.removeItem('sunbook_cart');
                 if (typeof updateCartCount === 'function') updateCartCount();
             } else {
                 // الدفع فشل أو اتلغى (أو لسه معلّق بعد كل المحاولات)
                 if (titleEl) titleEl.innerText = tr('checkout.paymentNotCompleted', 'Payment Not Completed');
                 if (msgEl) msgEl.innerText = tr('checkout.couldNotConfirmPayment', "We couldn't confirm your payment. Your cart is still saved — please try again.");
+                if (orderRefChip) orderRefChip.style.display = 'none';
                 if (iconEl) {
                     iconEl.style.stroke = '#e05252';
                     iconEl.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>';
                 }
+                if (glowEl) glowEl.style.background = 'radial-gradient(circle, rgba(224,82,82,0.35) 0%, rgba(224,82,82,0) 70%)';
             }
 
             if (modal) modal.classList.add('active');
@@ -385,6 +410,13 @@
 
         if (modal) modal.classList.add('active');
 
+        const orderRefChip = document.getElementById('orderRefChip');
+        const orderRefNumber = document.getElementById('orderRefNumber');
+        if (orderRefChip && orderRefNumber) {
+            orderRefNumber.innerText = '#' + newOrder.id;
+            orderRefChip.style.display = 'inline-flex';
+        }
+
         if (digitalBooks.length > 0) {
             if (dlContainer) {
                 dlContainer.style.display = 'block';
@@ -393,18 +425,34 @@
                     btnsHTML += `
                         <a href="#" onclick="handleDownload(${book.id}, this); return false;" class="download-btn" data-id="${book.id}">
                             <div class="dl-left">
-                                <svg class="dl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="7 10 12 15 17 10"></polyline>
-                                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                                </svg>
-                                <span>${book.title}</span>
+                                <span class="dl-icon-wrap">
+                                    <svg class="dl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                </span>
+                                <div class="dl-info">
+                                    <span class="dl-title">${book.title}</span>
+                                    <span class="dl-sub">${tr('checkout.digitalBook', 'Digital Book')}</span>
+                                </div>
                             </div>
                             <span class="dl-badge" id="dl-badge-${book.id}">${tr('checkout.downloadsLeft', '{n} Downloads left').replace('{n}', 3)}</span>
                         </a>
                     `;
                 });
-                dlContainer.innerHTML = `<div class="download-section-title">${tr('checkout.yourDigitalLibrary', 'Your Digital Library')}</div>` + btnsHTML;
+                let allBtnHTML = '';
+                if (digitalBooks.length > 1) {
+                    allBtnHTML = `<button type="button" class="download-all-btn" id="downloadAllBtn" onclick="downloadAllBooks()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>${tr('checkout.downloadAll', 'Download All')}</span>
+                    </button>`;
+                }
+                dlContainer.innerHTML = `<div class="download-section-title">${tr('checkout.yourDigitalLibrary', 'Your Digital Library')}</div>` + allBtnHTML + btnsHTML;
             }
 
             if (successMsg) {
@@ -459,6 +507,10 @@
         const badge = document.getElementById('dl-badge-' + bookId);
         if (badge) {
             badge.innerText = tr('checkout.downloadsLeft', '{n} Downloads left').replace('{n}', book.downloadsLeft);
+            badge.classList.remove('dl-low');
+            if (book.downloadsLeft === 1) {
+                badge.classList.add('dl-low');
+            }
             if (book.downloadsLeft === 0) {
                 badge.innerText = tr('checkout.limitReached', 'Limit reached');
                 badge.style.borderColor = '#ff4d4d';
@@ -478,6 +530,58 @@
             link.download = book.title.replace(/[^a-z0-9]/gi, '_') + '.pdf';
             link.click();
         }, 800);
+    }
+
+    // ====== تحميل كل الكتب الرقمية دفعة واحدة ======
+    function downloadAllBooks() {
+        const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
+        const allBtn = document.getElementById('downloadAllBtn');
+        const links = Array.from(document.querySelectorAll('.download-btn'))
+            .filter(a => a.style.pointerEvents !== 'none');
+
+        if (links.length === 0) return;
+
+        if (allBtn) {
+            allBtn.disabled = true;
+            allBtn.querySelector('span').innerText = tr('checkout.downloading', 'Downloading...');
+        }
+
+        links.forEach((link, i) => {
+            setTimeout(() => {
+                const bookId = link.getAttribute('data-id');
+                handleDownload(bookId, link);
+            }, i * 500);
+        });
+
+        setTimeout(() => {
+            if (allBtn) {
+                allBtn.disabled = false;
+                allBtn.querySelector('span').innerText = tr('checkout.downloadAll', 'Download All');
+            }
+        }, links.length * 500 + 400);
+    }
+
+    // ====== نسخ رقم الطلب ======
+    function copyOrderRef() {
+        const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
+        const numberEl = document.getElementById('orderRefNumber');
+        const copyBtn = document.getElementById('orderRefCopyBtn');
+        if (!numberEl) return;
+
+        const text = numberEl.innerText.replace('#', '');
+        const finishCopy = () => {
+            if (typeof showToast === 'function') showToast(tr('checkout.copied', 'Copied!'));
+            if (copyBtn) {
+                copyBtn.classList.add('copied');
+                setTimeout(() => copyBtn.classList.remove('copied'), 1200);
+            }
+        };
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(finishCopy).catch(finishCopy);
+        } else {
+            finishCopy();
+        }
     }
 
     function validateCheckoutForm(e) {
