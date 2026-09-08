@@ -1346,7 +1346,16 @@ body {
     color: var(--gold-color);
     font-size: var(--text-md); /* استخدام الخط المرن */
     margin-bottom: 12px;
-    font-family: var(--font-logo); 
+    font-family: var(--font-logo);
+    /* بنحجز ارتفاع سطرين ثابت دايمًا للعنوان، حتى لو فعليًا سطر واحد بس -
+       عشان الشارات والسعر يبدأوا من نفس المكان بالظبط في كل الكروت
+       (شغالة في العربي والإنجليزي مع بعض) */
+    line-height: 1.3;
+    min-height: calc(1.3em * 2);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 /* البادجات (زي EU38 اللي في الصورة بس للكتب) */
@@ -1448,6 +1457,10 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    /* بيثبت السعر والزرار في آخر الكارت دايمًا، سواء اسم الكتاب سطر واحد أو
+       سطرين، عشان كل الأزرار تتساوى في نفس الخط في الصف الواحد (عربي وإنجليزي) */
+    margin-top: auto;
+    padding-top: 15px;
 }
 
 .price-block {
