@@ -2116,6 +2116,13 @@ ul.footer-follow-icons {
 /* =========================================
    صفحة الأسئلة الشائعة (faq.html) - أكورديون مقسّم بفئات
    ========================================= */
+/* مسافات القسم عشان مايلزقش في حواف الشاشة، خصوصًا في الموبايل */
+.faq-section {
+    padding: 60px 5% 100px;
+    background-color: var(--bg-dark);
+    min-height: 70vh;
+}
+
 .faq-categories {
     max-width: 820px;
     margin: 0 auto;
@@ -2215,6 +2222,9 @@ ul.footer-follow-icons {
 }
 
 @media (max-width: 768px) {
+    .faq-section {
+        padding: 40px 4% 60px;
+    }
     .faq-question {
         font-size: 0.9rem;
         padding: 15px 16px;
