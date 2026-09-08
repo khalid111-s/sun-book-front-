@@ -5384,45 +5384,54 @@ html {
         }
         
         @media (max-width: 768px) {
+            /* على الموبايل بنوقف عرض العمودين جنب بعض، وبنخلي معلومات التواصل
+               فوق والفورم تحتها، كل واحد بعرض الشاشة كامل - ده الشكل
+               الاحترافي المريح للعين على شاشة صغيرة بدل ما نضغط عمودين ضيقين */
             .contact-wrapper {
-                gap: 14px;
-                padding: 14px;
-                align-items: flex-start;
+                flex-direction: column;
+                gap: 32px;
+                padding: 24px 20px;
+                border-radius: 14px;
             }
 
             .contact-info {
-                flex: 0 0 40%;
-                gap: 16px;
+                flex: none;
+                width: 100%;
+                gap: 22px;
+                padding-bottom: 28px;
+                border-bottom: 1px solid rgba(216, 176, 86, 0.18);
             }
 
             .contact-form-container {
-                flex: 1;
+                flex: none;
+                width: 100%;
                 min-width: 0;
             }
 
             .contact-info-block {
-                gap: 8px;
+                gap: 14px;
                 align-items: flex-start;
             }
 
             .contact-info-icon {
-                width: 18px;
+                width: 24px;
+                height: 24px;
                 flex-shrink: 0;
             }
 
             .contact-info-title {
-                font-size: 0.8rem !important;
+                font-size: 1rem !important;
             }
 
             .contact-info-copy {
-                font-size: 0.72rem;
-                line-height: 1.4;
+                font-size: 0.88rem;
+                line-height: 1.55;
             }
 
             .contact-input {
-                padding: 10px;
-                font-size: 0.8rem;
-                margin-bottom: 10px;
+                padding: 14px;
+                font-size: 0.95rem;
+                margin-bottom: 14px;
             }
         }
 
