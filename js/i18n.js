@@ -341,7 +341,7 @@
             'faq.title': 'Frequently Asked Questions',
             'faq.subtitle': 'Everything you need to know about orders, digital books, sessions, and payments',
             'faq.stillNeedHelp': 'Still have a question?',
-            'faq.cat.shipping': 'Orders &amp; Shipping',
+            'faq.cat.shipping': 'Orders & Shipping',
             'faq.shipping.q1': 'Do you ship physical books outside Egypt?',
             'faq.shipping.a1': "Right now, physical book delivery is available across Egypt only — from Cairo and Alexandria to every governorate in the country. If you're outside Egypt, you can still enjoy our Digital (PDF) editions or book a live one-on-one session instantly, from anywhere in the world.",
             'faq.shipping.q2': 'How much does shipping cost?',
@@ -349,7 +349,7 @@
             'faq.shipping.q3': 'How long will my order take to arrive?',
             'faq.shipping.a3': "Delivery times vary slightly by governorate, with Cairo and Alexandria usually arriving fastest. You can follow your order's progress anytime from your Profile — if it's taking longer than expected, message us on WhatsApp and we'll check on it for you.",
             'faq.shipping.q4': 'Can I track my order?',
-            'faq.shipping.a4': 'Yes — open your Profile and check the "Physical Orders &amp; Tracking" section. Each order shows its current status: Processing, Shipped, or Delivered.',
+            'faq.shipping.a4': 'Yes — open your Profile and check the "Physical Orders & Tracking" section. Each order shows its current status: Processing, Shipped, or Delivered.',
             'faq.shipping.q5': 'What does the "Egypt Only" label on a book mean?',
             'faq.shipping.a5': 'Some rare or limited titles are marked "Egypt Only" on their product page. This means that specific edition can only be delivered within Egypt and isn\'t available for international shipping, even as part of a mixed cart.',
             'faq.cat.digital': 'Digital Books',
@@ -359,7 +359,7 @@
             'faq.digital.a2': 'Right after payment, your download links appear directly on the confirmation screen. From then on, every digital book you\'ve bought stays saved in "My Digital Library" inside your Profile, ready to download anytime.',
             'faq.digital.q3': 'Can I re-download a digital book if I lose the file?',
             'faq.digital.a3': 'Yes — your digital books live permanently in "My Digital Library" in your Profile, so you can come back and download them again anytime without paying for them twice.',
-            'faq.cat.payments': 'Payments &amp; Pricing',
+            'faq.cat.payments': 'Payments & Pricing',
             'faq.payments.q1': 'What payment methods do you accept?',
             'faq.payments.a1': "We accept credit/debit cards and mobile wallets. At checkout, you'll be redirected to our secure payment page to enter your details safely.",
             'faq.payments.q2': 'Is it safe to pay on The Sun Book?',
@@ -377,7 +377,7 @@
             'faq.sessions.a2': 'Yes. Each session can be rescheduled once, or cancelled for a full refund — both up to 4 hours before your scheduled time, right from "Upcoming Sessions" in your Profile. After that window, sessions can no longer be changed.',
             'faq.sessions.q3': 'What happens if I miss my scheduled session?',
             'faq.sessions.a3': "If you miss a session without cancelling at least 4 hours beforehand, it's marked as missed and isn't automatically refunded. Reach out to us on WhatsApp and we'll review it with you.",
-            'faq.cat.account': 'Returns, Refunds &amp; Account',
+            'faq.cat.account': 'Returns, Refunds & Account',
             'faq.account.q1': 'What is your return and refund policy?',
             'faq.account.a1': 'Physical orders can be cancelled for a full refund anytime before they ship, right from your Profile. Once an order has shipped, our standard 14-day return policy applies instead — see our full <a href="policies.html#refund">Refund Policy</a> for details. Digital books can\'t be cancelled or refunded, since the files are delivered to you immediately after payment.',
             'faq.account.q2': 'Do I need to create an account to buy something?',
@@ -990,9 +990,16 @@
     }
 
     function loadContentOverrides() {
-        fetch(getSiteContentApiUrl())
+        // بنحط مهلة قصوى للطلب (8 ثواني) عشان لو الباك إند بطيء أو معلّق،
+        // المتصفح يوقف الطلب ويكمل الصفحة عادي بالنصوص الافتراضية، بدل ما
+        // يفضل التاب شكله "بيحمل" للأبد وهو فعليًا مستني رد مش هيجيله.
+        var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        var timeoutId = controller ? setTimeout(function () { controller.abort(); }, 8000) : null;
+
+        fetch(getSiteContentApiUrl(), controller ? { signal: controller.signal } : undefined)
             .then(function (res) { return res.json(); })
             .then(function (json) {
+                if (timeoutId) clearTimeout(timeoutId);
                 if (!json || !json.success || !Array.isArray(json.data)) return;
                 var newEn = {};
                 var newAr = {};
@@ -1005,7 +1012,8 @@
                 refresh(); // إعادة تطبيق الترجمة فور ما نص الأدمن يوصل، فوق أي حاجة اتعرضت قبل كده
             })
             .catch(function () {
-                // السيرفر نايم أو الشبكة اتقطعت - نفضل نستخدم النصوص الافتراضية في الكود، وده طبيعي تمامًا
+                if (timeoutId) clearTimeout(timeoutId);
+                // السيرفر نايم أو الشبكة اتقطعت أو الطلب اتلغى بسبب المهلة - نفضل نستخدم النصوص الافتراضية في الكود، وده طبيعي تمامًا
             });
     }
 
@@ -1120,9 +1128,14 @@
     }
 
     function refresh() {
+        // بنوقف المراقب مؤقتًا وإحنا بنغيّر النصوص، عشان مايراقبش التغييرات
+        // اللي إحنا بنعملها بنفسنا ويرجع يشتغل تاني فوق نفسه في نفس اللحظة
+        // (خصوصًا وقت تبديل اللغة لما نصوص كتير بتتغيّر مرة واحدة)
+        if (observer) observer.disconnect();
         setDocumentDirection();
         applyStaticTranslations();
         updateToggleButton();
+        if (observer) observer.observe(document.body, { childList: true, subtree: true });
     }
 
     // بيراقب أي جزء من الصفحة بيتغيّر (زي حقن الهيدر/الفوتر أو زرار تسجيل الدخول)
