@@ -747,7 +747,7 @@ function showToast(message, type = 'success') {
         iconHTML = `<svg class="animated-check" viewBox="0 0 24 24"><path d="M4 12l5 5L20 7"></path></svg>`;
     }
 
-    toast.innerHTML = `${iconHTML}<span style="font-weight: 600; font-size: 1.1rem; letter-spacing: 0.5px;">${message}</span>`;
+    toast.innerHTML = `<span class="toast-icon-wrap">${iconHTML}</span><span style="font-weight: 600; font-size: 1.1rem; letter-spacing: 0.5px;">${message}</span>`;
     toastContainer.appendChild(toast);
 
     setTimeout(() => {
