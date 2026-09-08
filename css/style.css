@@ -3743,6 +3743,7 @@ html[dir="rtl"] .remove-btn {
 }
 
 .booking-modal-content {
+    position: relative;
     display: flex;
     width: 900px;
     max-width: 95%;
@@ -3880,16 +3881,24 @@ html[dir="rtl"] .remove-btn {
 
 .close-modal {
     position: absolute;
-    top: 15px; right: 15px;
-    background: transparent;
+    top: 12px; right: 12px;
+    z-index: 5;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 50%;
     border: none;
     color: var(--text-gray);
-    font-size: 1.8rem;
+    font-size: 1.6rem;
+    line-height: 1;
     cursor: pointer;
-    transition: color 0.3s;
+    transition: color 0.3s, background 0.3s;
 }
 
-.close-modal:hover { color: #ff4d4d; }
+.close-modal:hover { color: #ff4d4d; background: rgba(0, 0, 0, 0.5); }
 
 .meeting-details {
     margin-bottom: 30px;
@@ -3972,50 +3981,62 @@ html[dir="rtl"] .remove-btn {
 
 /* ريسبونسف للموبايل */
 @media (max-width: 800px) {
-    .booking-modal-content { max-height: 90vh; overflow-y: auto; width: 96%; align-items: stretch; }
+    /* التقويم وتفاصيل الحجز بقوا فوق بعض بعرض كامل بدل ما يتزنقوا جنب بعض،
+       عشان أرقام وأيام التقويم تاخد مساحة كافية وتبقى واضحة وسهلة اللمس */
+    .booking-modal-content {
+        flex-direction: column;
+        max-height: 92vh;
+        overflow-y: auto;
+        width: 94%;
+        align-items: stretch;
+    }
 
-    /* التقويم وتفاصيل الحجز بقوا جنب بعض بالعرض زي الديسكتوب، بس بمقاسات مصغّرة عشان يتناسبوا مع عرض الموبايل */
     .modal-left, .modal-right {
-        padding: 14px;
+        padding: 20px 16px;
+        flex: none;
     }
 
     .modal-left {
-        border-right: 1px solid rgba(216, 176, 86, 0.1);
-        border-bottom: none;
-        flex: 1.15; /* شوية مساحة زيادة عن اليمين عشان يحس بتوازن أكتر */
+        border-right: none;
+        border-bottom: 1px solid rgba(216, 176, 86, 0.1);
+        padding-top: 44px; /* مساحة كافية تحت زرار الإغلاق العائم فوق الكارت كله */
+    }
+
+    html[dir="rtl"] .booking-modal-content .modal-left {
+        border-left: none;
+        border-bottom: 1px solid rgba(216, 176, 86, 0.1);
     }
 
     .modal-right {
-        flex: 0.95;
-        justify-content: space-between; /* المساحة الفاضية توزع بين الأقسام كلها، مش تتجمع فوق الزرار بس */
+        justify-content: flex-start;
+        gap: 18px;
     }
 
-    /* مسافة أمان واضحة بين آخر ميعاد والزرار، عشان مايبقاش لازق فيه */
     .confirm-booking-btn {
-        margin-top: 20px !important;
+        margin-top: 6px !important;
     }
 
-    .author-mini-profile h3 { font-size: 0.85rem; }
-    .timezone-info { font-size: 0.7rem; margin-bottom: 12px; }
+    .author-mini-profile { margin-bottom: 18px; }
+    .author-mini-profile h3 { font-size: 0.95rem; }
+    .timezone-info { font-size: 0.75rem; margin-bottom: 14px; }
 
-    .calendar-header { margin-bottom: 10px; }
-    .calendar-header h4 { font-size: 0.85rem; }
-    .cal-nav-btn svg { width: 16px; height: 16px; }
+    .calendar-header { margin-bottom: 14px; }
+    .calendar-header h4 { font-size: 1rem; }
+    .cal-nav-btn svg { width: 18px; height: 18px; }
 
-    .calendar-weekdays { font-size: 0.6rem; margin-bottom: 6px; gap: 3px; }
-    .calendar-days { gap: 3px; }
-    .cal-day { font-size: 0.65rem; }
+    .calendar-weekdays { font-size: 0.75rem; margin-bottom: 8px; gap: 4px; }
+    .calendar-days { gap: 4px; }
+    .cal-day { font-size: 0.9rem; min-height: 38px; }
 
-    .meeting-details { margin-bottom: 16px; padding-bottom: 12px; padding-right: 26px; } /* مسافة أمان عشان العنوان مايتصادمش مع زرار الإغلاق X */
+    .meeting-details { margin-bottom: 0; padding-bottom: 16px; }
 
-    .close-modal {
-        top: 12px;
-        right: 12px;
-        font-size: 1.4rem;
-    }
+    .time-slots-list { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .time-slot-btn { font-size: 0.75rem; padding: 10px 4px; }
+}
 
-    .time-slots-list { grid-template-columns: 1fr; gap: 6px; }
-    .time-slot-btn { font-size: 0.75rem; padding: 8px 6px; }
+/* موبايل صغير جدًا: عمود واحد للمواعيد بدل تلاتة عشان الخط مايتزنقش */
+@media (max-width: 380px) {
+    .time-slots-list { grid-template-columns: 1fr; }
 }
 
 /* =========================================
@@ -6130,15 +6151,6 @@ html[dir="rtl"] #nextMonth svg {
 html[dir="rtl"] .logo {
     direction: ltr;
     justify-content: flex-end;
-}
-
-/* زرار إغلاق مودال الحجز - في الإنجليزي بيبقى في الركن العلوي اليمين
-   لأن اللوحة اللي فيها موجودة فعليًا على يمين المودال. في العربي، نفس
-   اللوحة دي بتتنقل فعليًا لشمال المودال (بسبب انعكاس الفليكس)، فلازم
-   الزرار يتنقل معاها عشان يفضل في ركن المودال مش في النص */
-html[dir="rtl"] .close-modal {
-    right: auto;
-    left: 15px;
 }
 
 /* سهم "عرض كل التفاصيل" في كارت الحجز - نفس مبدأ أسهم التقويم */
