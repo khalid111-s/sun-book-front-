@@ -990,9 +990,16 @@
     }
 
     function loadContentOverrides() {
-        fetch(getSiteContentApiUrl())
+        // بنحط مهلة قصوى للطلب (8 ثواني) عشان لو الباك إند بطيء أو معلّق،
+        // المتصفح يوقف الطلب ويكمل الصفحة عادي بالنصوص الافتراضية، بدل ما
+        // يفضل التاب شكله "بيحمل" للأبد وهو فعليًا مستني رد مش هيجيله.
+        var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        var timeoutId = controller ? setTimeout(function () { controller.abort(); }, 8000) : null;
+
+        fetch(getSiteContentApiUrl(), controller ? { signal: controller.signal } : undefined)
             .then(function (res) { return res.json(); })
             .then(function (json) {
+                if (timeoutId) clearTimeout(timeoutId);
                 if (!json || !json.success || !Array.isArray(json.data)) return;
                 var newEn = {};
                 var newAr = {};
@@ -1005,7 +1012,8 @@
                 refresh(); // إعادة تطبيق الترجمة فور ما نص الأدمن يوصل، فوق أي حاجة اتعرضت قبل كده
             })
             .catch(function () {
-                // السيرفر نايم أو الشبكة اتقطعت - نفضل نستخدم النصوص الافتراضية في الكود، وده طبيعي تمامًا
+                if (timeoutId) clearTimeout(timeoutId);
+                // السيرفر نايم أو الشبكة اتقطعت أو الطلب اتلغى بسبب المهلة - نفضل نستخدم النصوص الافتراضية في الكود، وده طبيعي تمامًا
             });
     }
 
