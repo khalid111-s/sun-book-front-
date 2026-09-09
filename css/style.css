@@ -767,54 +767,32 @@ body {
         display: none; /* هنخفي القائمة مؤقتاً في الموبايل لحد ما نبرمجها تفتح وتقفل بالـ JS */
     }
 
-    /* شكل عصري للموبايل: الناف بار نفسه بقى "كارت عايم" بحواف دائرية وخلفية
-       زجاجية طول الوقت (مش بس وقت السكرول)، والهيدر اللي وراه بقى شفاف بالكامل
-       عشان الكارت يبان واضح فوق خلفية الصفحة الغامقة */
-    .header {
-        background-color: transparent;
-    }
-
-    .header::after {
-        display: none; /* الخط اللامع تحت الهيدر مش لازم لما الشكل بقى كارت مستقل */
-    }
-
+    /* رجّعنا الهيدر لبار كامل العرض ثابت اللون (بدل الكارت الدائري اللي كان
+       بيكشف خلفية الصفحة السودا وراه وبيتقطع من حتة) - عشان يندمج صح مع أي
+       خلفية تحته (زي توهج الصورة في الصفحة الرئيسية) من غير أي "رقعة" واضحة */
     .navbar {
-        margin: 0 12px;
-        background-color: rgba(15, 13, 10, 0.72);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(216, 176, 86, 0.22);
-        border-radius: 20px;
-        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
-        padding: 10px 14px;
-        transition: margin 0.3s ease, border-radius 0.3s ease, background-color 0.3s ease;
+        justify-content: space-between;
+        align-items: center;
+        position: relative; /* عشان لوحة البحث المنسدلة تتمركز تحت الناف بار بالظبط */
+        padding-top: 4px;
+        padding-bottom: 4px;
     }
 
-    /* لما نعمل سكرول، الكارت يتثبت فوق ويلزق بحافة الشاشة (من غير هامش)
-       عشان يوفر مساحة أكتر للمحتوى وهو ثابت في مكانه */
     .header.scrolled {
-        background-color: transparent;
-        box-shadow: none;
+        padding: 10px 0;
+        background-color: rgba(3, 4, 6, 0.9);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        border-bottom: 1px solid rgba(216, 176, 86, 0.25);
     }
 
-    .header.scrolled .navbar {
-        margin: 0;
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
-        border-top: none;
-        background-color: rgba(10, 9, 7, 0.9);
+    .header.scrolled::after {
+        opacity: 0;
     }
 
     .mobile-toggle {
         display: flex;
-    }
-
-    /* بدل ما اللوجو/السيرش/الأزرار ياخدوا تلت الشاشة بالتساوي (اللي كان بيكسر اللوجو)،
-       اللوجو والأزرار ياخدوا حجمهم الطبيعي بس، والسيرش ياخد المساحة اللي فاضلة ويتقلص بمرونة */
-    .navbar {
-        justify-content: space-between;
-        position: relative; /* عشان لوحة البحث المنسدلة تتمركز تحت الناف بار بالظبط */
     }
 
     .logo {
@@ -831,16 +809,13 @@ body {
     .search-wrapper.mobile-search-active {
         display: flex;
         position: absolute;
-        top: calc(100% + 8px);
+        top: 100%;
         left: 0;
         right: 0;
-        background-color: rgba(15, 13, 10, 0.92);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(216, 176, 86, 0.22);
-        border-radius: 18px;
-        padding: 14px 16px;
-        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45);
+        background-color: var(--bg-dark);
+        padding: 16px;
+        border-bottom: 1px solid rgba(216, 176, 86, 0.25);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
         z-index: 999;
     }
 

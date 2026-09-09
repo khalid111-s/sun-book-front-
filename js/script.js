@@ -1810,10 +1810,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (window.scrollY > bannerHeight) {
                     // نتأكد إنه لسه ماخدش كلاس التثبيت عشان ما نعملش لود عالفاضي
                     if (!header.classList.contains('scrolled')) {
-                        // ندي للعنصر الوهمي نفس ارتفاع الناف بار ونظهره
-                        spacer.style.height = `${header.offsetHeight}px`;
-                        spacer.style.display = 'block';
                         header.classList.add('scrolled'); // نثبت الناف بار
+                        // بنقيس ارتفاع الناف بار بعد ما شكل السكرول اتطبق (مش قبله)
+                        // عشان المساحة المحجوزة تبقى مظبوطة بالظبط ومفيش قفشة/لزقان
+                        requestAnimationFrame(() => {
+                            spacer.style.height = `${header.offsetHeight}px`;
+                            spacer.style.display = 'block';
+                        });
                     }
                 } else {
                     // لو رجعنا لفوق خالص
