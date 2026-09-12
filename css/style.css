@@ -1555,8 +1555,8 @@ body {
     position: absolute;
     top: 50%;
     left: 50%;
-    /* الإزاحة الرأسية (--img-offset-y) بتيجي لكل منتج من لوحة الأدمن (cardImage.offsetY) */
-    transform: translate(-50%, calc(-50% + var(--img-offset-y, 0px)));
+    /* الإزاحة الرأسية والأفقية (--img-offset-y و --img-offset-x) بتيجي لكل منتج من لوحة الأدمن (cardImage.offsetY/offsetX) */
+    transform: translate(calc(-50% + var(--img-offset-x, 0px)), calc(-50% + var(--img-offset-y, 0px)));
     /* بنحط الحجم على width/height نفسهم مش بس max- عشان الصورة تقدر تكبر فوق حجمها
        الطبيعي كمان مش تصغر بس؛ object-fit: contain بيحافظ على نسبة الصورة جوه الحجم ده */
     width: var(--img-max-width, 260px);
@@ -1571,7 +1571,7 @@ body {
 
 .product-card:hover .card-img {
     /* بنحافظ على نفس التمركز (translate) وبنضيف الزووم بس، عشان الكتاب يكبر مكانه من غير ما "يرتفع" */
-    transform: translate(-50%, calc(-50% + var(--img-offset-y, 0px))) scale(1.06);
+    transform: translate(calc(-50% + var(--img-offset-x, 0px)), calc(-50% + var(--img-offset-y, 0px))) scale(1.06);
 }
 
 /* 2. الجزء السفلي (التفاصيل) */
@@ -2190,11 +2190,11 @@ ul.footer-follow-icons {
         height: var(--img-max-height-mobile, 160px);
         max-width: var(--img-max-width-mobile, 135px);
         max-height: var(--img-max-height-mobile, 160px);
-        transform: translate(-50%, calc(-50% + var(--img-offset-y-mobile, 0px)));
+        transform: translate(calc(-50% + var(--img-offset-x-mobile, 0px)), calc(-50% + var(--img-offset-y-mobile, 0px)));
     }
 
     .product-card:hover .card-img {
-        transform: translate(-50%, calc(-50% + var(--img-offset-y-mobile, 0px))) scale(1.06);
+        transform: translate(calc(-50% + var(--img-offset-x-mobile, 0px)), calc(-50% + var(--img-offset-y-mobile, 0px))) scale(1.06);
     }
 
     /* توهج الخلفية كان بحجم ثابت (290x280) من الديسكتوب فبيبان ضخم وغير متناسب

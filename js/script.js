@@ -256,7 +256,7 @@ function productCardHTML(product) {
         : `<button class="add-to-cart-new add-to-cart" data-id="${product.id}" data-title="${product.title.replace(/"/g, '&quot;')}">${tr('product.addToCart', 'Add to cart')}</button>`;
     // حجم/وضع الصورة جوه الكارت بييجي من لوحة الأدمن (cardImage) بدل ما يبقى مكتوب في الـ CSS
     const ci = product.cardImage || {};
-    const cardImgStyle = `--img-max-width:${ci.width || 260}px; --img-max-height:${ci.height || 300}px; --img-offset-y:${ci.offsetY || 0}px; --img-max-width-mobile:${ci.mobileWidth || 135}px; --img-max-height-mobile:${ci.mobileHeight || 160}px; --img-offset-y-mobile:${ci.mobileOffsetY || 0}px;`;
+    const cardImgStyle = `--img-max-width:${ci.width || 260}px; --img-max-height:${ci.height || 300}px; --img-offset-x:${ci.offsetX || 0}px; --img-offset-y:${ci.offsetY || 0}px; --img-max-width-mobile:${ci.mobileWidth || 135}px; --img-max-height-mobile:${ci.mobileHeight || 160}px; --img-offset-x-mobile:${ci.mobileOffsetX || 0}px; --img-offset-y-mobile:${ci.mobileOffsetY || 0}px;`;
     // ملحوظة: عنوان الكتاب ووصفه بييجوا زي ما هما مسجلين في قاعدة البيانات (إنجليزي)
     // ومبيتترجموش تلقائيًا، بالظبط زي عناوين الكتب في أي متجر عالمي كبير
     return `

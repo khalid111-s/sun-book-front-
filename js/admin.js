@@ -300,9 +300,11 @@ function resetForm() {
     document.getElementById('stockCountWrap').style.display = 'none';
     document.getElementById('fieldCardImgWidth').value = 260;
     document.getElementById('fieldCardImgHeight').value = 300;
+    document.getElementById('fieldCardImgOffsetX').value = 0;
     document.getElementById('fieldCardImgOffsetY').value = 0;
     document.getElementById('fieldCardImgWidthMobile').value = 135;
     document.getElementById('fieldCardImgHeightMobile').value = 160;
+    document.getElementById('fieldCardImgOffsetXMobile').value = 0;
     document.getElementById('fieldCardImgOffsetYMobile').value = 0;
     updateCardImgPreview();
     updateCardImgPreviewMobile();
@@ -334,9 +336,11 @@ function fillFormForEdit(product) {
     document.getElementById('stockCountWrap').style.display = product.trackStock ? 'block' : 'none';
     document.getElementById('fieldCardImgWidth').value = product.cardImage?.width ?? 260;
     document.getElementById('fieldCardImgHeight').value = product.cardImage?.height ?? 300;
+    document.getElementById('fieldCardImgOffsetX').value = product.cardImage?.offsetX ?? 0;
     document.getElementById('fieldCardImgOffsetY').value = product.cardImage?.offsetY ?? 0;
     document.getElementById('fieldCardImgWidthMobile').value = product.cardImage?.mobileWidth ?? 135;
     document.getElementById('fieldCardImgHeightMobile').value = product.cardImage?.mobileHeight ?? 160;
+    document.getElementById('fieldCardImgOffsetXMobile').value = product.cardImage?.mobileOffsetX ?? 0;
     document.getElementById('fieldCardImgOffsetYMobile').value = product.cardImage?.mobileOffsetY ?? 0;
     updateCardImgPreview();
     updateCardImgPreviewMobile();
@@ -374,9 +378,11 @@ function readFormData() {
         cardImage: {
             width: parseInt(document.getElementById('fieldCardImgWidth').value) || 260,
             height: parseInt(document.getElementById('fieldCardImgHeight').value) || 300,
+            offsetX: parseInt(document.getElementById('fieldCardImgOffsetX').value) || 0,
             offsetY: parseInt(document.getElementById('fieldCardImgOffsetY').value) || 0,
             mobileWidth: parseInt(document.getElementById('fieldCardImgWidthMobile').value) || 135,
             mobileHeight: parseInt(document.getElementById('fieldCardImgHeightMobile').value) || 160,
+            mobileOffsetX: parseInt(document.getElementById('fieldCardImgOffsetXMobile').value) || 0,
             mobileOffsetY: parseInt(document.getElementById('fieldCardImgOffsetYMobile').value) || 0,
         },
     };
@@ -389,13 +395,14 @@ function updateCardImgPreview() {
     const src = document.getElementById('fieldImage').value.trim();
     const width = parseInt(document.getElementById('fieldCardImgWidth').value) || 260;
     const height = parseInt(document.getElementById('fieldCardImgHeight').value) || 300;
+    const offsetX = parseInt(document.getElementById('fieldCardImgOffsetX').value) || 0;
     const offsetY = parseInt(document.getElementById('fieldCardImgOffsetY').value) || 0;
     preview.src = src;
     preview.style.width = width + 'px';
     preview.style.height = height + 'px';
     preview.style.maxWidth = width + 'px';
     preview.style.maxHeight = height + 'px';
-    preview.style.transform = `translate(-50%, calc(-50% + ${offsetY}px))`;
+    preview.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
 }
 
 // نفس الفكرة بالظبط بس لمعاينة الموبايل
@@ -405,13 +412,14 @@ function updateCardImgPreviewMobile() {
     const src = document.getElementById('fieldImage').value.trim();
     const width = parseInt(document.getElementById('fieldCardImgWidthMobile').value) || 135;
     const height = parseInt(document.getElementById('fieldCardImgHeightMobile').value) || 160;
+    const offsetX = parseInt(document.getElementById('fieldCardImgOffsetXMobile').value) || 0;
     const offsetY = parseInt(document.getElementById('fieldCardImgOffsetYMobile').value) || 0;
     preview.src = src;
     preview.style.width = width + 'px';
     preview.style.height = height + 'px';
     preview.style.maxWidth = width + 'px';
     preview.style.maxHeight = height + 'px';
-    preview.style.transform = `translate(-50%, calc(-50% + ${offsetY}px))`;
+    preview.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
 }
 
 let revenueChartInstance = null;
@@ -1048,10 +1056,10 @@ function initAdminPanel() {
         document.getElementById('showInAllWrap').style.display = e.target.checked ? 'block' : 'none';
     });
 
-    ['fieldImage', 'fieldCardImgWidth', 'fieldCardImgHeight', 'fieldCardImgOffsetY'].forEach((id) => {
+    ['fieldImage', 'fieldCardImgWidth', 'fieldCardImgHeight', 'fieldCardImgOffsetX', 'fieldCardImgOffsetY'].forEach((id) => {
         document.getElementById(id).addEventListener('input', updateCardImgPreview);
     });
-    ['fieldImage', 'fieldCardImgWidthMobile', 'fieldCardImgHeightMobile', 'fieldCardImgOffsetYMobile'].forEach((id) => {
+    ['fieldImage', 'fieldCardImgWidthMobile', 'fieldCardImgHeightMobile', 'fieldCardImgOffsetXMobile', 'fieldCardImgOffsetYMobile'].forEach((id) => {
         document.getElementById(id).addEventListener('input', updateCardImgPreviewMobile);
     });
 
