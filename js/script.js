@@ -115,6 +115,7 @@ function normalizeProduct(p) {
         featured: !!p.featured,
         egyptOnly: !!p.egyptOnly,
         available,
+        cardImage: p.cardImage || null,
     };
 }
 
