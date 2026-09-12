@@ -1,0 +1,372 @@
+const Order = require('../models/Order');
+const Booking = require('../models/Booking');
+const PromoCode = require('../models/PromoCode');
+const Product = require('../models/Product');
+const { getDateRange, dateFormatForUnit, keyForDate, buildBuckets } = require('../utils/dateRange');
+const { getOrCreateSettings } = require('./settingsController');
+const { sendOrderConfirmationEmail, sendNewOrderAdminAlert, sendOrderCancelledEmail } = require('../utils/email');
+
+// بيحدّث حالة الطلب لـ "paid" ويبعت إيميلات التأكيد/التنبيه مرة واحدة بس، مهما كانت الطريقة اللي
+// عرفنا بيها إن الدفع نجح (webhook، فحص مباشر، أو وضع التطوير من غير بوابة دفع)
+const markOrderPaidAndNotify = async (order) => {
+  order.status = 'paid';
+  if (!order.confirmationEmailSent) {
+    order.confirmationEmailSent = true;
+    await order.save();
+    try {
+      await sendOrderConfirmationEmail(order);
+    } catch (err) {
+      console.error('Order confirmation email failed:', err.message);
+    }
+    try {
+      await sendNewOrderAdminAlert(order);
+    } catch (err) {
+      console.error('Admin order alert email failed:', err.message);
+    }
+  } else {
+    await order.save();
+  }
+};
+
+// @desc    Create an order (called from checkout after a purchase is completed)
+// @route   POST /api/orders
+// @access  Private (must be logged in - checkout already requires it)
+const createOrder = async (req, res) => {
+  const { customerName, phone, address, governorate, items, totalAmount, currency, promoCode } = req.body;
+
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    res.status(400);
+    throw new Error('Order must include at least one item');
+  }
+
+  // --- التحقق من توفر المخزون للكتب الفيزيكال اللي بيتتبّع مخزونها فعليًا، قبل ما نأكد الطلب ---
+  // 'both' بيتحسب هنا كمان لأنه بيتضمن نسخة فيزيكال فعليًا بتاخد من المخزون زي physical تمامًا
+  const physicalItemsWithProduct = items.filter((i) => (i.type === 'physical' || i.type === 'both') && i.product);
+  const stockUpdates = [];
+  for (const item of physicalItemsWithProduct) {
+    const product = await Product.findById(item.product);
+    if (product && product.trackStock) {
+      if (product.stockCount < item.qty) {
+        res.status(400);
+        throw new Error(`"${product.title}" is out of stock (only ${product.stockCount} left).`);
+      }
+      stockUpdates.push({ id: product._id, qty: item.qty });
+    }
+  }
+
+  const orderCurrency = currency === 'EUR' ? 'EUR' : 'EGP';
+
+  // --- تطبيق كود الخصم (لو الفرونت بعت واحد) على الإجمالي قبل ما نسجّل الطلب ---
+  let finalAmount = totalAmount;
+  let discountAmount = 0;
+  let appliedPromoCode = '';
+
+  if (promoCode) {
+    const promo = await PromoCode.findOne({ code: String(promoCode).trim().toUpperCase() });
+
+    if (!promo || !promo.active) {
+      res.status(404);
+      throw new Error('Invalid promo code');
+    }
+    if (promo.expiresAt < new Date()) {
+      res.status(400);
+      throw new Error('This promo code has expired');
+    }
+    if (promo.usageLimit && promo.timesUsed >= promo.usageLimit) {
+      res.status(400);
+      throw new Error('This promo code has reached its usage limit');
+    }
+
+    if (promo.perUserLimit) {
+      const timesUsedByThisUser = promo.usedBy.filter((u) => u.toString() === req.user._id.toString()).length;
+      if (timesUsedByThisUser >= promo.perUserLimit) {
+        res.status(400);
+        throw new Error("You've already used this promo code the maximum number of times allowed");
+      }
+    }
+
+    discountAmount =
+      promo.discountType === 'percentage'
+        ? (totalAmount * promo.discountValue) / 100
+        : Math.min(promo.discountValue, totalAmount);
+    discountAmount = Math.round(discountAmount * 100) / 100;
+    finalAmount = Math.max(0, Math.round((totalAmount - discountAmount) * 100) / 100);
+    appliedPromoCode = promo.code;
+
+    promo.timesUsed += 1;
+    promo.usedBy.push(req.user._id);
+    await promo.save();
+  }
+
+  const order = await Order.create({
+    user: req.user._id,
+    customerName: customerName || req.user.name,
+    customerEmail: req.user.email,
+    phone,
+    address,
+    governorate,
+    items,
+    totalAmount: finalAmount,
+    promoCode: appliedPromoCode,
+    discountAmount,
+    currency: orderCurrency,
+    country: req.headers['x-vercel-ip-country'] || 'Unknown',
+  });
+
+  // --- تنزيل المخزون فعليًا بعد ما اتأكد إنشاء الطلب ---
+  for (const update of stockUpdates) {
+    await Product.findByIdAndUpdate(update.id, { $inc: { stockCount: -update.qty } });
+  }
+
+  // --- مفيش بوابة دفع متصلة حاليًا (اتشالت فواتيرك) ---
+  // بشكل مؤقت لحد ما تتحدد بوابة دفع جديدة، أي طلب بيتحط "مدفوع" تلقائيًا فور إنشاءه.
+  // لما تضيف بوابة دفع جديدة، هنا بالظبط المكان اللي هيتحط فيه استدعاء إنشاء معاملة الدفع
+  // (زي ما كان شكل كود فواتيرك قبل كده)، وهيتشال السطر اللي تحت وقتها.
+  const paymentUrl = null;
+  await markOrderPaidAndNotify(order);
+
+  res.status(201).json({ success: true, data: { order, paymentUrl } });
+};
+
+// @desc    Customer cancels their own physical order and gets a refund - only allowed while
+//          the order hasn't shipped yet. Digital-only orders can never be cancelled since the
+//          customer already has access to the files the moment they pay.
+// @route   PATCH /api/orders/:id/cancel
+// @access  Private (order owner only)
+const cancelOrder = async (req, res) => {
+  const order = await Order.findOne({ _id: req.params.id, user: req.user._id });
+
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+
+  if (order.status === 'cancelled') {
+    res.status(400);
+    throw new Error('Order is already cancelled');
+  }
+
+  const hasPhysicalItem = order.items.some((i) => i.type === 'physical' || i.type === 'both');
+  if (!hasPhysicalItem) {
+    res.status(400);
+    throw new Error('Digital orders cannot be cancelled since the files are delivered immediately upon payment');
+  }
+
+  if (order.fulfillmentStatus !== 'processing') {
+    res.status(400);
+    throw new Error('This order has already shipped and can no longer be cancelled');
+  }
+
+  // ملحوظة: مفيش بوابة دفع متصلة حاليًا، فأي استرجاع فلوس لطلب مدفوع لازم يتم يدويًا
+  // (تحويل بنكي مباشر للعميل) من غير أي استرجاع أوتوماتيكي هنا.
+
+  // نرجّع كل الكتب الفيزيكال اللي في الطلب ده للمخزون (لو كان بيتتبّع فعليًا)
+  for (const item of order.items) {
+    if ((item.type === 'physical' || item.type === 'both') && item.product) {
+      const product = await Product.findById(item.product);
+      if (product && product.trackStock) {
+        await Product.findByIdAndUpdate(product._id, { $inc: { stockCount: item.qty } });
+      }
+    }
+  }
+
+  order.status = 'cancelled';
+  await order.save();
+
+  try {
+    await sendOrderCancelledEmail(order);
+  } catch (err) {
+    console.error('Order cancellation email failed:', err.message);
+  }
+
+  res.json({ success: true, data: order });
+};
+
+// @desc    List orders (most recent first)
+// @route   GET /api/orders
+// @access  Private/Admin
+const getOrders = async (req, res) => {
+  const orders = await Order.find().populate('user', 'name email').sort({ createdAt: -1 }).limit(200);
+  res.json({ success: true, count: orders.length, data: orders });
+};
+
+// @desc    List the logged-in user's own orders (used by the profile page for order tracking)
+// @route   GET /api/orders/my-orders
+// @access  Private
+const getMyOrders = async (req, res) => {
+  const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+  res.json({ success: true, count: orders.length, data: orders });
+};
+
+// @desc    Update an order's fulfillment status (processing / shipped / delivered)
+// @route   PATCH /api/orders/:id/fulfillment
+// @access  Private/Admin
+const updateOrderFulfillment = async (req, res) => {
+  const { fulfillmentStatus } = req.body;
+  const validStatuses = ['processing', 'shipped', 'delivered'];
+
+  if (!validStatuses.includes(fulfillmentStatus)) {
+    res.status(400);
+    throw new Error('Invalid fulfillment status');
+  }
+
+  const order = await Order.findByIdAndUpdate(
+    req.params.id,
+    { fulfillmentStatus },
+    { new: true }
+  );
+
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+
+  res.json({ success: true, data: order });
+};
+
+// @desc    Revenue + top-selling products summary
+// @route   GET /api/orders/stats/summary
+// @access  Private/Admin
+const getOrderStats = async (req, res) => {
+  const [totals] = await Order.aggregate([
+    {
+      $group: {
+        _id: null,
+        totalRevenue: { $sum: '$totalAmount' },
+        totalOrders: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const topProducts = await Order.aggregate([
+    { $unwind: '$items' },
+    {
+      $group: {
+        _id: '$items.title',
+        quantitySold: { $sum: '$items.qty' },
+        revenue: { $sum: { $multiply: ['$items.qty', '$items.price'] } },
+      },
+    },
+    { $sort: { quantitySold: -1 } },
+    { $limit: 5 },
+  ]);
+
+  // إيرادات الفترة المطلوبة (يوم/أسبوع/شهر/سنة) - عشان الرسم البياني في الداشبورد
+  const granularity = ['day', 'week', 'month', 'year'].includes(req.query.granularity)
+    ? req.query.granularity
+    : 'month';
+  const { start, end, unit, bucketCount } = getDateRange(granularity, req.query.date);
+
+  const revenueAgg = await Order.aggregate([
+    { $match: { createdAt: { $gte: start, $lt: end } } },
+    {
+      $group: {
+        _id: { $dateToString: { format: dateFormatForUnit(unit), date: '$createdAt' } },
+        revenue: { $sum: '$totalAmount' },
+        orders: { $sum: 1 },
+      },
+    },
+  ]);
+
+  // نملى أي فترة مفيهاش طلبات بصفر عشان الرسم البياني يبقى متصل صح
+  const revenueMap = new Map(revenueAgg.map((d) => [d._id, d]));
+  const buckets = buildBuckets(start, unit, bucketCount);
+  const dailyRevenue = buckets.map((d) => {
+    const key = keyForDate(d, unit);
+    const found = revenueMap.get(key);
+    return {
+      date: key,
+      revenue: found ? found.revenue : 0,
+      orders: found ? found.orders : 0,
+    };
+  });
+
+  // الإيرادات حسب نوع المنتج (فيزيكال / ديجيتال) من الطلبات + جلسات الحجز المدفوعة
+  const revenueByItemType = await Order.aggregate([
+    { $unwind: '$items' },
+    {
+      $group: {
+        _id: '$items.type',
+        revenue: { $sum: { $multiply: ['$items.qty', '$items.price'] } },
+      },
+    },
+  ]);
+
+  const [bookingRevenueAgg] = await Booking.aggregate([
+    { $match: { status: 'paid' } },
+    { $group: { _id: null, revenue: { $sum: '$price' } } },
+  ]);
+
+  const revenueByType = [
+    ...revenueByItemType.map((t) => ({ type: t._id || 'physical', revenue: t.revenue })),
+    { type: 'booking', revenue: bookingRevenueAgg ? bookingRevenueAgg.revenue : 0 },
+  ];
+
+  // كام طلب دفع بالجنيه المصري مقابل كام طلب دفع باليورو
+  const ordersByCurrencyAgg = await Order.aggregate([
+    { $group: { _id: '$currency', orders: { $sum: 1 }, revenue: { $sum: '$totalAmount' } } },
+  ]);
+  const ordersByCurrency = {
+    EGP: { orders: 0, revenue: 0 },
+    EUR: { orders: 0, revenue: 0 },
+  };
+  ordersByCurrencyAgg.forEach((c) => {
+    const key = c._id === 'EUR' ? 'EUR' : 'EGP';
+    ordersByCurrency[key] = { orders: c.orders, revenue: c.revenue };
+  });
+
+  res.json({
+    success: true,
+    data: {
+      totalRevenue: totals ? totals.totalRevenue : 0,
+      totalOrders: totals ? totals.totalOrders : 0,
+      topProducts: topProducts.map((p) => ({
+        title: p._id,
+        quantitySold: p.quantitySold,
+        revenue: p.revenue,
+      })),
+      dailyRevenue,
+      granularity,
+      seriesUnit: unit,
+      rangeStart: start,
+      rangeEnd: end,
+      revenueByType,
+      ordersByCurrency,
+    },
+  });
+};
+
+// @desc    Get a single order (used by the checkout return page to confirm payment status)
+// @route   GET /api/orders/:id
+// @access  Private (owner or admin)
+const getOrderById = async (req, res) => {
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+
+  const isOwner = order.user && order.user.toString() === req.user._id.toString();
+  if (!isOwner && req.user.role !== 'admin') {
+    res.status(403);
+    throw new Error('Not authorized to view this order');
+  }
+
+  // ملحوظة: الاعتماد على webhooks فواتيرك (paid/failed/cancel) لتحديث حالة الطلب.
+  // ميزة "الاستعلام المباشر عن حالة الدفع" (كانت موجودة مع كاشير) اتشالت مؤقتًا هنا لحد ما
+  // نتأكد من شكل استجابة POST /api/v3/getTransactionData بتاعة فواتيرك بالظبط.
+
+  res.json({ success: true, data: order });
+};
+
+module.exports = {
+  createOrder,
+  cancelOrder,
+  getOrders,
+  getMyOrders,
+  updateOrderFulfillment,
+  getOrderById,
+  getOrderStats,
+  markOrderPaidAndNotify,
+};
