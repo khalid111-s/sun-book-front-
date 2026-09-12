@@ -127,17 +127,71 @@ function renderAdminAccountSwitcher(activeEmail) {
     });
 }
 
+// ---------- Drag & drop reordering (used for the products table AND the Best Offers list) ----------
+// container: the persistent wrapper element (tbody or a div) - listeners are bound to it once
+// itemSelector: CSS selector matching each draggable item inside the container
+// onReordered(orderedIds): called with the new order of data-id values after a drop
+function makeSortable(container, itemSelector, onReordered) {
+    if (!container || container.dataset.sortableBound === 'true') return;
+    container.dataset.sortableBound = 'true';
+
+    let draggedEl = null;
+
+    container.addEventListener('dragstart', (e) => {
+        const item = e.target.closest(itemSelector);
+        if (!item) return;
+        draggedEl = item;
+        item.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', item.dataset.id);
+    });
+
+    container.addEventListener('dragend', () => {
+        if (draggedEl) draggedEl.classList.remove('dragging');
+        container.querySelectorAll('.drag-over-row').forEach((el) => el.classList.remove('drag-over-row'));
+        draggedEl = null;
+    });
+
+    container.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const item = e.target.closest(itemSelector);
+        if (!item || item === draggedEl) return;
+        container.querySelectorAll('.drag-over-row').forEach((el) => el.classList.remove('drag-over-row'));
+        item.classList.add('drag-over-row');
+    });
+
+    container.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const targetItem = e.target.closest(itemSelector);
+        container.querySelectorAll('.drag-over-row').forEach((el) => el.classList.remove('drag-over-row'));
+        if (!targetItem || !draggedEl || targetItem === draggedEl) return;
+
+        const items = Array.from(container.querySelectorAll(itemSelector));
+        const draggedIndex = items.indexOf(draggedEl);
+        const targetIndex = items.indexOf(targetItem);
+
+        if (draggedIndex < targetIndex) {
+            targetItem.after(draggedEl);
+        } else {
+            targetItem.before(draggedEl);
+        }
+
+        onReordered(Array.from(container.querySelectorAll(itemSelector)).map((el) => el.dataset.id));
+    });
+}
+
 // ---------- 2. تحميل جدول المنتجات ----------
 async function loadProductsTable() {
     const tbody = document.getElementById('productsTableBody');
-    tbody.innerHTML = '<tr><td colspan="10">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11">Loading...</td></tr>';
 
     try {
         const { data } = await api.getProducts();
         currentProducts = data;
+        renderBestOffersOrderList();
 
         if (!data.length) {
-            tbody.innerHTML = '<tr><td colspan="10">No products yet. Add your first one above.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="11">No products yet. Add your first one above.</td></tr>';
             return;
         }
 
@@ -149,7 +203,8 @@ async function loadProductsTable() {
                 stockCell = `<span style="color:${out ? '#e05252' : low ? '#e0a552' : 'inherit'};">${p.stockCount} ${out ? '(Out)' : low ? '(Low)' : ''}</span>`;
             }
             return `
-            <tr>
+            <tr draggable="true" data-id="${p._id}">
+                <td class="drag-handle" title="Drag to reorder">⠿</td>
                 <td><img src="${p.image}" alt="${p.title}" onerror="this.src='assets/sun-icon.png'"></td>
                 <td>${p.title}</td>
                 <td>LE ${Number(p.price).toFixed(2)}</td>
@@ -168,9 +223,58 @@ async function loadProductsTable() {
             </tr>
         `;
         }).join('');
+
+        // سحب صف فوق التاني بيغيّر ترتيبه في "order" (بتاع All Products) بس - مبيلمسش featuredOrder خالص
+        makeSortable(tbody, 'tr[draggable="true"]', async (orderedIds) => {
+            const items = orderedIds.map((id, idx) => ({ id, value: (idx + 1) * 10 }));
+            try {
+                await api.reorderProducts('order', items);
+                await loadProductsTable();
+            } catch (err) {
+                alert('Failed to save new order: ' + err.message);
+                loadProductsTable();
+            }
+        });
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="10" style="color:#e05252;">Failed to load products: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" style="color:#e05252;">Failed to load products: ${err.message}</td></tr>`;
     }
+}
+
+// ---------- 2ب. قائمة ترتيب Best Offers (مستقلة تمامًا عن ترتيب All Products) ----------
+function renderBestOffersOrderList() {
+    const wrap = document.getElementById('bestOffersOrderList');
+    if (!wrap) return;
+
+    const featured = currentProducts
+        .filter(p => p.featured)
+        .sort((a, b) => (a.featuredOrder || 0) - (b.featuredOrder || 0));
+
+    if (!featured.length) {
+        wrap.innerHTML = '<p style="color:var(--text-gray); font-size:0.85rem;">No products have "Show in Best Offers" checked yet.</p>';
+        return;
+    }
+
+    wrap.innerHTML = featured.map(p => `
+        <div class="best-offer-order-item" draggable="true" data-id="${p._id}">
+            <span class="drag-handle" title="Drag to reorder">⠿</span>
+            <img src="${p.image}" alt="${p.title}" onerror="this.src='assets/sun-icon.png'">
+            <span>${p.title}</span>
+        </div>
+    `).join('');
+
+    makeSortable(wrap, '.best-offer-order-item', async (orderedIds) => {
+        const items = orderedIds.map((id, idx) => ({ id, value: (idx + 1) * 10 }));
+        try {
+            await api.reorderProducts('featuredOrder', items);
+            items.forEach(({ id, value }) => {
+                const p = currentProducts.find(cp => cp._id === id);
+                if (p) p.featuredOrder = value;
+            });
+        } catch (err) {
+            alert('Failed to save Best Offers order: ' + err.message);
+        }
+        renderBestOffersOrderList();
+    });
 }
 
 // ---------- 3. فورم الإضافة/التعديل ----------
@@ -187,6 +291,8 @@ function resetForm() {
     document.getElementById('fieldDescription').value = '';
     document.getElementById('fieldDescriptionAr').value = '';
     document.getElementById('fieldFeatured').checked = false;
+    document.getElementById('fieldShowInAll').checked = true;
+    document.getElementById('showInAllWrap').style.display = 'none';
     document.getElementById('fieldInStock').checked = true;
     document.getElementById('fieldEgyptOnly').checked = false;
     document.getElementById('fieldTrackStock').checked = false;
@@ -219,6 +325,8 @@ function fillFormForEdit(product) {
     document.getElementById('fieldDescription').value = product.description || '';
     document.getElementById('fieldDescriptionAr').value = product.descriptionAr || '';
     document.getElementById('fieldFeatured').checked = !!product.featured;
+    document.getElementById('fieldShowInAll').checked = product.showInAllProducts !== false;
+    document.getElementById('showInAllWrap').style.display = product.featured ? 'block' : 'none';
     document.getElementById('fieldInStock').checked = product.inStock !== false;
     document.getElementById('fieldEgyptOnly').checked = !!product.egyptOnly;
     document.getElementById('fieldTrackStock').checked = !!product.trackStock;
@@ -253,6 +361,12 @@ function readFormData() {
         description: document.getElementById('fieldDescription').value.trim(),
         descriptionAr: document.getElementById('fieldDescriptionAr').value.trim(),
         featured: document.getElementById('fieldFeatured').checked,
+        // بيتحسب بس لو المنتج featured أصلاً - غير كده مالوش معنى وبيفضل true افتراضيًا
+        showInAllProducts: document.getElementById('fieldFeatured').checked
+            ? document.getElementById('fieldShowInAll').checked
+            : true,
+        // featuredOrder متتبعتش من الفورم خالص - بتتحدد بس من قائمة "Best Offers Order"
+        // بالسحب، عشان حفظ الفورم العادي ميعملش overwrite لترتيب اتظبط قبل كده
         inStock: document.getElementById('fieldInStock').checked,
         egyptOnly: document.getElementById('fieldEgyptOnly').checked,
         trackStock: document.getElementById('fieldTrackStock').checked,
@@ -928,6 +1042,10 @@ function initAdminPanel() {
 
     document.getElementById('fieldTrackStock').addEventListener('change', (e) => {
         document.getElementById('stockCountWrap').style.display = e.target.checked ? 'block' : 'none';
+    });
+
+    document.getElementById('fieldFeatured').addEventListener('change', (e) => {
+        document.getElementById('showInAllWrap').style.display = e.target.checked ? 'block' : 'none';
     });
 
     ['fieldImage', 'fieldCardImgWidth', 'fieldCardImgHeight', 'fieldCardImgOffsetY'].forEach((id) => {

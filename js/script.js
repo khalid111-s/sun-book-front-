@@ -113,6 +113,9 @@ function normalizeProduct(p) {
         type: p.type,
         badges: p.badges || [],
         featured: !!p.featured,
+        featuredOrder: p.featuredOrder || 0,
+        // لو مش featured، السؤال مبيحصلش أصلاً وبيفضل يظهر عادي في All Products
+        showInAllProducts: p.showInAllProducts !== false,
         egyptOnly: !!p.egyptOnly,
         available,
         cardImage: p.cardImage || null,
@@ -336,13 +339,16 @@ function renderHomepageProductGrids() {
     if (!bestOffersGrid && !allProductsGrid) return;
     if (!allProductsFetched) return;
 
-    const featured = productsData.filter(p => p.featured);
+    // ترتيب الـ Best Offers مستقل تمامًا عن ترتيب All Products (featuredOrder مش order)
+    const featured = productsData.filter(p => p.featured).sort((a, b) => a.featuredOrder - b.featuredOrder);
     if (bestOffersGrid) {
         bestOffersGrid.innerHTML = featured.length ? featured.map(productCardHTML).join('') : `<p>${trHome('product.noOffers', 'No offers right now.')}</p>`;
         bindAddToCartDelegation(bestOffersGrid);
     }
     if (allProductsGrid) {
-        allProductsGrid.innerHTML = productsData.length ? productsData.map(productCardHTML).join('') : `<p>${trHome('product.noProducts', 'No products yet.')}</p>`;
+        // المنتج الـ featured بيتشال من All Products لو الأدمن طفّى "Show in All Products" بتاعه
+        const forAllGrid = productsData.filter(p => !p.featured || p.showInAllProducts);
+        allProductsGrid.innerHTML = forAllGrid.length ? forAllGrid.map(productCardHTML).join('') : `<p>${trHome('product.noProducts', 'No products yet.')}</p>`;
         bindAddToCartDelegation(allProductsGrid);
     }
 }

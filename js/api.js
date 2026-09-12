@@ -129,6 +129,13 @@ const api = {
       method: 'DELETE',
     }),
 
+  // field: 'order' (All Products) or 'featuredOrder' (Best Offers) - items: [{ id, value }]
+  reorderProducts: (field, items) =>
+    api.request('/products/reorder', {
+      method: 'PUT',
+      body: JSON.stringify({ field, items }),
+    }),
+
   createBooking: (data) =>
     api.request('/bookings', {
       method: 'POST',

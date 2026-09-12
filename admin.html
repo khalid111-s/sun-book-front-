@@ -272,6 +272,24 @@
         .admin-row-actions .edit-btn:hover { border-color: var(--gold-color); color: var(--gold-color); }
         .admin-row-actions .delete-btn:hover { border-color: #e05252; color: #e05252; }
 
+        /* Drag handle in the products table */
+        .drag-handle { cursor: grab; color: #888; font-size: 1.1rem; text-align: center; user-select: none; }
+        .drag-handle:active { cursor: grabbing; }
+        table.admin-table tr.dragging { opacity: 0.4; }
+        table.admin-table tr.drag-over-row { border-top: 2px solid var(--gold-color); }
+
+        /* Best Offers sortable list */
+        #bestOffersOrderList { display: flex; flex-direction: column; gap: 6px; }
+        .best-offer-order-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 12px; border: 1px solid rgba(216,176,86,0.25); border-radius: 6px;
+            background: #1a1b1d; color: #eee; font-size: 0.9rem;
+        }
+        .best-offer-order-item img { width: 34px; height: 34px; object-fit: cover; border-radius: 4px; }
+        .best-offer-order-item .drag-handle { font-size: 1.2rem; }
+        .best-offer-order-item.dragging { opacity: 0.4; }
+        .best-offer-order-item.drag-over-row { border-top: 2px solid var(--gold-color); }
+
         @media (max-width: 640px) {
             .admin-grid { grid-template-columns: 1fr; }
         }
@@ -715,6 +733,10 @@
                     <input type="checkbox" id="fieldFeatured">
                     <label for="fieldFeatured" style="margin:0;">Show in "Best Offers"</label>
                 </div>
+                <div class="admin-field admin-checkbox" id="showInAllWrap" style="display:none;">
+                    <input type="checkbox" id="fieldShowInAll" checked>
+                    <label for="fieldShowInAll" style="margin:0;">Also show this product in "All Products"</label>
+                </div>
                 <div class="admin-field admin-checkbox">
                     <input type="checkbox" id="fieldInStock" checked>
                     <label for="fieldInStock" style="margin:0;">In stock</label>
@@ -782,10 +804,12 @@
         </form>
     </div>
 
+    <p style="font-size:13px; color:#999; margin:0 0 8px;">Drag the ⠿ handle to reorder products in "All Products" on the site. This order doesn't affect Best Offers below.</p>
     <div class="admin-table-wrap">
         <table class="admin-table">
             <thead>
                 <tr>
+                    <th></th>
                     <th>Image</th>
                     <th>Title</th>
                     <th>Price</th>
@@ -799,9 +823,15 @@
                 </tr>
             </thead>
             <tbody id="productsTableBody">
-                <tr><td colspan="10">Loading...</td></tr>
+                <tr><td colspan="11">Loading...</td></tr>
             </tbody>
         </table>
+    </div>
+
+    <div class="admin-form" style="margin-top:30px;">
+        <h2 style="margin-top:0;">Best Offers Order</h2>
+        <p style="font-size:13px; color:#999; margin:0 0 12px;">Only products with "Show in Best Offers" checked show up here. Drag to set the order they appear in on the homepage's Best Offers section - independent from the "All Products" order above.</p>
+        <div id="bestOffersOrderList"></div>
     </div>
     </div>
 
