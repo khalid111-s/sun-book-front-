@@ -195,7 +195,11 @@ function resetForm() {
     document.getElementById('fieldCardImgWidth').value = 260;
     document.getElementById('fieldCardImgHeight').value = 300;
     document.getElementById('fieldCardImgOffsetY').value = 0;
+    document.getElementById('fieldCardImgWidthMobile').value = 135;
+    document.getElementById('fieldCardImgHeightMobile').value = 160;
+    document.getElementById('fieldCardImgOffsetYMobile').value = 0;
     updateCardImgPreview();
+    updateCardImgPreviewMobile();
     document.getElementById('formTitle').innerText = 'Add New Product';
     document.getElementById('submitBtn').innerText = 'Add Product';
     document.getElementById('cancelEditBtn').style.display = 'none';
@@ -223,7 +227,11 @@ function fillFormForEdit(product) {
     document.getElementById('fieldCardImgWidth').value = product.cardImage?.width ?? 260;
     document.getElementById('fieldCardImgHeight').value = product.cardImage?.height ?? 300;
     document.getElementById('fieldCardImgOffsetY').value = product.cardImage?.offsetY ?? 0;
+    document.getElementById('fieldCardImgWidthMobile').value = product.cardImage?.mobileWidth ?? 135;
+    document.getElementById('fieldCardImgHeightMobile').value = product.cardImage?.mobileHeight ?? 160;
+    document.getElementById('fieldCardImgOffsetYMobile').value = product.cardImage?.mobileOffsetY ?? 0;
     updateCardImgPreview();
+    updateCardImgPreviewMobile();
     document.getElementById('formTitle').innerText = `Edit: ${product.title}`;
     document.getElementById('submitBtn').innerText = 'Save Changes';
     document.getElementById('cancelEditBtn').style.display = 'inline-block';
@@ -253,11 +261,14 @@ function readFormData() {
             width: parseInt(document.getElementById('fieldCardImgWidth').value) || 260,
             height: parseInt(document.getElementById('fieldCardImgHeight').value) || 300,
             offsetY: parseInt(document.getElementById('fieldCardImgOffsetY').value) || 0,
+            mobileWidth: parseInt(document.getElementById('fieldCardImgWidthMobile').value) || 135,
+            mobileHeight: parseInt(document.getElementById('fieldCardImgHeightMobile').value) || 160,
+            mobileOffsetY: parseInt(document.getElementById('fieldCardImgOffsetYMobile').value) || 0,
         },
     };
 }
 
-// بتحدّث معاينة حجم/وضع الصورة جوه الفورم لحظيًا مع أي تعديل في الحقول
+// بتحدّث معاينة حجم/وضع الصورة جوه الفورم لحظيًا مع أي تعديل في الحقول (ديسكتوب)
 function updateCardImgPreview() {
     const preview = document.getElementById('cardImgPreview');
     if (!preview) return;
@@ -265,6 +276,22 @@ function updateCardImgPreview() {
     const width = parseInt(document.getElementById('fieldCardImgWidth').value) || 260;
     const height = parseInt(document.getElementById('fieldCardImgHeight').value) || 300;
     const offsetY = parseInt(document.getElementById('fieldCardImgOffsetY').value) || 0;
+    preview.src = src;
+    preview.style.width = width + 'px';
+    preview.style.height = height + 'px';
+    preview.style.maxWidth = width + 'px';
+    preview.style.maxHeight = height + 'px';
+    preview.style.transform = `translate(-50%, calc(-50% + ${offsetY}px))`;
+}
+
+// نفس الفكرة بالظبط بس لمعاينة الموبايل
+function updateCardImgPreviewMobile() {
+    const preview = document.getElementById('cardImgPreviewMobile');
+    if (!preview) return;
+    const src = document.getElementById('fieldImage').value.trim();
+    const width = parseInt(document.getElementById('fieldCardImgWidthMobile').value) || 135;
+    const height = parseInt(document.getElementById('fieldCardImgHeightMobile').value) || 160;
+    const offsetY = parseInt(document.getElementById('fieldCardImgOffsetYMobile').value) || 0;
     preview.src = src;
     preview.style.width = width + 'px';
     preview.style.height = height + 'px';
@@ -905,6 +932,9 @@ function initAdminPanel() {
 
     ['fieldImage', 'fieldCardImgWidth', 'fieldCardImgHeight', 'fieldCardImgOffsetY'].forEach((id) => {
         document.getElementById(id).addEventListener('input', updateCardImgPreview);
+    });
+    ['fieldImage', 'fieldCardImgWidthMobile', 'fieldCardImgHeightMobile', 'fieldCardImgOffsetYMobile'].forEach((id) => {
+        document.getElementById(id).addEventListener('input', updateCardImgPreviewMobile);
     });
 
     document.getElementById('productForm').addEventListener('submit', async (e) => {

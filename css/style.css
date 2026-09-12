@@ -2184,10 +2184,17 @@ ul.footer-follow-icons {
     }
 
     .card-img {
-        /* بنصغّر نفس القيم الجايه من لوحة الأدمن بنسبة ~52% عشان تتناسب مع ارتفاع
-           الـ wrapper بتاع الموبايل (190px) بدل الحجم الكامل بتاع الديسكتوب */
-        max-width: calc(var(--img-max-width, 260px) * 0.52);
-        max-height: calc(var(--img-max-height, 300px) * 0.52);
+        /* حجم وإزاحة مستقلين للموبايل، بييجوا من لوحة الأدمن (cardImage.mobileWidth/mobileHeight/mobileOffsetY)
+           بدل ما يتحسبوا تلقائيًا كنسبة من حجم الديسكتوب */
+        width: var(--img-max-width-mobile, 135px);
+        height: var(--img-max-height-mobile, 160px);
+        max-width: var(--img-max-width-mobile, 135px);
+        max-height: var(--img-max-height-mobile, 160px);
+        transform: translate(-50%, calc(-50% + var(--img-offset-y-mobile, 0px)));
+    }
+
+    .product-card:hover .card-img {
+        transform: translate(-50%, calc(-50% + var(--img-offset-y-mobile, 0px))) scale(1.06);
     }
 
     /* توهج الخلفية كان بحجم ثابت (290x280) من الديسكتوب فبيبان ضخم وغير متناسب
