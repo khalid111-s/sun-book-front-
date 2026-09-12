@@ -250,6 +250,9 @@ function productCardHTML(product) {
     const addToCartBtn = outOfStock
         ? `<button class="add-to-cart-new add-to-cart" disabled style="opacity:0.5; cursor:not-allowed;">${outOfStockLabel}</button>`
         : `<button class="add-to-cart-new add-to-cart" data-id="${product.id}" data-title="${product.title.replace(/"/g, '&quot;')}">${tr('product.addToCart', 'Add to cart')}</button>`;
+    // حجم/وضع الصورة جوه الكارت بييجي من لوحة الأدمن (cardImage) بدل ما يبقى مكتوب في الـ CSS
+    const ci = product.cardImage || {};
+    const cardImgStyle = `--img-max-width:${ci.width || 260}px; --img-max-height:${ci.height || 300}px; --img-offset-y:${ci.offsetY || 0}px;`;
     // ملحوظة: عنوان الكتاب ووصفه بييجوا زي ما هما مسجلين في قاعدة البيانات (إنجليزي)
     // ومبيتترجموش تلقائيًا، بالظبط زي عناوين الكتب في أي متجر عالمي كبير
     return `
@@ -258,7 +261,7 @@ function productCardHTML(product) {
                 ${egyptStripHTML}
                 ${outOfStockOverlay}
                 <a href="product.html?id=${product.id}">
-                    <img src="${product.image}" alt="${product.title}" class="card-img" loading="lazy">
+                    <img src="${product.image}" alt="${product.title}" class="card-img" style="${cardImgStyle}" loading="lazy">
                 </a>
             </div>
             <div class="card-info-wrapper">

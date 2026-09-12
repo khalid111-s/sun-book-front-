@@ -192,6 +192,10 @@ function resetForm() {
     document.getElementById('fieldTrackStock').checked = false;
     document.getElementById('fieldStockCount').value = 0;
     document.getElementById('stockCountWrap').style.display = 'none';
+    document.getElementById('fieldCardImgWidth').value = 260;
+    document.getElementById('fieldCardImgHeight').value = 300;
+    document.getElementById('fieldCardImgOffsetY').value = 0;
+    updateCardImgPreview();
     document.getElementById('formTitle').innerText = 'Add New Product';
     document.getElementById('submitBtn').innerText = 'Add Product';
     document.getElementById('cancelEditBtn').style.display = 'none';
@@ -216,6 +220,10 @@ function fillFormForEdit(product) {
     document.getElementById('fieldTrackStock').checked = !!product.trackStock;
     document.getElementById('fieldStockCount').value = product.stockCount ?? 0;
     document.getElementById('stockCountWrap').style.display = product.trackStock ? 'block' : 'none';
+    document.getElementById('fieldCardImgWidth').value = product.cardImage?.width ?? 260;
+    document.getElementById('fieldCardImgHeight').value = product.cardImage?.height ?? 300;
+    document.getElementById('fieldCardImgOffsetY').value = product.cardImage?.offsetY ?? 0;
+    updateCardImgPreview();
     document.getElementById('formTitle').innerText = `Edit: ${product.title}`;
     document.getElementById('submitBtn').innerText = 'Save Changes';
     document.getElementById('cancelEditBtn').style.display = 'inline-block';
@@ -241,7 +249,26 @@ function readFormData() {
         egyptOnly: document.getElementById('fieldEgyptOnly').checked,
         trackStock: document.getElementById('fieldTrackStock').checked,
         stockCount: parseInt(document.getElementById('fieldStockCount').value) || 0,
+        cardImage: {
+            width: parseInt(document.getElementById('fieldCardImgWidth').value) || 260,
+            height: parseInt(document.getElementById('fieldCardImgHeight').value) || 300,
+            offsetY: parseInt(document.getElementById('fieldCardImgOffsetY').value) || 0,
+        },
     };
+}
+
+// بتحدّث معاينة حجم/وضع الصورة جوه الفورم لحظيًا مع أي تعديل في الحقول
+function updateCardImgPreview() {
+    const preview = document.getElementById('cardImgPreview');
+    if (!preview) return;
+    const src = document.getElementById('fieldImage').value.trim();
+    const width = parseInt(document.getElementById('fieldCardImgWidth').value) || 260;
+    const height = parseInt(document.getElementById('fieldCardImgHeight').value) || 300;
+    const offsetY = parseInt(document.getElementById('fieldCardImgOffsetY').value) || 0;
+    preview.src = src;
+    preview.style.maxWidth = width + 'px';
+    preview.style.maxHeight = height + 'px';
+    preview.style.transform = `translate(-50%, calc(-50% + ${offsetY}px))`;
 }
 
 let revenueChartInstance = null;
@@ -872,6 +899,10 @@ function initAdminPanel() {
 
     document.getElementById('fieldTrackStock').addEventListener('change', (e) => {
         document.getElementById('stockCountWrap').style.display = e.target.checked ? 'block' : 'none';
+    });
+
+    ['fieldImage', 'fieldCardImgWidth', 'fieldCardImgHeight', 'fieldCardImgOffsetY'].forEach((id) => {
+        document.getElementById(id).addEventListener('input', updateCardImgPreview);
     });
 
     document.getElementById('productForm').addEventListener('submit', async (e) => {

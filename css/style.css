@@ -1555,12 +1555,14 @@ body {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    /* الإزاحة الرأسية (--img-offset-y) بتيجي لكل منتج من لوحة الأدمن (cardImage.offsetY) */
+    transform: translate(-50%, calc(-50% + var(--img-offset-y, 0px)));
     width: auto;
     height: auto;
-    /* سقف ثابت بالبكسل (مش نسبة %) عشان الصورة متكبرش عن الحجم ده أبدًا، أيًا كان حجم الكارت أو الشاشة */
-    max-width: 260px;
-    max-height: 300px;
+    /* الحجم (--img-max-width / --img-max-height) بييجي لكل منتج من لوحة الأدمن (cardImage.width/height)
+       بدل ما يبقى رقم ثابت أو استثناء مكتوب هنا لكل صورة */
+    max-width: var(--img-max-width, 260px);
+    max-height: var(--img-max-height, 300px);
     object-fit: contain;
     filter: drop-shadow(0 15px 15px rgba(0,0,0,0.7));
     transition: transform 0.3s ease;
@@ -1569,34 +1571,7 @@ body {
 
 .product-card:hover .card-img {
     /* بنحافظ على نفس التمركز (translate) وبنضيف الزووم بس، عشان الكتاب يكبر مكانه من غير ما "يرتفع" */
-    transform: translate(-50%, -50%) scale(1.06);
-}
-
-/* استثناء خاص بصورة "Book of Symbolism" (اليد) بس، من غير ما يأثر على باقي الكروت */
-.card-img[src*="trew.png"] {
-    top: auto;
-    bottom: 0;
-    transform: translateX(-50%);
-    max-width: 420px;
-    max-height: 430px;
-    object-position: bottom;
-    transform-origin: bottom center;
-}
-
-/* لازم قاعدة هوفر مخصوصة برضه، وإلا القاعدة العامة (اللي بتتمركز من النص) بتاخد الأولوية وتلغي وضعها من تحت */
-.product-card:hover .card-img[src*="trew.png"] {
-    transform: translateX(-50%) scale(1.06);
-}
-
-/* تكبير صورة "Trio Wisdom Bundle" الجديدة بس (لسه متمركزة زي باقي الكروت، مش محتاجة قاعدة هوفر خاصة) */
-.card-img[src*="akdj.png"] {
-    max-width: 520px;
-    max-height: 530px;
-    transform: translate(-50%, calc(-50% + 20px)); /* رقم موجب = تنزل تحت */
-}
-
-.product-card:hover .card-img[src*="akdj.png"] {
-    transform: translate(-50%, calc(-50% + 20px)) scale(1.06);
+    transform: translate(-50%, calc(-50% + var(--img-offset-y, 0px))) scale(1.06);
 }
 
 /* 2. الجزء السفلي (التفاصيل) */
@@ -2209,14 +2184,10 @@ ul.footer-follow-icons {
     }
 
     .card-img {
-        /* سقف ثابت أصغر يناسب ارتفاع الـ wrapper بتاع الموبايل (190px)، بنفس فكرة الديسكتوب */
-        max-width: 135px;
-        max-height: 160px;
-    }
-
-    .card-img[src*="trew.png"] {
-        max-width: 165px;
-        max-height: 190px;
+        /* بنصغّر نفس القيم الجايه من لوحة الأدمن بنسبة ~52% عشان تتناسب مع ارتفاع
+           الـ wrapper بتاع الموبايل (190px) بدل الحجم الكامل بتاع الديسكتوب */
+        max-width: calc(var(--img-max-width, 260px) * 0.52);
+        max-height: calc(var(--img-max-height, 300px) * 0.52);
     }
 
     /* توهج الخلفية كان بحجم ثابت (290x280) من الديسكتوب فبيبان ضخم وغير متناسب
@@ -2225,19 +2196,6 @@ ul.footer-follow-icons {
         width: 190px;
         height: 185px;
         filter: blur(16px);
-    }
-
-    /* صورة "Trio Wisdom Bundle" (akdj.png) محتاجة سقف حجم وتمركز خاص بالموبايل
-       زيها زي trew.png بالظبط، وإلا بتفضل بحجمها الكبير بتاع الديسكتوب (520x530)
-       وتطلع مقطوعة/مكبرة جوه كارت الموبايل الصغير */
-    .card-img[src*="akdj.png"] {
-        max-width: 140px;
-        max-height: 165px;
-        transform: translate(-50%, calc(-50% + 8px));
-    }
-
-    .product-card:hover .card-img[src*="akdj.png"] {
-        transform: translate(-50%, calc(-50% + 8px)) scale(1.06);
     }
 
     .card-info-wrapper {
