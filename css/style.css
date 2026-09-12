@@ -1557,10 +1557,10 @@ body {
     left: 50%;
     /* الإزاحة الرأسية (--img-offset-y) بتيجي لكل منتج من لوحة الأدمن (cardImage.offsetY) */
     transform: translate(-50%, calc(-50% + var(--img-offset-y, 0px)));
-    width: auto;
-    height: auto;
-    /* الحجم (--img-max-width / --img-max-height) بييجي لكل منتج من لوحة الأدمن (cardImage.width/height)
-       بدل ما يبقى رقم ثابت أو استثناء مكتوب هنا لكل صورة */
+    /* بنحط الحجم على width/height نفسهم مش بس max- عشان الصورة تقدر تكبر فوق حجمها
+       الطبيعي كمان مش تصغر بس؛ object-fit: contain بيحافظ على نسبة الصورة جوه الحجم ده */
+    width: var(--img-max-width, 260px);
+    height: var(--img-max-height, 300px);
     max-width: var(--img-max-width, 260px);
     max-height: var(--img-max-height, 300px);
     object-fit: contain;

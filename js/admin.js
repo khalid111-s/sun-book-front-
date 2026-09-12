@@ -266,6 +266,8 @@ function updateCardImgPreview() {
     const height = parseInt(document.getElementById('fieldCardImgHeight').value) || 300;
     const offsetY = parseInt(document.getElementById('fieldCardImgOffsetY').value) || 0;
     preview.src = src;
+    preview.style.width = width + 'px';
+    preview.style.height = height + 'px';
     preview.style.maxWidth = width + 'px';
     preview.style.maxHeight = height + 'px';
     preview.style.transform = `translate(-50%, calc(-50% + ${offsetY}px))`;
