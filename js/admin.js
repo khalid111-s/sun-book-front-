@@ -336,7 +336,7 @@ async function loadDashboardStats() {
 
         // ---- الإيرادات حسب النوع ----
         const revenueByTypeBody = document.getElementById('revenueByTypeBody');
-        const typeLabels = { physical: 'Physical Books', digital: 'Digital Books', booking: 'Sessions' };
+        const typeLabels = { physical: 'Physical Books', digital: 'Digital Books', both: 'Physical + Digital', booking: 'Sessions' };
         revenueByTypeBody.innerHTML = orderStats.revenueByType.length
             ? orderStats.revenueByType.map(t => `
                 <tr><td>${typeLabels[t.type] || t.type}</td><td>LE ${Number(t.revenue).toFixed(2)}</td></tr>
@@ -349,7 +349,7 @@ async function loadDashboardStats() {
             ? orders.slice(0, 50).map(o => {
                 const itemsSummary = o.items.map(i => `${i.title} ×${i.qty}`).join(', ');
                 const accountName = o.user && o.user.name ? o.user.name : '—';
-                const hasPhysical = o.items.some(i => i.type === 'physical');
+                const hasPhysical = o.items.some(i => i.type === 'physical' || i.type === 'both');
                 const fulfillmentCell = hasPhysical
                     ? `<select class="fulfillment-select" data-id="${o._id}" style="background:#1a1b1d;color:#fff;border:1px solid #444;border-radius:4px;padding:4px 6px;font-size:0.8rem;">
                         <option value="processing" ${o.fulfillmentStatus === 'processing' || !o.fulfillmentStatus ? 'selected' : ''}>Processing</option>

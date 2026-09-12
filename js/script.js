@@ -559,13 +559,14 @@ function renderCartItemsNow() {
     let totalPrice = 0;
     const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
     cartItems.forEach((item, index) => {
-        const typeLabel = item.type === 'digital' ? tr('cart.typeDigital', 'Digital (PDF)') : item.type === 'booking' ? tr('cart.typeSession', 'Session') : tr('cart.typePhysical', 'Physical Book');
+        const typeLabel = item.type === 'digital' ? tr('cart.typeDigital', 'Digital (PDF)') : item.type === 'both' ? tr('cart.typeBoth', 'Physical + Digital') : item.type === 'booking' ? tr('cart.typeSession', 'Session') : tr('cart.typePhysical', 'Physical Book');
+        const typeColor = item.type === 'digital' ? '#34A853' : item.type === 'both' ? '#5b8def' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)';
         const itemHTML = `
             <div class="cart-item reveal active">
                 <img src="${item.image}" alt="Book" class="cart-item-img">
                 <div class="cart-item-info">
                     <h3 class="cart-item-title">${item.title}</h3>
-                    <span style="font-size: 0.75rem; color: ${item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)'}; border: 1px solid ${item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)'}; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 5px;">${typeLabel}</span>
+                    <span style="font-size: 0.75rem; color: ${typeColor}; border: 1px solid ${typeColor}; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 5px;">${typeLabel}</span>
                 </div>
                 <div class="cart-item-actions">
                     <p class="cart-item-price">${item.price}</p>

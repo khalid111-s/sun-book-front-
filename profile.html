@@ -311,7 +311,7 @@
     try {
         const { data: myOrders } = await api.getMyOrders();
         // بس الطلبات اللي فيها عناصر فيزيكال (كتب مطبوعة) بتتابع شحنها هنا
-        const physicalOrders = (myOrders || []).filter(order => order.items.some(i => i.type === 'physical'));
+        const physicalOrders = (myOrders || []).filter(order => order.items.some(i => i.type === 'physical' || i.type === 'both'));
 
         if (physicalOrders.length === 0) {
             ordersList.innerHTML = `<p style="color: var(--text-gray); text-align: center; padding: 20px 0;">${tr('profile.noPhysicalOrders', 'No physical orders to track.')}</p>`;

@@ -260,11 +260,12 @@
             return;
         }
 
-        const digitalBooks = cart.filter(item => item.type === 'digital').map(book => {
+        // 'both' بيتحسب ضمن digitalBooks (عشان يتحمّل ويتحط في المكتبة الرقمية) وبرضو ضمن physicalBooks (عشان يتشحن)
+        const digitalBooks = cart.filter(item => item.type === 'digital' || item.type === 'both').map(book => {
             return { ...book, downloadsLeft: 3, orderDate: new Date().toISOString() };
         });
 
-        const physicalBooks = cart.filter(item => item.type === 'physical');
+        const physicalBooks = cart.filter(item => item.type === 'physical' || item.type === 'both');
         const bookingItems = cart.filter(item => item.type === 'booking');
 
         // ─── حفظ الحجز في الـ Backend ─────────────────────────
@@ -334,8 +335,10 @@
             localStorage.setItem('sunbook_library', JSON.stringify(userLibrary));
         }
 
-        // ─── تسجيل طلب الكتب (فيزيكال/ديجيتال) في الباك اند + الدفع عبر Kashier ───
-        const bookItems = [...digitalBooks, ...physicalBooks];
+        // ─── تسجيل طلب الكتب (فيزيكال/ديجيتال/الاتنين مع بعض) في الباك اند + الدفع عبر Kashier ───
+        // ملحوظة: بنفلتر من الـ cart الأصلي مباشرة (مش من دمج digitalBooks+physicalBooks) عشان
+        // عنصر type='both' ميتبعتش للباك اند مرتين كأنه صنفين منفصلين (كان هيدبل السعر والمخزون)
+        const bookItems = cart.filter(item => item.type === 'physical' || item.type === 'digital' || item.type === 'both');
         if (bookItems.length > 0) {
             try {
                 const fName = document.getElementById('ship-firstname')?.value || '';
@@ -597,7 +600,7 @@
         }
 
         let cart = JSON.parse(localStorage.getItem('sunbook_cart')) || [];
-        const hasPhysical = cart.some(item => item.type === 'physical');
+        const hasPhysical = cart.some(item => item.type === 'physical' || item.type === 'both');
 
         let isValid = true;
         let firstError = null;
@@ -863,8 +866,8 @@ function initSmartCheckout() {
     const digitalBanner = document.getElementById('digital-banner');
     const noticeSection = document.getElementById('smart-notice');
 
-    const hasPhysical = cart.some(item => item.type === 'physical');
-    const hasDigital = cart.some(item => item.type === 'digital');
+    const hasPhysical = cart.some(item => item.type === 'physical' || item.type === 'both');
+    const hasDigital = cart.some(item => item.type === 'digital' || item.type === 'both');
     const hasBooking = cart.some(item => item.type === 'booking');
 
     // ========== منطق الرسائل الذكي ==========
@@ -969,8 +972,8 @@ function initSmartCheckout() {
     if (listContainer) {
         listContainer.innerHTML = '';
         cart.forEach(item => {
-            const typeLabel = item.type === 'digital' ? tr('cart.typeDigital', 'Digital (PDF)') : item.type === 'booking' ? tr('cart.typeSession', 'Session') : tr('cart.typePhysical', 'Physical Book');
-            const typeColor = item.type === 'digital' ? '#34A853' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)';
+            const typeLabel = item.type === 'digital' ? tr('cart.typeDigital', 'Digital (PDF)') : item.type === 'both' ? tr('cart.typeBoth', 'Physical + Digital') : item.type === 'booking' ? tr('cart.typeSession', 'Session') : tr('cart.typePhysical', 'Physical Book');
+            const typeColor = item.type === 'digital' ? '#34A853' : item.type === 'both' ? '#5b8def' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)';
             const priceNum = parseFloat(item.price.replace(/[^0-9.]/g, ''));
             totalPrice += (priceNum * item.qty);
 
