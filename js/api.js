@@ -331,4 +331,11 @@ const api = {
       method: 'PUT',
       body: JSON.stringify({ items }),
     }),
+
+  // ---- Contact Us (بتوصل بالإيميل مباشرة لصاحب الموقع) ----
+  sendContactMessage: (data) =>
+    api.request('/contact', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };
