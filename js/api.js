@@ -197,7 +197,7 @@ const api = {
       subject: subject || 'Exclusive One-on-One Session',
       date: parsed.toISOString(),
       duration: 30,
-      price: price || 199,
+      price: price || 1300,
       paymentMethod: 'card',
       notes: notes || `Preferred time: ${timeStr}`,
     });

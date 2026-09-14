@@ -290,7 +290,7 @@
                         dateStr: item.bookingDetails.date,
                         timeStr: item.bookingDetails.time,
                         subject: item.title,
-                        price: parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 199,
+                        price: parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 1300,
                         notes: `Preferred time: ${item.bookingDetails.time}`,
                     });
                     // لو Kashier جهز رابط دفع حقيقي، نحفظه عشان نوجه المستخدم ليه

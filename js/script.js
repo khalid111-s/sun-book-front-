@@ -1602,7 +1602,7 @@ if (confirmBookingBtn && !document.body.classList.contains('use-api-booking')) {
         const bookingItem = {
             id: 'booking-' + Date.now(),
             title: 'Exclusive One-on-One Session',
-            price: 'LE 199.00',
+            price: 'LE 1300.00',
             image: 'assets/sun-icon.png',
             description: `Session on ${selectedDateStr} at ${selectedTimeBtn.innerText.trim()}`,
             type: 'booking',
