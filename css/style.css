@@ -4489,6 +4489,42 @@ html[dir="rtl"] .remove-btn {
 .pay-form { display: none; }
 .pay-form.active { display: block; }
 
+/* اختيارات طريقة الدفع (فيزا / محفظة / كاش عند الاستلام) */
+.payment-methods { display: flex; flex-direction: column; gap: 10px; }
+.pay-method-option {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1px solid rgba(216, 176, 86, 0.3);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.pay-method-option input { position: absolute; opacity: 0; pointer-events: none; }
+.pay-method-radio {
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(216, 176, 86, 0.5);
+    border-radius: 50%;
+    position: relative;
+    transition: all 0.3s;
+}
+.pay-method-option.active { background: rgba(216, 176, 86, 0.12); border-color: var(--gold-color); }
+.pay-method-option.active .pay-method-radio { border-color: var(--gold-color); }
+.pay-method-option.active .pay-method-radio::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--gold-color);
+}
+.pay-method-body { display: flex; flex-direction: column; gap: 2px; }
+.pay-method-body strong { color: var(--text-light, #fff); font-size: 0.95rem; }
+.pay-method-body small { color: var(--text-gray); font-size: 0.8rem; }
+.pay-method-option:focus-within { outline: 2px solid rgba(216, 176, 86, 0.6); outline-offset: 2px; }
+
 /* ملخص الطلب في الدفع */
 .checkout-items-list {
     display: flex;

@@ -97,12 +97,39 @@
                 <div class="checkout-box">
                     <h3 class="checkout-title" data-i18n="checkout.paymentMethod">Payment Method</h3>
 
-                    <!-- بيانات الدفع بتتاخد بأمان من صفحة Kashier الرسمية بعد الضغط على الزرار تحت -->
-                    <div id="card-form" class="pay-form active">
-                        <p style="color: var(--text-gray); font-size: 0.9rem;" data-i18n="checkout.securePaymentNotice">
-                            You'll be redirected to our secure payment page to enter your card or mobile wallet details safely.
-                        </p>
+                    <!-- اختيار طريقة الدفع: فيزا / محفظة (أونلاين عبر بوابة الدفع) أو كاش عند الاستلام (للكتب الفيزيكال بس) -->
+                    <div class="payment-methods" id="payment-methods" role="radiogroup">
+                        <label class="pay-method-option active" data-method="card">
+                            <input type="radio" name="paymentMethod" value="card" checked>
+                            <span class="pay-method-radio"></span>
+                            <span class="pay-method-body">
+                                <strong data-i18n="checkout.payCard">Credit / Debit Card</strong>
+                                <small data-i18n="checkout.payCardDesc">Visa, Mastercard or Meeza</small>
+                            </span>
+                        </label>
+                        <label class="pay-method-option" data-method="wallet">
+                            <input type="radio" name="paymentMethod" value="wallet">
+                            <span class="pay-method-radio"></span>
+                            <span class="pay-method-body">
+                                <strong data-i18n="checkout.payWallet">Mobile Wallet</strong>
+                                <small data-i18n="checkout.payWalletDesc">Vodafone Cash, Orange Cash, Etisalat Cash...</small>
+                            </span>
+                        </label>
+                        <label class="pay-method-option" data-method="cod" id="codOption" style="display:none;">
+                            <input type="radio" name="paymentMethod" value="cod">
+                            <span class="pay-method-radio"></span>
+                            <span class="pay-method-body">
+                                <strong data-i18n="checkout.payCod">Cash on Delivery</strong>
+                                <small data-i18n="checkout.payCodDesc">Pay in cash when your order arrives</small>
+                            </span>
+                        </label>
                     </div>
+                    <p id="pay-method-note" style="color: var(--text-gray); font-size: 0.9rem; margin-top: 14px;" data-i18n="checkout.securePaymentNotice">
+                        You'll be redirected to our secure payment page to enter your card or mobile wallet details safely.
+                    </p>
+                    <p id="cod-unavailable-note" style="display:none; color: var(--text-gray); font-size: 0.82rem; margin-top: 8px;" data-i18n="checkout.codUnavailableNote">
+                        Cash on delivery is only available for orders that contain physical books only.
+                    </p>
                 </div>
 
                 <button class="book-now-btn checkout-submit-btn" id="confirmPaymentBtn" onclick="return validateCheckoutForm(event);">Pay Now & Complete Order</button>
@@ -260,6 +287,9 @@
             return;
         }
 
+        // طريقة الدفع المختارة (الكاش بيترفض تلقائيًا لو السلة مش كلها كتب فيزيكال)
+        const paymentMethod = (getSelectedPaymentMethod() === 'cod' && !isCodAvailable(cart)) ? 'card' : getSelectedPaymentMethod();
+
         // 'both' بيتحسب ضمن digitalBooks (عشان يتحمّل ويتحط في المكتبة الرقمية) وبرضو ضمن physicalBooks (عشان يتشحن)
         const digitalBooks = cart.filter(item => item.type === 'digital' || item.type === 'both').map(book => {
             return { ...book, downloadsLeft: 3, orderDate: new Date().toISOString() };
@@ -364,6 +394,7 @@
                     address: document.getElementById('ship-address')?.value || '',
                     governorate: document.getElementById('governorate')?.value || '',
                     currency: orderCurrency,
+                    paymentMethod,
                     items: bookItems.map(item => ({
                         product: (item.id && item.id.length === 24) ? item.id : undefined,
                         title: item.title,
@@ -391,6 +422,7 @@
                     confirmBtn.innerText = tr('checkout.payNowComplete', 'Pay Now & Complete Order');
                     confirmBtn.disabled = false;
                 }
+                if (typeof refreshPaymentOptions === 'function') refreshPaymentOptions();
                 return;
             }
         }
@@ -480,6 +512,16 @@
         } else {
             if (dlContainer) dlContainer.style.display = 'none';
             if (successMsg) successMsg.innerText = tr('checkout.orderPlacedGeneric', 'Your order has been placed securely. A receipt has been sent to your email.');
+        }
+
+        // كاش عند الاستلام: لسه مدفعش، فمينفعش نقوله "Payment Successful"
+        if (paymentMethod === 'cod') {
+            const titleEl = document.querySelector('#successModal .success-title');
+            if (titleEl) {
+                titleEl.setAttribute('data-i18n', 'checkout.orderPlacedTitle');
+                titleEl.innerText = tr('checkout.orderPlacedTitle', 'Order Placed!');
+            }
+            if (successMsg) successMsg.innerText = tr('checkout.codOrderPlaced', 'Your order has been placed. Please have the cash ready when it arrives - we will contact you on your phone to arrange delivery.');
         }
 
         localStorage.removeItem('sunbook_cart');
@@ -849,6 +891,67 @@
         if (districtSelect && districtSelect._refreshCustomDropdown) districtSelect._refreshCustomDropdown();
     });
 
+// ====== اختيار طريقة الدفع ======
+// الكاش عند الاستلام متاح بس لو السلة كلها كتب فيزيكال (من غير ديجيتال أو 'both' أو جلسات)،
+// لأن أي حاجة رقمية أو جلسة بتتسلّم/تتأكد فورًا ومينفعش قبل الدفع الفعلي.
+function isCodAvailable(cart) {
+    return cart.length > 0 && cart.every(item => item.type === 'physical');
+}
+
+function getSelectedPaymentMethod() {
+    const checked = document.querySelector('input[name="paymentMethod"]:checked');
+    return checked ? checked.value : 'card';
+}
+
+function refreshPaymentOptions() {
+    const cart = JSON.parse(localStorage.getItem('sunbook_cart')) || [];
+    const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
+    const codOption = document.getElementById('codOption');
+    const unavailableNote = document.getElementById('cod-unavailable-note');
+    const hasPhysical = cart.some(item => item.type === 'physical' || item.type === 'both');
+    const codOk = isCodAvailable(cart);
+
+    // الكاش بيظهر بس لو السلة كلها فيزيكال؛ ولو فيها فيزيكال مع حاجة رقمية نوضّح ليه مش متاح
+    if (codOption) codOption.style.display = codOk ? '' : 'none';
+    if (unavailableNote) unavailableNote.style.display = (!codOk && hasPhysical) ? 'block' : 'none';
+
+    // لو الكاش كان مختار والسلة اتغيّرت، نرجع للكارت
+    if (!codOk) {
+        const codRadio = document.querySelector('input[name="paymentMethod"][value="cod"]');
+        if (codRadio && codRadio.checked) {
+            const cardRadio = document.querySelector('input[name="paymentMethod"][value="card"]');
+            if (cardRadio) cardRadio.checked = true;
+        }
+    }
+
+    const method = getSelectedPaymentMethod();
+    document.querySelectorAll('.pay-method-option').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.method === method);
+    });
+
+    const note = document.getElementById('pay-method-note');
+    if (note) {
+        if (method === 'cod') {
+            note.setAttribute('data-i18n', 'checkout.codNotice');
+            note.innerText = tr('checkout.codNotice', 'No payment now. You will pay in cash to the courier when your order arrives.');
+        } else {
+            note.setAttribute('data-i18n', 'checkout.securePaymentNotice');
+            note.innerText = tr('checkout.securePaymentNotice', "You'll be redirected to our secure payment page to enter your card or mobile wallet details safely.");
+        }
+    }
+
+    const confirmBtn = document.getElementById('confirmPaymentBtn');
+    if (confirmBtn && !confirmBtn.disabled) {
+        confirmBtn.innerText = method === 'cod'
+            ? tr('checkout.confirmCodOrder', 'Confirm Order (Pay on Delivery)')
+            : tr('checkout.payNowComplete', 'Pay Now & Complete Order');
+    }
+}
+
+document.addEventListener('change', (e) => {
+    if (e.target && e.target.name === 'paymentMethod') refreshPaymentOptions();
+});
+
 function initSmartCheckout() {
     const loggedInUser = localStorage.getItem('sunbook_username');
     if (!loggedInUser) return;
@@ -1071,10 +1174,14 @@ function initSmartCheckout() {
 
     document.addEventListener("DOMContentLoaded", function() {
         initSmartCheckout();
+        refreshPaymentOptions();
         autoFillCheckoutData();
     });
     document.addEventListener('sunbook:langChanged', () => {
-        if (document.getElementById('confirmPaymentBtn')) initSmartCheckout();
+        if (document.getElementById('confirmPaymentBtn')) {
+            initSmartCheckout();
+            refreshPaymentOptions();
+        }
     });
 </script>
 </body>
