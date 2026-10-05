@@ -93,6 +93,19 @@
                     </div>
                 </div>
 
+                <!-- بيانات العميل للكتب الديجيتال (بتظهر بس لو السلة فيها ديجيتال ومفيش كتب فيزيكال) -->
+                <div id="digital-contact-section" class="checkout-box" style="display: none;">
+                    <h3 class="checkout-title" data-i18n="checkout.digitalContactTitle">Your Details</h3>
+
+                    <div class="input-grid two-cols">
+                        <input type="text" id="digital-name" class="contact-input" placeholder="Full Name" dir="auto" autocomplete="name" data-i18n-placeholder="checkout.fullName">
+                        <div class="phone-input-wrapper">
+                            <span class="country-code">+20</span>
+                            <input type="tel" id="digital-phone" class="contact-input phone-field" placeholder="1XX XXX XXXX" maxlength="11" dir="ltr" autocomplete="tel" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11); if(this.value.length > 0 && !this.value.startsWith('0')) this.value = '0' + this.value;">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- قسم الدفع -->
                 <div class="checkout-box">
                     <h3 class="checkout-title" data-i18n="checkout.paymentMethod">Payment Method</h3>
@@ -273,9 +286,20 @@
     document.addEventListener('DOMContentLoaded', checkKashierReturn);
 </script>
 <script>
+    // لو الدفع اتلغى والعميل ضغط تاني على نفس السلة، بنكمّل على نفس الطلب/الحجز المعلّق بدل ما نعمل طلب جديد
+    let pendingCheckout = null;
+
     async function processPayment() {
         const confirmBtn = document.getElementById('confirmPaymentBtn');
         const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
+        const originalBtnText = confirmBtn ? confirmBtn.innerText : '';
+        const resetPayBtn = () => {
+            if (confirmBtn) {
+                confirmBtn.innerText = originalBtnText;
+                confirmBtn.disabled = false;
+            }
+            if (typeof refreshPaymentOptions === 'function') refreshPaymentOptions();
+        };
         if (confirmBtn) {
             confirmBtn.innerText = tr('checkout.processing', 'Processing...');
             confirmBtn.disabled = true;
@@ -298,8 +322,13 @@
         const physicalBooks = cart.filter(item => item.type === 'physical' || item.type === 'both');
         const bookingItems = cart.filter(item => item.type === 'booking');
 
-        // ─── حفظ الحجز في الـ Backend ─────────────────────────
-        if (bookingItems.length > 0) {
+        const cartSig = JSON.stringify(cart.map(i => [i.id, i.type, i.qty, i.bookingDetails || null]));
+        const reused = !!(pendingCheckout && pendingCheckout.sig === cartSig);
+        const createdBookingIds = reused ? [...pendingCheckout.bookingIds] : [];
+        let createdOrderId = reused ? pendingCheckout.orderId : null;
+
+        // ─── حفظ الحجز في الـ Backend (بيفضل "pending" لحد ما الدفع يتأكد) ───────────
+        if (!reused && bookingItems.length > 0) {
             const token = localStorage.getItem('sunbook_token');
             if (!token || token === 'social_dummy_token') {
                 if (typeof showToast === 'function') {
@@ -312,7 +341,6 @@
                 return;
             }
 
-            let bookingPaymentUrl = null;
             try {
                 for (const item of bookingItems) {
                     if (!item.bookingDetails) continue;
@@ -323,10 +351,7 @@
                         price: parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 1300,
                         notes: `Preferred time: ${item.bookingDetails.time}`,
                     });
-                    // لو Kashier جهز رابط دفع حقيقي، نحفظه عشان نوجه المستخدم ليه
-                    if (bookingRes && bookingRes.data && bookingRes.data.paymentUrl) {
-                        bookingPaymentUrl = bookingRes.data.paymentUrl;
-                    }
+                    if (bookingRes?.data?.booking?._id) createdBookingIds.push(bookingRes.data.booking._id);
                 }
             } catch (err) {
                 if (typeof showToast === 'function') {
@@ -341,11 +366,6 @@
                 return;
             }
 
-            // لو فيه رابط دفع حقيقي من Kashier، وديه هناك عشان يدخل بيانات الكارت/المحفظة الحقيقية
-            if (bookingPaymentUrl) {
-                window.location.href = bookingPaymentUrl;
-                return;
-            }
         }
 
         let totalPrice = 0;
@@ -359,21 +379,16 @@
             finalTotal = totalPrice - (totalPrice * 0.05);
         }
 
-        if (digitalBooks.length > 0) {
-            let userLibrary = JSON.parse(localStorage.getItem('sunbook_library')) || [];
-            userLibrary = userLibrary.concat(digitalBooks);
-            localStorage.setItem('sunbook_library', JSON.stringify(userLibrary));
-        }
-
         // ─── تسجيل طلب الكتب (فيزيكال/ديجيتال/الاتنين مع بعض) في الباك اند + الدفع عبر Kashier ───
         // ملحوظة: بنفلتر من الـ cart الأصلي مباشرة (مش من دمج digitalBooks+physicalBooks) عشان
         // عنصر type='both' ميتبعتش للباك اند مرتين كأنه صنفين منفصلين (كان هيدبل السعر والمخزون)
         const bookItems = cart.filter(item => item.type === 'physical' || item.type === 'digital' || item.type === 'both');
-        if (bookItems.length > 0) {
+        if (!reused && bookItems.length > 0) {
             try {
                 const fName = document.getElementById('ship-firstname')?.value || '';
                 const lName = document.getElementById('ship-lastname')?.value || '';
-                const fullName = (fName + ' ' + lName).trim() || localStorage.getItem('sunbook_username') || 'Guest';
+                const digitalName = document.getElementById('digital-name')?.value.trim() || '';
+                const fullName = (fName + ' ' + lName).trim() || digitalName || localStorage.getItem('sunbook_username') || 'Guest';
 
                 // العملة بتتحدد من شكل السعر المخزّن في السلة نفسها (€ = يورو، غير كده جنيه)
                 // ده أضمن من الاعتماد على متغير عام ممكن لسه بيتحمّل وقت الضغط على الزرار
@@ -390,7 +405,7 @@
 
                 const orderRes = await api.createOrder({
                     customerName: fullName,
-                    phone: document.getElementById('phoneNumber')?.value || '',
+                    phone: document.getElementById('phoneNumber')?.value || document.getElementById('digital-phone')?.value || '',
                     address: document.getElementById('ship-address')?.value || '',
                     governorate: document.getElementById('governorate')?.value || '',
                     currency: orderCurrency,
@@ -406,12 +421,7 @@
                     promoCode: (typeof getStoredPromo === 'function' && getStoredPromo()) ? getStoredPromo().code : undefined,
                 });
 
-                // لو Kashier جهز رابط دفع حقيقي (مفاتيح Test أو Live)، نوجّه العميل لصفحة الدفع فعليًا
-                const bookPaymentUrl = orderRes?.data?.paymentUrl;
-                if (bookPaymentUrl) {
-                    window.location.href = bookPaymentUrl;
-                    return;
-                }
+                createdOrderId = orderRes?.data?.order?._id || null;
             } catch (err) {
                 if (typeof showToast === 'function') {
                     showToast(err.message || tr('checkout.orderFailed', 'Order failed'), 'error');
@@ -425,6 +435,15 @@
                 if (typeof refreshPaymentOptions === 'function') refreshPaymentOptions();
                 return;
             }
+        }
+
+        // ─── كل اللي تحت ده بيتنفذ بس بعد تأكيد الدفع (أو فورًا لو كاش عند الاستلام) ───
+        const finishCheckout = async () => {
+        pendingCheckout = null;
+        if (digitalBooks.length > 0) {
+            let userLibrary = JSON.parse(localStorage.getItem('sunbook_library')) || [];
+            userLibrary = userLibrary.concat(digitalBooks);
+            localStorage.setItem('sunbook_library', JSON.stringify(userLibrary));
         }
 
         const newOrder = {
@@ -527,6 +546,26 @@
         localStorage.removeItem('sunbook_cart');
         if (typeof setStoredPromo === 'function') setStoredPromo(null);
         if (typeof updateCartBadge === 'function') updateCartBadge();
+        };
+
+        // كاش عند الاستلام: مفيش دفع أونلاين، الطلب اتسجّل كـ pending
+        if (paymentMethod === 'cod') {
+            await finishCheckout();
+            return;
+        }
+
+        // أونلاين: لازم يكون فيه طلب أو حجز اتسجّل، وإلا مفيش حاجة تتدفع (منعرضش "نجاح" أبدًا من غير دفع)
+        if (!createdOrderId && createdBookingIds.length === 0) {
+            if (typeof showToast === 'function') showToast(tr('checkout.orderFailed', 'Order failed'), 'error');
+            resetPayBtn();
+            return;
+        }
+        pendingCheckout = { sig: cartSig, orderId: createdOrderId, bookingIds: createdBookingIds };
+
+        await api.payWithGeidea(
+            { orderId: createdOrderId, bookingIds: createdBookingIds },
+            { onPaid: finishCheckout, onAbort: resetPayBtn }
+        );
     }
 
     // ====== دالة التحميل (محاكاة) ======
@@ -679,6 +718,37 @@
                     phoneField.parentNode.parentNode.appendChild(errorMsg);
                     if (!firstError) firstError = phoneField;
                 }
+            }
+        }
+
+        // 1-ب. اسم وتليفون الكتب الديجيتال (لو ظاهرين فقط)
+        const digitalSection = document.getElementById('digital-contact-section');
+        if (digitalSection && digitalSection.style.display !== 'none') {
+            const showError = (field, msg, holder) => {
+                isValid = false;
+                (holder || field).style.borderColor = 'rgba(255, 77, 77, 0.6)';
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'field-error show';
+                errorMsg.textContent = msg;
+                (holder ? holder.parentNode : field.parentNode).appendChild(errorMsg);
+                if (!firstError) firstError = field;
+            };
+
+            const dName = document.getElementById('digital-name');
+            const dPhone = document.getElementById('digital-phone');
+            dName.style.borderColor = '';
+            dPhone.parentNode.style.borderColor = '';
+
+            if (!dName.value.trim()) {
+                showError(dName, tr('checkout.fieldRequired', 'This field is required'));
+            } else if (!/^[\u0600-\u06FFa-zA-Z\s]{2,}$/.test(dName.value.trim())) {
+                showError(dName, tr('checkout.invalidName', 'Please enter a valid name'));
+            }
+
+            if (!dPhone.value.trim()) {
+                showError(dPhone, tr('checkout.fieldRequired', 'This field is required'), dPhone.parentNode);
+            } else if (!/^01[0-2,5][0-9]{8}$/.test(dPhone.value.trim())) {
+                showError(dPhone, tr('checkout.invalidEgyptianPhone', 'Please enter a valid Egyptian number (11 digits starting with 01)'), dPhone.parentNode);
             }
         }
 
@@ -1069,6 +1139,10 @@ function initSmartCheckout() {
         confirmBtn.innerText = tr('checkout.payNowComplete', 'Pay Now & Complete Order');
     }
 
+    // بيانات الاسم والتليفون للكتب الديجيتال: بتظهر لو فيه ديجيتال ومفيش فيزيكال (الفيزيكال عنده الاسم والتليفون في قسم الشحن)
+    const digitalContactSection = document.getElementById('digital-contact-section');
+    if (digitalContactSection) digitalContactSection.style.display = (hasDigital && !hasPhysical) ? 'block' : 'none';
+
     // ========== رسم ملخص الطلب ==========
     let totalPrice = 0;
     const listContainer = document.getElementById('checkout-items-list');
@@ -1158,6 +1232,11 @@ function initSmartCheckout() {
             if(fNameInput && fNameInput.value === '') fNameInput.value = fName;
             if(lNameInput && lNameInput.value === '') lNameInput.value = lName;
         }
+
+        const digitalNameInput = document.getElementById('digital-name');
+        if (savedName && digitalNameInput && digitalNameInput.value === '') digitalNameInput.value = savedName.trim();
+        const digitalPhoneInput = document.getElementById('digital-phone');
+        if (savedPhone && digitalPhoneInput && digitalPhoneInput.value === '') digitalPhoneInput.value = savedPhone;
 
         // تعبئة العنوان
         if (savedAddress) {

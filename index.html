@@ -265,15 +265,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       document.getElementById('bookingModal')?.classList.remove('active');
 
-      // ─── لو فيه رابط دفع (Kashier)، نوديه هناك يكمّل الدفع ──
-      if (res.data.paymentUrl) {
-        if (typeof showToast === 'function') showToast(tr('toast.redirecting', 'Redirecting to payment...'));
-        window.location.href = res.data.paymentUrl;
-      } else {
-        // بوابة الدفع لسه مش متظبطة في الـ .env (وضع تطوير)، أو الدفع cash/wallet
-        if (typeof showToast === 'function') showToast(tr('toast.bookedSuccess', 'Booked successfully!'));
-        window.location.href = 'profile.html?tab=sessions';
-      }
+      // ─── الحجز اتسجّل "pending" - بنفتح نافذة Geidea، ومبنأكدش الحجز غير بعد ما الدفع يتأكد ──
+      await api.payWithGeidea(
+        { bookingIds: [res.data.booking._id] },
+        {
+          onPaid: () => {
+            if (typeof showToast === 'function') showToast(tr('toast.bookedSuccess', 'Booked successfully!'));
+            window.location.href = 'profile.html?tab=sessions';
+          },
+        }
+      );
 
     } catch (err) {
       if (typeof showToast === 'function') showToast(err.message, 'error');

@@ -221,6 +221,81 @@ const api = {
       body: JSON.stringify(data),
     }),
 
+  /** ─── الدفع عبر Geidea ─── */
+  createPaymentSession: (data) =>
+    api.request('/payments/session', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  confirmPayment: (id) => api.request(`/payments/${id}/confirm`, { method: 'POST' }),
+
+  loadScript: (src) =>
+    new Promise((resolve, reject) => {
+      if (window.GeideaCheckout) return resolve();
+      const el = document.createElement('script');
+      el.src = src;
+      el.onload = resolve;
+      el.onerror = () => reject(new Error('Could not load the payment page. Please check your connection and try again.'));
+      document.head.appendChild(el);
+    }),
+
+  /**
+   * بيفتح نافذة الدفع بتاعة Geidea (العميل بيدخل بيانات الكارت/المحفظة هناك).
+   * onPaid بتتنفذ بس بعد ما السيرفر يتأكد من Geidea إن الدفع نجح فعلًا.
+   * onAbort بتتنفذ لو الدفع اتلغى أو فشل أو مقدرناش نبدأه.
+   */
+  payWithGeidea: async ({ orderId, bookingIds }, { onPaid, onAbort } = {}) => {
+    const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const abort = (msg) => {
+      if (msg) {
+        if (typeof showToast === 'function') showToast(msg, 'error');
+        else alert(msg);
+      }
+      if (onAbort) onAbort();
+    };
+
+    let session;
+    try {
+      const lang = window.SunBookI18n && window.SunBookI18n.getLang ? window.SunBookI18n.getLang() : 'en';
+      session = (await api.createPaymentSession({ orderId, bookingIds, language: lang })).data;
+    } catch (err) {
+      return abort(err.message);
+    }
+
+    // طلب مجاني بالكامل (كود خصم 100%) - السيرفر أكده بالفعل
+    if (session.free) {
+      if (onPaid) await onPaid();
+      return;
+    }
+
+    try {
+      await api.loadScript(session.hppScriptUrl);
+    } catch (err) {
+      return abort(err.message);
+    }
+
+    const onSuccess = async () => {
+      let status = 'pending';
+      try {
+        for (let i = 0; i < 4 && status !== 'paid'; i++) {
+          if (i > 0) await sleep(1500);
+          status = (await api.confirmPayment(session.paymentId)).data.status;
+        }
+      } catch (err) {
+        return abort(err.message);
+      }
+      if (status !== 'paid') {
+        return abort(tr('checkout.couldNotConfirmPayment', "We couldn't confirm your payment. Your cart is still saved - please try again."));
+      }
+      if (onPaid) await onPaid();
+    };
+    const onFail = () => abort(tr('checkout.paymentNotCompleted', 'Payment not completed. Please try again.'));
+
+    new window.GeideaCheckout(onSuccess, onFail, onFail).startPayment(session.sessionId);
+  },
+
   cancelOrder: (id) =>
     api.request(`/orders/${id}/cancel`, { method: 'PATCH' }),
 

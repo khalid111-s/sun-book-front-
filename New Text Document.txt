@@ -1,0 +1,7 @@
+khalidsalem2552_db_user
+
+
+HZEsbjpZlstBrmXI
+
+
+mongodb+srv://khalidsalem2552_db_user:HZEsbjpZlstBrmXI@cluster0.piyavri.mongodb.net/?appName=Cluster0
