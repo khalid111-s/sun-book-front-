@@ -224,66 +224,6 @@
         }
     })();
 
-    // ====== لو العميل راجع من صفحة دفع Kashier، نتأكد فعليًا من حالة الطلب من السيرفر ======
-    // (مش بنثق في رجوع المتصفح لوحده كدليل إن الدفع نجح - بنسأل الباك اند صراحة،
-    // وهو بدوره بيسأل Kashier مباشرة لو الحالة لسه معلّقة)
-    function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-
-    async function checkKashierReturn() {
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('kashier_return') !== '1') return;
-
-        const orderId = params.get('order');
-        if (!orderId || typeof api === 'undefined') return;
-
-        try {
-            let order = (await api.getOrder(orderId)).data;
-
-            // لو لسه "pending"، نجرب تاني كام مرة بفاصل بسيط - ممكن التأكيد يكون في طريقه
-            let attempts = 0;
-            while (order.status === 'pending' && attempts < 3) {
-                await sleep(1500);
-                order = (await api.getOrder(orderId)).data;
-                attempts++;
-            }
-
-            const modal = document.getElementById('successModal');
-            const titleEl = modal ? modal.querySelector('h2') : null;
-            const msgEl = document.getElementById('success-message');
-            const iconEl = modal ? modal.querySelector('svg.success-check-svg') : null;
-            const glowEl = modal ? modal.querySelector('.success-icon-glow') : null;
-            const orderRefChip = document.getElementById('orderRefChip');
-            const orderRefNumber = document.getElementById('orderRefNumber');
-            const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
-
-            if (order.status === 'paid') {
-                const orderNum = order._id.slice(-6).toUpperCase();
-                const template = tr('checkout.paymentConfirmedOrder', 'Payment confirmed — order #{orderNum} is on its way.');
-                if (msgEl) msgEl.innerText = template.replace('{orderNum}', orderNum);
-                if (orderRefChip && orderRefNumber) {
-                    orderRefNumber.innerText = '#' + orderNum;
-                    orderRefChip.style.display = 'inline-flex';
-                }
-                localStorage.removeItem('sunbook_cart');
-                if (typeof updateCartCount === 'function') updateCartCount();
-            } else {
-                // الدفع فشل أو اتلغى (أو لسه معلّق بعد كل المحاولات)
-                if (titleEl) titleEl.innerText = tr('checkout.paymentNotCompleted', 'Payment Not Completed');
-                if (msgEl) msgEl.innerText = tr('checkout.couldNotConfirmPayment', "We couldn't confirm your payment. Your cart is still saved — please try again.");
-                if (orderRefChip) orderRefChip.style.display = 'none';
-                if (iconEl) {
-                    iconEl.style.stroke = '#e05252';
-                    iconEl.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>';
-                }
-                if (glowEl) glowEl.style.background = 'radial-gradient(circle, rgba(224,82,82,0.35) 0%, rgba(224,82,82,0) 70%)';
-            }
-
-            if (modal) modal.classList.add('active');
-        } catch (err) {
-            console.error('Failed to confirm Kashier return status:', err);
-        }
-    }
-    document.addEventListener('DOMContentLoaded', checkKashierReturn);
 </script>
 <script>
     // لو الدفع اتلغى والعميل ضغط تاني على نفس السلة، بنكمّل على نفس الطلب/الحجز المعلّق بدل ما نعمل طلب جديد
@@ -379,7 +319,7 @@
             finalTotal = totalPrice - (totalPrice * 0.05);
         }
 
-        // ─── تسجيل طلب الكتب (فيزيكال/ديجيتال/الاتنين مع بعض) في الباك اند + الدفع عبر Kashier ───
+        // ─── تسجيل طلب الكتب (فيزيكال/ديجيتال/الاتنين مع بعض) في الباك اند + الدفع عبر Geidea ───
         // ملحوظة: بنفلتر من الـ cart الأصلي مباشرة (مش من دمج digitalBooks+physicalBooks) عشان
         // عنصر type='both' ميتبعتش للباك اند مرتين كأنه صنفين منفصلين (كان هيدبل السعر والمخزون)
         const bookItems = cart.filter(item => item.type === 'physical' || item.type === 'digital' || item.type === 'both');
