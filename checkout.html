@@ -389,6 +389,27 @@
         }
 
         if (digitalBooks.length > 0) {
+            // بنعرض كارت المكتبة لكل حاجة اشتراها: لو عرض (Bundle) بيفتح القارئ بكل كتبه في تابات
+            let readableBooks = digitalBooks.map(book => ({
+                title: book.title,
+                href: `reader.html?book=${encodeURIComponent(book.id)}`
+            }));
+            try {
+                const { data: library } = await api.getLibrary();
+                const purchasedIds = new Set(digitalBooks.map(book => String(book.id)));
+                const fromLibrary = library
+                    .filter(entry => purchasedIds.has(String(entry.productId)))
+                    .map(entry => ({
+                        title: entry.title,
+                        href: entry.isBundle
+                            ? `reader.html?entry=${encodeURIComponent(entry.productId)}`
+                            : `reader.html?book=${encodeURIComponent(entry.books[0].productId)}`
+                    }));
+                if (fromLibrary.length) readableBooks = fromLibrary;
+            } catch (error) {
+                console.error('Could not load the digital library after payment:', error);
+            }
+
             if (dlContainer) {
                 dlContainer.style.display = 'block';
                 dlContainer.replaceChildren();
@@ -396,10 +417,10 @@
                 heading.className = 'download-section-title';
                 heading.textContent = tr('checkout.yourDigitalLibrary', 'Your Digital Library');
                 dlContainer.appendChild(heading);
-                digitalBooks.forEach(book => {
+                readableBooks.forEach(book => {
                     const link = document.createElement('a');
                     link.className = 'download-btn';
-                    link.href = `reader.html?book=${encodeURIComponent(book.id)}`;
+                    link.href = book.href;
                     const title = document.createElement('span');
                     title.className = 'dl-title';
                     title.textContent = book.title;
@@ -1089,4 +1110,4 @@ function initSmartCheckout() {
 </script>
     <script src="js/pwa.js"></script>
 </body>
-</html>
+</html>

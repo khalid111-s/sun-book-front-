@@ -716,6 +716,10 @@
                         <option value="both">Both (Physical + Digital)</option>
                     </select>
                 </div>
+                <div class="admin-field full" id="bundleWrap" style="display:none;">
+                    <label>Bundle contents — optional. Tick the digital books this product gives access to (for example Part 1 and Part 2). A bundle has no PDF of its own: each book inside it is its own product, processed separately.</label>
+                    <div id="bundleItemsList" style="display:flex; flex-direction:column; gap:6px; max-height:220px; overflow:auto; padding:10px; border:1px solid rgba(255,255,255,0.1); border-radius:8px;"></div>
+                </div>
                 <div class="admin-field">
                     <label>Badges (comma separated)</label>
                     <input type="text" id="fieldBadges" placeholder="Hardcover, English">
@@ -743,6 +747,10 @@
                 <div class="admin-field admin-checkbox">
                     <input type="checkbox" id="fieldInStock" checked>
                     <label for="fieldInStock" style="margin:0;">In stock</label>
+                </div>
+                <div class="admin-field admin-checkbox">
+                    <input type="checkbox" id="fieldHidden">
+                    <label for="fieldHidden" style="margin:0;">Hide from the shop (people who already bought it keep their access) — use this instead of deleting a book that was sold</label>
                 </div>
                 <div class="admin-field admin-checkbox">
                     <input type="checkbox" id="fieldEgyptOnly">

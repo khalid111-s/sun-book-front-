@@ -265,6 +265,9 @@
             // ------- Online reader -------
             'reader.readNow': 'Read now',
             'reader.pageCount': '{n} pages',
+            'reader.bundleBooks': 'Includes {n} books',
+            'reader.tabsLabel': 'Books in this bundle',
+            'reader.bookN': 'Book',
             'reader.bookNotReady': 'This book is not ready for reading yet.',
             'reader.pageOf': 'Page {page} of {total}',
             'reader.previous': 'Previous page',
@@ -768,6 +771,9 @@
             // ------- قارئ الكتب عبر الموقع -------
             'reader.readNow': 'اقرأ الآن',
             'reader.pageCount': '{n} صفحة',
+            'reader.bundleBooks': 'يضم {n} من الكتب',
+            'reader.tabsLabel': 'كتب هذا العرض',
+            'reader.bookN': 'كتاب',
             'reader.bookNotReady': 'هذا الكتاب غير جاهز للقراءة بعد.',
             'reader.pageOf': 'صفحة {page} من {total}',
             'reader.previous': 'الصفحة السابقة',

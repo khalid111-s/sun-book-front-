@@ -381,28 +381,44 @@
         if (!library.length) {
             digitalList.innerHTML = `<p style="color: var(--text-gray); text-align: center; padding: 20px 0;">${tr('profile.emptyLibrary', 'Your digital library is empty.')}</p>`;
         } else {
-            library.forEach(book => {
+            library.forEach(entry => {
+                const books = entry.books || [];
+                const readyBooks = books.filter(b => b.pageCount > 0);
                 const card = document.createElement('div');
                 card.className = 'digital-card';
                 const title = document.createElement('h4');
-                title.textContent = book.title;
+                title.textContent = entry.title;
                 const details = document.createElement('p');
                 details.style.cssText = 'font-size:0.8rem;color:var(--text-gray);margin-bottom:15px;';
                 const button = document.createElement('button');
                 button.className = 'btn-shop';
                 button.style.cssText = 'width:100%;padding:8px;';
-                if (book.pageCount > 0) {
-                    details.textContent = tr('reader.pageCount', '{n} pages').replace('{n}', book.pageCount);
+                card.append(title);
+                if (entry.isBundle) {
+                    // عرض فيه كذا كتاب: كارت واحد، والقارئ بيفتحهم كتابات (tabs)
+                    details.textContent = tr('reader.bundleBooks', 'Includes {n} books').replace('{n}', books.length);
+                    const names = document.createElement('p');
+                    names.style.cssText = 'font-size:0.75rem;color:var(--gold-color);margin:-8px 0 12px;';
+                    names.textContent = books.map(b => b.title).join(' • ');
+                    card.append(details, names);
+                } else {
+                    details.textContent = readyBooks.length
+                        ? tr('reader.pageCount', '{n} pages').replace('{n}', books[0].pageCount)
+                        : tr('reader.bookNotReady', 'This book is not ready for reading yet.');
+                    card.append(details);
+                }
+                if (readyBooks.length) {
                     button.textContent = tr('reader.readNow', 'Read now');
                     button.addEventListener('click', () => {
-                        window.location.href = `reader.html?book=${encodeURIComponent(book.productId)}`;
+                        window.location.href = entry.isBundle
+                            ? `reader.html?entry=${encodeURIComponent(entry.productId)}`
+                            : `reader.html?book=${encodeURIComponent(books[0].productId)}`;
                     });
                 } else {
-                    details.textContent = tr('reader.bookNotReady', 'This book is not ready for reading yet.');
                     button.textContent = tr('reader.bookNotReady', 'This book is not ready for reading yet.');
                     button.disabled = true;
                 }
-                card.append(title, details, button);
+                card.append(button);
                 digitalList.appendChild(card);
             });
         }
@@ -828,4 +844,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <script src="js/pwa.js"></script>
 </body>
-</html>
+</html>

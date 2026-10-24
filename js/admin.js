@@ -188,6 +188,7 @@ async function loadProductsTable() {
     try {
         const { data } = await api.getProductsAdmin();
         currentProducts = data;
+        renderBundlePicker(getSelectedBundleIds());
         renderBestOffersOrderList();
 
         if (!data.length) {
@@ -206,11 +207,11 @@ async function loadProductsTable() {
             <tr draggable="true" data-id="${p._id}">
                 <td class="drag-handle" title="Drag to reorder">⠿</td>
                 <td><img src="${p.image}" alt="${p.title}" onerror="this.src='assets/sun-icon.png'"></td>
-                <td>${p.title}</td>
+                <td>${p.title}${p.hidden ? ' <span class="admin-badge-yes" style="background:#6b6b6b;">Hidden</span>' : ''}</td>
                 <td>LE ${Number(p.price).toFixed(2)}</td>
                 <td>${p.priceEUR ? `€${Number(p.priceEUR).toFixed(2)}` : '—'}</td>
                 <td>${p.type}${['digital', 'both'].includes(p.type)
-                ? `<div style="font-size:0.75rem;color:var(--text-gray);margin-top:4px;">${p.digital?.pageCount ? `Ready · ${p.digital.pageCount} pages` : 'Book not processed'}${p.digital?.pageCount ? ` · <a href="reader.html?book=${encodeURIComponent(p._id)}" target="_blank" rel="noopener">Preview</a>` : ''}</div>`
+                ? `<div style="font-size:0.75rem;color:var(--text-gray);margin-top:4px;">${(p.bundleItems || []).length ? `Bundle · ${p.bundleItems.length} books` : (p.digital?.pageCount ? `Ready · ${p.digital.pageCount} pages` : 'Book not processed')}${p.digital?.pageCount ? ` · <a href="reader.html?book=${encodeURIComponent(p._id)}" target="_blank" rel="noopener">Preview</a>` : ''}</div>`
                 : ''}</td>
                 <td>${p.featured ? '<span class="admin-badge-yes">Yes</span>' : '—'}</td>
                 <td>${p.egyptOnly ? '<span class="admin-badge-yes">🇪🇬 Yes</span>' : '—'}</td>
@@ -279,6 +280,50 @@ function renderBestOffersOrderList() {
     });
 }
 
+// ---------- اختيار الكتب اللي جوه "العرض" (Bundle) ----------
+// بيظهر بس لو نوع المنتج Digital أو Both، وبيعرض باقي الكتب الرقمية (من غير العروض التانية ومن غير المنتج نفسه)
+function getSelectedBundleIds() {
+    const list = document.getElementById('bundleItemsList');
+    if (!list) return [];
+    const type = document.getElementById('fieldType').value;
+    if (!['digital', 'both'].includes(type)) return [];
+    return Array.from(list.querySelectorAll('input[type="checkbox"]:checked')).map((box) => box.value);
+}
+
+function renderBundlePicker(selectedIds) {
+    const wrap = document.getElementById('bundleWrap');
+    const list = document.getElementById('bundleItemsList');
+    if (!wrap || !list) return;
+    const type = document.getElementById('fieldType').value;
+    wrap.style.display = ['digital', 'both'].includes(type) ? 'block' : 'none';
+    const selected = new Set((selectedIds || []).map(String));
+    list.replaceChildren();
+    const candidates = (currentProducts || []).filter((p) =>
+        ['digital', 'both'].includes(p.type) &&
+        String(p._id) !== String(editingId || '') &&
+        !(p.bundleItems || []).length
+    );
+    if (!candidates.length) {
+        const empty = document.createElement('span');
+        empty.style.cssText = 'color:var(--text-gray); font-size:0.85rem;';
+        empty.textContent = 'No other digital books yet. Add the individual books first, then come back and tick them here.';
+        list.appendChild(empty);
+        return;
+    }
+    candidates.forEach((p) => {
+        const row = document.createElement('label');
+        row.style.cssText = 'display:flex; align-items:center; gap:8px; cursor:pointer; margin:0;';
+        const box = document.createElement('input');
+        box.type = 'checkbox';
+        box.value = String(p._id);
+        box.checked = selected.has(String(p._id));
+        const text = document.createElement('span');
+        text.textContent = p.title;
+        row.append(box, text);
+        list.appendChild(row);
+    });
+}
+
 // ---------- 3. فورم الإضافة/التعديل ----------
 function resetForm() {
     editingId = null;
@@ -288,6 +333,7 @@ function resetForm() {
     document.getElementById('fieldPriceEUR').value = '';
     document.getElementById('fieldImage').value = '';
     document.getElementById('fieldType').value = 'physical';
+    renderBundlePicker([]);
     document.getElementById('fieldBadges').value = '';
     document.getElementById('fieldOrder').value = 0;
     document.getElementById('fieldDescription').value = '';
@@ -297,6 +343,7 @@ function resetForm() {
     document.getElementById('showInAllWrap').style.display = 'none';
     document.getElementById('fieldInStock').checked = true;
     document.getElementById('fieldEgyptOnly').checked = false;
+    document.getElementById('fieldHidden').checked = false;
     document.getElementById('fieldTrackStock').checked = false;
     document.getElementById('fieldStockCount').value = 0;
     document.getElementById('stockCountWrap').style.display = 'none';
@@ -324,6 +371,7 @@ function fillFormForEdit(product) {
     document.getElementById('fieldPriceEUR').value = product.priceEUR ?? '';
     document.getElementById('fieldImage').value = product.image;
     document.getElementById('fieldType').value = product.type;
+    renderBundlePicker((product.bundleItems || []).map(String));
     document.getElementById('fieldBadges').value = (product.badges || []).join(', ');
     document.getElementById('fieldOrder').value = product.order ?? 0;
     document.getElementById('fieldDescription').value = product.description || '';
@@ -333,6 +381,7 @@ function fillFormForEdit(product) {
     document.getElementById('showInAllWrap').style.display = product.featured ? 'block' : 'none';
     document.getElementById('fieldInStock').checked = product.inStock !== false;
     document.getElementById('fieldEgyptOnly').checked = !!product.egyptOnly;
+    document.getElementById('fieldHidden').checked = !!product.hidden;
     document.getElementById('fieldTrackStock').checked = !!product.trackStock;
     document.getElementById('fieldStockCount').value = product.stockCount ?? 0;
     document.getElementById('stockCountWrap').style.display = product.trackStock ? 'block' : 'none';
@@ -362,6 +411,7 @@ function readFormData() {
             : null,
         image: document.getElementById('fieldImage').value.trim(),
         type: document.getElementById('fieldType').value,
+        bundleItems: getSelectedBundleIds(),
         badges: badgesRaw ? badgesRaw.split(',').map(b => b.trim()).filter(Boolean) : [],
         order: parseInt(document.getElementById('fieldOrder').value) || 0,
         description: document.getElementById('fieldDescription').value.trim(),
@@ -374,6 +424,7 @@ function readFormData() {
         // featuredOrder متتبعتش من الفورم خالص - بتتحدد بس من قائمة "Best Offers Order"
         // بالسحب، عشان حفظ الفورم العادي ميعملش overwrite لترتيب اتظبط قبل كده
         inStock: document.getElementById('fieldInStock').checked,
+        hidden: document.getElementById('fieldHidden').checked,
         egyptOnly: document.getElementById('fieldEgyptOnly').checked,
         trackStock: document.getElementById('fieldTrackStock').checked,
         stockCount: parseInt(document.getElementById('fieldStockCount').value) || 0,
@@ -1049,6 +1100,8 @@ function initAdminPanel() {
     loadProductsTable();
     loadDashboardStats();
     startOnlinePolling();
+
+    document.getElementById('fieldType').addEventListener('change', () => renderBundlePicker(getSelectedBundleIds()));
 
     document.getElementById('fieldTrackStock').addEventListener('change', (e) => {
         document.getElementById('stockCountWrap').style.display = e.target.checked ? 'block' : 'none';
