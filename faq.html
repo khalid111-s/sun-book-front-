@@ -6,6 +6,9 @@
     <title>FAQ - The Sun Book</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/png" href="assets/sun-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#111111">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
@@ -36,7 +39,7 @@
                         <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </button>
                     <div class="faq-answer">
-                        <p data-i18n="faq.shipping.a1">Right now, physical book delivery is available across Egypt only — from Cairo and Alexandria to every governorate in the country. If you're outside Egypt, you can still enjoy our Digital (PDF) editions or book a live one-on-one session instantly, from anywhere in the world.</p>
+                        <p data-i18n="faq.shipping.a1">Right now, physical book delivery is available across Egypt only — from Cairo and Alexandria to every governorate in the country. If you're outside Egypt, you can read our digital books online or book a live one-on-one session instantly, from anywhere in the world.</p>
                     </div>
                 </div>
 
@@ -91,7 +94,7 @@
                         <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </button>
                     <div class="faq-answer">
-                        <p data-i18n="faq.digital.a1">A Physical book is the real printed copy, shipped to your door anywhere in Egypt. A Digital book is a PDF edition you can download and read instantly on any device — no shipping required, and available to anyone, anywhere in the world.</p>
+                        <p data-i18n="faq.digital.a1">A physical book is printed and shipped to your door in Egypt. A digital book is read page by page on our website after payment; it is not downloaded.</p>
                     </div>
                 </div>
 
@@ -101,17 +104,17 @@
                         <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </button>
                     <div class="faq-answer">
-                        <p data-i18n-html="faq.digital.a2">Right after payment, your download links appear directly on the confirmation screen. From then on, every digital book you've bought stays saved in "My Digital Library" inside your Profile, ready to download anytime.</p>
+                        <p data-i18n-html="faq.digital.a2">After payment is confirmed, your books appear in "My Digital Library" in your Profile, where you can read them online at any time.</p>
                     </div>
                 </div>
 
                 <div class="faq-item">
                     <button type="button" class="faq-question" aria-expanded="false">
-                        <span data-i18n="faq.digital.q3">Can I re-download a digital book if I lose the file?</span>
+                        <span data-i18n="faq.digital.q3">Do I need an internet connection to read a digital book?</span>
                         <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </button>
                     <div class="faq-answer">
-                        <p data-i18n-html="faq.digital.a3">Yes — your digital books live permanently in "My Digital Library" in your Profile, so you can come back and download them again anytime without paying for them twice.</p>
+                        <p data-i18n-html="faq.digital.a3">Yes. Reading is online-only and book pages are not saved for offline use. Paid, non-cancelled purchases stay in your library.</p>
                     </div>
                 </div>
             </div>
@@ -288,5 +291,6 @@
 <script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
 <script src="js/script.js"></script>
+    <script src="js/pwa.js"></script>
 </body>
 </html>

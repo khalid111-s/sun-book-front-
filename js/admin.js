@@ -186,7 +186,7 @@ async function loadProductsTable() {
     tbody.innerHTML = '<tr><td colspan="11">Loading...</td></tr>';
 
     try {
-        const { data } = await api.getProducts();
+        const { data } = await api.getProductsAdmin();
         currentProducts = data;
         renderBestOffersOrderList();
 
@@ -209,7 +209,9 @@ async function loadProductsTable() {
                 <td>${p.title}</td>
                 <td>LE ${Number(p.price).toFixed(2)}</td>
                 <td>${p.priceEUR ? `€${Number(p.priceEUR).toFixed(2)}` : '—'}</td>
-                <td>${p.type}</td>
+                <td>${p.type}${['digital', 'both'].includes(p.type)
+                ? `<div style="font-size:0.75rem;color:var(--text-gray);margin-top:4px;">${p.digital?.pageCount ? `Ready · ${p.digital.pageCount} pages` : 'Book not processed'}${p.digital?.pageCount ? ` · <a href="reader.html?book=${encodeURIComponent(p._id)}" target="_blank" rel="noopener">Preview</a>` : ''}</div>`
+                : ''}</td>
                 <td>${p.featured ? '<span class="admin-badge-yes">Yes</span>' : '—'}</td>
                 <td>${p.egyptOnly ? '<span class="admin-badge-yes">🇪🇬 Yes</span>' : '—'}</td>
                 <td>${stockCell}</td>

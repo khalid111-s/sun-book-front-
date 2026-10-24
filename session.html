@@ -6,6 +6,9 @@
   <title>Live Session - The Sun Book</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" type="image/png" href="assets/sun-icon.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#111111">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
   <style>
     body { margin: 0; background: #030406; overflow: hidden; }
     #jitsi-container { width: 100vw; height: calc(100vh - 52px); margin-top: 52px; }
@@ -168,5 +171,6 @@ async function endCall() {
 initMeeting();
 </script>
 
+    <script src="js/pwa.js"></script>
 </body>
 </html>

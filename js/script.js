@@ -569,7 +569,7 @@ function renderCartItemsNow() {
     let totalPrice = 0;
     const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
     cartItems.forEach((item, index) => {
-        const typeLabel = item.type === 'digital' ? tr('cart.typeDigital', 'Digital (PDF)') : item.type === 'both' ? tr('cart.typeBoth', 'Physical + Digital') : item.type === 'booking' ? tr('cart.typeSession', 'Session') : tr('cart.typePhysical', 'Physical Book');
+        const typeLabel = item.type === 'digital' ? tr('cart.typeDigital', 'Digital (Online reader)') : item.type === 'both' ? tr('cart.typeBoth', 'Physical + Digital') : item.type === 'booking' ? tr('cart.typeSession', 'Session') : tr('cart.typePhysical', 'Physical Book');
         const typeColor = item.type === 'digital' ? '#34A853' : item.type === 'both' ? '#5b8def' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)';
         const itemHTML = `
             <div class="cart-item reveal active">
@@ -1903,3 +1903,4 @@ function initFaqAccordion() {
     });
 }
 document.addEventListener('DOMContentLoaded', initFaqAccordion);
+

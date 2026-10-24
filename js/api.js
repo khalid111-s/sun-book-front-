@@ -17,11 +17,13 @@ const api = {
       ...options.headers,
     };
 
-    const res = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
+    const res = await fetch(`${API_URL}${endpoint}`, { cache: 'no-store', ...options, headers });
     const data = await res.json();
 
     if (!res.ok) {
-      throw new Error(data.message || 'Server Error');
+      const error = new Error(data.message || 'Server Error');
+      error.status = res.status;
+      throw error;
     }
 
     return data;
@@ -109,6 +111,49 @@ const api = {
   getTeachers: () => api.request('/users/teachers/list'),
 
   getProducts: () => api.request('/products'),
+
+  getProductsAdmin: () => api.request('/products/admin'),
+
+  getLibrary: () => api.request('/library'),
+
+  startReadSession: (productId, deviceId) =>
+    api.request(`/reader/${encodeURIComponent(productId)}/session`, {
+      method: 'POST',
+      body: JSON.stringify({ deviceId }),
+    }),
+
+  fetchPage: async (productId, page, readToken) => {
+    const authToken = localStorage.getItem('sunbook_token');
+    const response = await fetch(
+      `${API_URL}/reader/${encodeURIComponent(productId)}/page/${encodeURIComponent(page)}`,
+      {
+        headers: {
+          ...(authToken && { Authorization: `Bearer ${authToken}` }),
+          'X-Read-Token': readToken,
+        },
+        cache: 'no-store',
+      }
+    );
+    if (!response.ok) {
+      let message = 'Could not load this page.';
+      try {
+        const data = await response.json();
+        message = data.message || message;
+      } catch (error) {
+        if (!navigator.onLine) message = 'Reading requires an internet connection.';
+      }
+      const requestError = new Error(message);
+      requestError.status = response.status;
+      throw requestError;
+    }
+    return response.blob();
+  },
+
+  saveProgress: (productId, page) =>
+    api.request(`/reader/${encodeURIComponent(productId)}/progress`, {
+      method: 'PUT',
+      body: JSON.stringify({ page }),
+    }),
 
   getProduct: (id) => api.request(`/products/${id}`),
 
