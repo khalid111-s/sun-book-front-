@@ -20,23 +20,27 @@
             <div class="reader-controls">
                 <button type="button" id="zoomOut" aria-label="Zoom out" data-i18n-aria-label="reader.zoomOut">−</button>
                 <button type="button" id="zoomIn" aria-label="Zoom in" data-i18n-aria-label="reader.zoomIn">+</button>
+                <button type="button" id="viewBtn" class="reader-text-btn" aria-haspopup="true" aria-expanded="false"></button>
+                <button type="button" id="fullscreenBtn" class="reader-text-btn" aria-label="Fullscreen">⛶</button>
             </div>
+            <div id="viewMenu" class="reader-menu" hidden></div>
         </header>
         <nav id="readerTabs" class="reader-tabs" role="tablist" aria-label="Books in this bundle" data-i18n-aria-label="reader.tabsLabel" hidden></nav>
         <section class="reader-navigation" aria-label="Reader navigation">
             <button type="button" id="previousPage" data-i18n="reader.previous">Previous page</button>
             <div class="reader-page-jump">
-                <label for="pageNumber" id="pageCounter" data-i18n="reader.loading">Loading page...</label>
+                <span id="pageCounter" class="reader-counter"></span>
                 <input id="pageNumber" type="number" min="1" step="1" inputmode="numeric" aria-label="Go to page" data-i18n-aria-label="reader.jump">
                 <button type="button" id="goToPage" data-i18n="reader.jump">Go to page</button>
             </div>
             <button type="button" id="nextPage" data-i18n="reader.next">Next page</button>
+            <div id="cacheChip" class="reader-chip" hidden></div>
         </section>
-        <p id="readerStatus" class="reader-status" role="status" aria-live="polite" data-i18n="reader.loading">Loading page...</p>
+        <p id="readerStatus" class="reader-status" role="status" aria-live="polite"></p>
         <div id="readerViewport" class="reader-viewport">
-            <div id="readerSkeleton" class="reader-skeleton"></div>
-            <img id="readerPage" class="reader-page-image" alt="" draggable="false" hidden>
+            <div id="readerStage" class="reader-stage"></div>
         </div>
+        <button type="button" id="immersiveExit" class="reader-immersive-exit" hidden></button>
     </main>
     <script src="js/i18n.js"></script>
     <script src="js/api.js"></script>

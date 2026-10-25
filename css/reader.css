@@ -1,4 +1,7 @@
 html, body.reader-page { min-height: 100%; margin: 0; background: #0c0d0f; color: #f7f7f7; }
+body.reader-page { --reader-bg: #0c0d0f; }
+body.reader-page.bg-gray { --reader-bg: #3a3b3f; }
+body.reader-page.bg-light { --reader-bg: #e6e2d8; }
 body.reader-page { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; overflow: hidden; }
 body.reader-page.reader-blurred .reader-shell { filter: blur(18px); }
 .reader-shell { height: 100dvh; display: flex; flex-direction: column; }
@@ -13,13 +16,49 @@ body.reader-page.reader-blurred .reader-shell { filter: blur(18px); }
 .reader-page-jump { font-size: .9rem; }
 .reader-page-jump input { width: 74px; padding: 8px; border: 1px solid #46474b; border-radius: 6px; background: #0f1012; color: #fff; text-align: center; }
 .reader-status-error { color: #ff8a8a; }
-.reader-status { min-height: 22px; margin: 6px 12px; color: #e2c778; text-align: center; font-size: .88rem; }
-.reader-viewport { position: relative; flex: 1; min-height: 0; overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: 0 10px 16px; overscroll-behavior: contain; touch-action: pan-x pan-y; }
-.reader-page-image { display: block; max-width: min(100%, 1100px); max-height: calc(100dvh - 150px); width: auto; height: auto; object-fit: contain; transform-origin: center top; box-shadow: 0 4px 30px rgba(0,0,0,.5); -webkit-user-drag: none; }
-.reader-page-image[hidden] { display: none; }
-.reader-skeleton { width: min(92vw, 760px); height: min(72vh, 1000px); border-radius: 4px; background: linear-gradient(100deg, #202124 20%, #303135 38%, #202124 56%); background-size: 220% 100%; animation: reader-shimmer 1.4s ease infinite; }
-.reader-skeleton[hidden] { display: none; }
+.reader-status { margin: 6px 12px; color: #e2c778; text-align: center; font-size: .88rem; }
+/* الحالة: بنخفيها لو فاضية، وبتظهر بس للأخطاء */
+.reader-status:empty { display: none; }
+.reader-counter { font-size: .9rem; color: #d7d7da; white-space: nowrap; }
+.reader-text-btn { font-size: .9rem !important; white-space: nowrap; }
+.reader-toolbar { position: relative; }
+
+/* منطقة القراءة */
+.reader-viewport { position: relative; flex: 1; min-height: 0; overflow: auto; display: flex; padding: 10px; background: var(--reader-bg); overscroll-behavior: contain; touch-action: pan-x pan-y pinch-zoom; }
+.reader-stage { width: max-content; margin: auto; display: flex; align-items: flex-start; gap: 12px; }
+.reader-stage.layout-spread { direction: rtl; gap: 3px; }
+.reader-stage.layout-scroll { flex-direction: column; align-items: center; margin: 0 auto; }
+.reader-sheet { position: relative; flex: 0 0 auto; width: var(--page-w, 600px); aspect-ratio: var(--aspect, 0.707); background: #18191c; box-shadow: 0 4px 30px rgba(0,0,0,.5); overflow: hidden; }
+.reader-sheet img { display: block; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .18s ease; -webkit-user-drag: none; user-select: none; }
+.reader-sheet.is-ready img { opacity: 1; }
+/* الهيكل اللامع بيظهر بعد 200ms بس: لو الصفحة جت بسرعة محدش بيشوفه */
+.reader-sheet-skeleton { position: absolute; inset: 0; background: linear-gradient(100deg, #1d1e21 20%, #2a2b2f 38%, #1d1e21 56%); background-size: 220% 100%; animation: reader-shimmer 1.4s ease infinite, reader-appear .25s ease .2s both; }
+.reader-sheet.is-ready .reader-sheet-skeleton, .reader-sheet.is-failed .reader-sheet-skeleton { display: none; }
 @keyframes reader-shimmer { to { background-position-x: -220%; } }
+@keyframes reader-appear { from { opacity: 0; } to { opacity: 1; } }
+.reader-retry { position: absolute; inset: 0; margin: auto; width: max-content; height: max-content; padding: 9px 16px; border: 1px solid #5a5b60; border-radius: 8px; background: #202124; color: #fff; cursor: pointer; display: none; }
+.reader-sheet.is-failed .reader-retry { display: block; }
+
+/* شريط التحميل الصغير (القراءة السريعة) */
+.reader-chip { font-size: .78rem; color: #e2c778; background: #1d1e21; border: 1px solid #3a3b3f; border-radius: 999px; padding: 4px 12px; white-space: nowrap; }
+.reader-chip[hidden] { display: none; }
+
+/* قايمة العرض */
+.reader-menu { position: absolute; top: 100%; inset-inline-end: 12px; z-index: 20; width: min(340px, calc(100vw - 24px)); padding: 14px; border: 1px solid #3a3b3f; border-radius: 12px; background: #1a1b1e; box-shadow: 0 12px 40px rgba(0,0,0,.6); display: grid; gap: 14px; }
+.reader-menu[hidden] { display: none; }
+.reader-menu h3 { margin: 0 0 7px; font-size: .78rem; font-weight: 600; color: #9d9da3; }
+.reader-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.reader-seg button { flex: 1 1 auto; min-height: 36px; padding: 6px 10px; border: 1px solid #46474b; border-radius: 8px; background: #202124; color: #e8e8ea; cursor: pointer; font-size: .85rem; }
+.reader-seg button[aria-pressed="true"] { border-color: var(--gold-color, #d8b056); color: var(--gold-color, #d8b056); background: #26231a; }
+.reader-menu-note { margin: 0; font-size: .76rem; color: #9d9da3; line-height: 1.5; }
+.reader-menu .reader-link { background: none; border: none; padding: 0; color: #e5c574; cursor: pointer; font-size: .78rem; text-decoration: underline; justify-self: start; }
+
+/* وضع ملء الشاشة: بنخفي الأشرطة ونسيب زرار صغير للخروج */
+.reader-shell.reader-immersive .reader-toolbar, .reader-shell.reader-immersive .reader-tabs, .reader-shell.reader-immersive .reader-navigation, .reader-shell.reader-immersive .reader-status:not(:empty) { display: none; }
+.reader-shell.reader-immersive .reader-viewport { padding: 0; }
+.reader-immersive-exit { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 10px); inset-inline-end: 10px; z-index: 30; padding: 8px 14px; border: 1px solid rgba(255,255,255,.25); border-radius: 999px; background: rgba(20,20,22,.72); color: #fff; font-size: .82rem; cursor: pointer; opacity: .55; backdrop-filter: blur(6px); }
+.reader-immersive-exit:hover, .reader-immersive-exit:focus-visible { opacity: 1; }
+.reader-immersive-exit[hidden] { display: none; }
 /* تابات الكتب (زي تابات المتصفح) لما المشتري يكون اشترى عرض فيه كذا كتاب */
 .reader-tabs { display: flex; gap: 4px; padding: 8px clamp(12px, 3vw, 28px) 0; background: #151619; overflow-x: auto; scrollbar-width: thin; }
 .reader-tabs[hidden] { display: none; }
@@ -33,6 +72,5 @@ body.reader-page.reader-blurred .reader-shell { filter: blur(18px); }
     .reader-back { font-size: .78rem; max-width: 110px; }
     .reader-navigation { justify-content: center; gap: 7px; padding: 8px 6px; }
     .reader-page-jump { order: -1; width: 100%; justify-content: center; }
-    .reader-page-image { max-width: 100%; max-height: calc(100dvh - 185px); }
 }
 @media print { body.reader-page { display: none !important; } }

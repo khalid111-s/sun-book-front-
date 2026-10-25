@@ -1,7 +1,6 @@
 (() => {
     'use strict';
 
-    const tr = (key, fallback) => window.SunBookI18n ? window.SunBookI18n.t(key) : fallback;
     const token = localStorage.getItem('sunbook_token');
     const params = new URLSearchParams(window.location.search);
     const bookParam = params.get('book') || '';
@@ -17,28 +16,75 @@
         return;
     }
 
-    const pageImage = document.getElementById('readerPage');
-    const viewport = document.getElementById('readerViewport');
-    const skeleton = document.getElementById('readerSkeleton');
-    const status = document.getElementById('readerStatus');
-    const counter = document.getElementById('pageCounter');
-    const pageInput = document.getElementById('pageNumber');
-    const previous = document.getElementById('previousPage');
-    const next = document.getElementById('nextPage');
-    const titleEl = document.getElementById('readerTitle');
-    const tabsNav = document.getElementById('readerTabs');
+    const $ = (id) => document.getElementById(id);
+    const shell = $('readerShell');
+    const viewport = $('readerViewport');
+    const stage = $('readerStage');
+    const status = $('readerStatus');
+    const counter = $('pageCounter');
+    const pageInput = $('pageNumber');
+    const previous = $('previousPage');
+    const next = $('nextPage');
+    const titleEl = $('readerTitle');
+    const tabsNav = $('readerTabs');
+    const viewBtn = $('viewBtn');
+    const viewMenu = $('viewMenu');
+    const fullscreenBtn = $('fullscreenBtn');
+    const immersiveExit = $('immersiveExit');
+    const chip = $('cacheChip');
 
-    // الكتب عربية (RTL): الصفحة التالية بتبقى ناحية الشمال (سهم شمال / سحب من الشمال لليمين)
-    const BOOK_IS_RTL = true;
-    // بنحتفظ بآخر كام صفحة لكل كتاب في الذاكرة (blob URLs) عشان الرجوع للصفحة السابقة ميتحسبش طلب جديد على السيرفر
-    const MAX_CACHED_PAGES = 6;
+    // ---------- النصوص (عربي/إنجليزي) ----------
+    const STR = {
+        ar: {
+            view: 'العرض ▾', fullscreen: 'ملء الشاشة', exit: 'خروج من ملء الشاشة',
+            layout: 'شكل العرض', single: 'صفحة واحدة', spread: 'صفحتان', scroll: 'تمرير متواصل',
+            fit: 'حجم الصفحة', fitPage: 'الصفحة كاملة', fitWidth: 'ملء العرض',
+            bg: 'لون الخلفية', dark: 'داكن', gray: 'رمادي', light: 'فاتح',
+            fast: 'قراءة سريعة', fastOn: 'تحميل الكتاب على جهازي', fastOff: 'إيقاف',
+            fastNote: 'بيتحمّل الكتاب مرة واحدة في الخلفية، وبعدها بيفتح فورًا من جهازك.',
+            clear: 'مسح الكتاب المحمّل من جهازي',
+            preparing: 'جارٍ تجهيز الكتاب للقراءة السريعة {p}%', ready: '✓ الكتاب جاهز للقراءة السريعة',
+            spreadOf: 'الصفحتان {a}–{b} من {total}', retry: 'إعادة المحاولة',
+        },
+        en: {
+            view: 'View ▾', fullscreen: 'Fullscreen', exit: 'Exit fullscreen',
+            layout: 'Layout', single: 'Single page', spread: 'Two pages', scroll: 'Continuous scroll',
+            fit: 'Page size', fitPage: 'Whole page', fitWidth: 'Fit width',
+            bg: 'Background', dark: 'Dark', gray: 'Gray', light: 'Light',
+            fast: 'Fast reading', fastOn: 'Download book to this device', fastOff: 'Turn off',
+            fastNote: 'The book downloads once in the background, then opens instantly from your device.',
+            clear: 'Remove downloaded book from this device',
+            preparing: 'Preparing book for fast reading {p}%', ready: '✓ Book ready for fast reading',
+            spreadOf: 'Pages {a}–{b} of {total}', retry: 'Try again',
+        },
+    };
+    const lang = () => {
+        const current = (window.SunBookI18n && window.SunBookI18n.getLang && window.SunBookI18n.getLang())
+            || document.documentElement.lang || 'en';
+        return String(current).startsWith('ar') ? 'ar' : 'en';
+    };
+    const L = (key) => STR[lang()][key] || STR.en[key] || key;
+    const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
 
-    // كل كتاب في العرض ليه حالته الخاصة (صفحته الحالية، الزووم، جلسة القراءة، الصفحات المتخزنة)،
-    // فالتنقل بين التابات بيرجّعك لنفس المكان اللي كنت واقف فيه في كل كتاب.
+    // ---------- الإعدادات (بتتحفظ على الجهاز) ----------
+    const PREFS_KEY = 'sunbook_reader_prefs';
+    const prefs = { layout: 'single', fit: 'page', bg: 'dark', fastLoad: true };
+    try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS_KEY) || '{}')); } catch (error) { /* مش مهم */ }
+    const savePrefs = () => { try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (error) { /* مش مهم */ } };
+
+    const MAX_MEMORY_PAGES = 8;
+    const PREFETCH_DELAY_MS = 1500;
+    const CACHE_NAME = 'sunbook-reader-pages-v1';
+    const CACHE_ORIGIN = 'https://sunbook-reader.local/';
+    const hasCacheApi = 'caches' in window;
+
     let books = [];
     let active = null;
     let entryKey = '';
-    let requestSerial = 0;
+    let renderSerial = 0;
+    let progressTimer = null;
+    let sheets = [];
+    let observer = null;
 
     const makeBook = (info) => ({
         productId: info.productId,
@@ -46,33 +92,23 @@
         pageCount: info.pageCount || 0,
         currentPage: info.lastPage || 1,
         zoom: 1,
+        aspect: 0,
         readToken: '',
-        cache: new Map(),
-        inflight: new Map(),
-        wantedPage: 1,
+        cacheScope: '',
+        urls: new Map(),
+        blobFlight: new Map(),
+        stored: new Set(),
+        pinned: new Set(),
+        prefetchToken: 0,
         tabButton: null,
     });
 
+    const effectiveLayout = () => (prefs.layout === 'spread' && viewport.clientWidth < 700 ? 'single' : prefs.layout);
     const setStatus = (message, isError = false) => {
-        status.textContent = message;
-        status.classList.toggle('reader-status-error', isError);
+        status.textContent = message || '';
+        status.classList.toggle('reader-status-error', Boolean(isError));
     };
-
-    const updateControls = () => {
-        if (!active) return;
-        if (!active.pageCount) {
-            counter.textContent = tr('reader.loading', 'Loading page...');
-            previous.disabled = true;
-            next.disabled = true;
-            return;
-        }
-        counter.textContent = tr('reader.pageOf', 'Page {page} of {total}')
-            .replace('{page}', active.currentPage).replace('{total}', active.pageCount);
-        pageInput.value = active.currentPage;
-        pageInput.max = active.pageCount;
-        previous.disabled = active.currentPage <= 1;
-        next.disabled = active.currentPage >= active.pageCount;
-    };
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
     const showError = (error) => {
         if (error.status === 401) setStatus(tr('reader.sessionExpired', error.message), true);
@@ -83,99 +119,347 @@
         else setStatus(error.message || tr('reader.loadFailed', 'Could not load this page.'), true);
     };
 
-    const trimCache = (book) => {
-        while (book.cache.size > MAX_CACHED_PAGES) {
-            let farthest = null;
-            for (const page of book.cache.keys()) {
-                if (farthest === null || Math.abs(page - book.wantedPage) > Math.abs(farthest - book.wantedPage)) farthest = page;
+    // ---------- التخزين على جهاز المستخدم (Cache API) ----------
+    const cachePromise = hasCacheApi ? caches.open(CACHE_NAME).catch(() => null) : Promise.resolve(null);
+    const storedUrl = (book, page) => `${CACHE_ORIGIN}${book.cacheScope}/${book.productId}/${page}`;
+    const canStore = (book) => hasCacheApi && Boolean(book.cacheScope);
+
+    const readStored = async (book, page) => {
+        if (!canStore(book) || !book.stored.has(page)) return null;
+        try {
+            const cache = await cachePromise;
+            const response = cache && await cache.match(storedUrl(book, page));
+            return response ? await response.blob() : null;
+        } catch (error) { return null; }
+    };
+    const writeStored = async (book, page, blob) => {
+        if (!canStore(book) || !prefs.fastLoad) return;
+        try {
+            const cache = await cachePromise;
+            if (!cache) return;
+            await cache.put(storedUrl(book, page), new Response(blob, { headers: { 'Content-Type': blob.type || 'image/webp' } }));
+            book.stored.add(page);
+            updateChip(book);
+        } catch (error) { /* المساحة ممتلئة أو المتصفح رافض: نكمل عادي */ }
+    };
+    // بنعرف إيه المتخزن من الكتاب ده، ونمسح النسخ القديمة (لو الكتاب اتجدد أو مستخدم تاني)
+    const scanStored = async (book) => {
+        if (!canStore(book)) return;
+        try {
+            const cache = await cachePromise;
+            if (!cache) return;
+            const mine = `${CACHE_ORIGIN}${book.cacheScope}/${book.productId}/`;
+            const sameBook = `/${book.productId}/`;
+            for (const request of await cache.keys()) {
+                if (request.url.startsWith(mine)) book.stored.add(Number(request.url.slice(mine.length)));
+                else if (request.url.includes(sameBook)) await cache.delete(request);
             }
-            if (farthest === null || farthest === book.wantedPage) break;
-            URL.revokeObjectURL(book.cache.get(farthest));
-            book.cache.delete(farthest);
-        }
+        } catch (error) { /* مش مهم */ }
+    };
+    const clearStored = async (book) => {
+        book.prefetchToken += 1;
+        try {
+            const cache = await cachePromise;
+            if (cache) {
+                const prefix = `${CACHE_ORIGIN}${book.cacheScope}/${book.productId}/`;
+                for (const request of await cache.keys()) if (request.url.startsWith(prefix)) await cache.delete(request);
+            }
+        } catch (error) { /* مش مهم */ }
+        book.stored.clear();
+        updateChip(book);
     };
 
-    // لما نسيب تاب، بنفضي صفحاته المتخزنة ما عدا الصفحة اللي كان واقف عندها (عشان الذاكرة)
-    const trimToCurrent = (book) => {
-        for (const [page, url] of book.cache) {
-            if (page !== book.currentPage) {
-                URL.revokeObjectURL(url);
-                book.cache.delete(page);
-            }
-        }
-    };
-
-    const getPageUrl = (book, page) => {
-        if (book.cache.has(page)) return Promise.resolve(book.cache.get(page));
-        if (book.inflight.has(page)) return book.inflight.get(page);
-        const request = api.fetchPage(book.productId, page, book.readToken)
-            .then((blob) => {
-                const url = URL.createObjectURL(blob);
-                book.cache.set(page, url);
-                trimCache(book);
-                return url;
-            })
-            .finally(() => book.inflight.delete(page));
-        book.inflight.set(page, request);
+    // ---------- جلب الصفحات ----------
+    const getBlob = (book, page) => {
+        if (book.blobFlight.has(page)) return book.blobFlight.get(page);
+        const request = (async () => {
+            const stored = await readStored(book, page);
+            if (stored) return stored;
+            const blob = await api.fetchPage(book.productId, page, book.readToken);
+            writeStored(book, page, blob);
+            return blob;
+        })().finally(() => book.blobFlight.delete(page));
+        book.blobFlight.set(page, request);
         return request;
     };
 
-    const showPage = async (page, save = true) => {
+    const trimMemory = (book) => {
+        for (const page of [...book.urls.keys()]) {
+            if (book.urls.size <= MAX_MEMORY_PAGES) break;
+            if (book.pinned.has(page)) continue;
+            URL.revokeObjectURL(book.urls.get(page));
+            book.urls.delete(page);
+        }
+    };
+    const getPageUrl = async (book, page) => {
+        if (book.urls.has(page)) return book.urls.get(page);
+        const blob = await getBlob(book, page);
+        if (!book.urls.has(page)) book.urls.set(page, URL.createObjectURL(blob));
+        trimMemory(book);
+        return book.urls.get(page);
+    };
+    const dropUrl = (book, page) => {
+        if (book.urls.has(page)) { URL.revokeObjectURL(book.urls.get(page)); book.urls.delete(page); }
+    };
+    const releaseAll = (book) => {
+        for (const url of book.urls.values()) URL.revokeObjectURL(url);
+        book.urls.clear();
+        book.pinned.clear();
+    };
+
+    // ---------- التحميل في الخلفية للقراءة السريعة ----------
+    const updateChip = (book) => {
+        if (book !== active) return;
+        const total = book.pageCount || 1;
+        const done = Math.min(book.stored.size, total);
+        const percent = Math.floor((done / total) * 100);
+        if (!prefs.fastLoad || !canStore(book) || !done) { chip.hidden = true; refreshMenuNote(); return; }
+        chip.hidden = false;
+        chip.textContent = done >= total ? L('ready') : L('preparing').replace('{p}', percent);
+        refreshMenuNote();
+    };
+
+    const startPrefetch = async (book) => {
+        if (!prefs.fastLoad || !canStore(book)) return;
+        const token = ++book.prefetchToken;
+        const order = [];
+        for (let page = book.currentPage + 1; page <= book.pageCount; page += 1) order.push(page);
+        for (let page = 1; page < book.currentPage; page += 1) order.push(page);
+        let failures = 0;
+        for (const page of order) {
+            if (token !== book.prefetchToken || active !== book || !prefs.fastLoad) return;
+            if (book.stored.has(page)) continue;
+            try {
+                await getBlob(book, page);
+                failures = 0;
+                await sleep(PREFETCH_DELAY_MS);
+            } catch (error) {
+                if (error.status === 401 || error.status === 403 || error.status === 409) return;
+                failures += 1;
+                if (failures >= 6) return;
+                await sleep(error.status === 429 ? 30000 : 4000);
+            }
+        }
+    };
+
+    // ---------- الحجم والتخطيط ----------
+    const applyLayout = (keepPosition = true) => {
         const book = active;
-        if (!book || !Number.isInteger(page) || page < 1 || page > book.pageCount) return;
-        const serial = ++requestSerial;
-        book.wantedPage = page;
-        skeleton.hidden = false;
-        pageImage.hidden = true;
-        setStatus(tr('reader.loading', 'Loading page...'));
+        const layout = effectiveLayout();
+        stage.className = `reader-stage layout-${layout}`;
+        document.body.classList.remove('bg-dark', 'bg-gray', 'bg-light');
+        document.body.classList.add(`bg-${prefs.bg}`);
+        if (!book) return;
+        const aspect = book.aspect || 0.707;
+        const availableW = Math.max(120, viewport.clientWidth - 20);
+        const availableH = Math.max(120, viewport.clientHeight - 20);
+        const columns = layout === 'spread' && stage.children.length > 1 ? 2 : 1;
+        const columnW = (availableW - (columns - 1) * 3) / columns;
+        let base;
+        if (layout === 'scroll') base = prefs.fit === 'page' ? Math.min(columnW, availableH * aspect) : Math.min(columnW, 1500);
+        else base = prefs.fit === 'page' ? Math.min(columnW, availableH * aspect) : columnW;
+        const width = Math.max(80, base * book.zoom);
+        stage.style.setProperty('--page-w', `${width}px`);
+        stage.style.setProperty('--aspect', String(aspect));
+        if (keepPosition && layout === 'scroll' && sheets.length) scrollToSheet(book.currentPage, false);
+    };
+
+    // ---------- الصفحات على الشاشة ----------
+    const spreadStart = (page) => (page <= 1 ? 1 : (page % 2 === 0 ? page : page - 1));
+    const visiblePages = (book) => {
+        if (effectiveLayout() === 'spread') {
+            const start = spreadStart(book.currentPage);
+            return start === 1 || start + 1 > book.pageCount ? [start] : [start, start + 1];
+        }
+        return [book.currentPage];
+    };
+
+    const makeSheet = (book, page) => {
+        const el = document.createElement('div');
+        el.className = 'reader-sheet';
+        el.dataset.page = String(page);
+        const img = document.createElement('img');
+        img.alt = '';
+        img.draggable = false;
+        const skeleton = document.createElement('div');
+        skeleton.className = 'reader-sheet-skeleton';
+        const retryButton = document.createElement('button');
+        retryButton.type = 'button';
+        retryButton.className = 'reader-retry';
+        retryButton.textContent = L('retry');
+        const sheet = { page, el, img, serial: 0, book };
+        retryButton.addEventListener('click', () => { setStatus(''); loadSheet(sheet); });
+        el.append(img, skeleton, retryButton);
+        return sheet;
+    };
+
+    const loadSheet = async (sheet) => {
+        const { book, page } = sheet;
+        const serial = ++sheet.serial;
+        sheet.el.classList.remove('is-failed');
+        book.pinned.add(page);
         try {
             const url = await getPageUrl(book, page);
-            if (serial !== requestSerial || active !== book) return;
-            pageImage.onload = () => {
-                if (serial !== requestSerial || active !== book) return;
-                pageImage.hidden = false;
-                skeleton.hidden = true;
-                pageImage.style.transform = `scale(${book.zoom})`;
-                setStatus('');
-                if (save) {
-                    api.saveProgress(book.productId, page).catch((error) => {
-                        console.error('Could not save reader progress:', error);
-                    });
+            if (sheet.serial !== serial || active !== book || !sheet.el.isConnected) return;
+            sheet.img.onload = () => {
+                if (sheet.serial !== serial) return;
+                sheet.el.classList.add('is-ready');
+                if (!book.aspect && sheet.img.naturalWidth) {
+                    book.aspect = sheet.img.naturalWidth / sheet.img.naturalHeight;
+                    applyLayout();
                 }
-                preloadNearbyPages(book);
+                if (page === book.currentPage) afterFirstPage(book);
             };
-            pageImage.onerror = () => {
-                if (serial !== requestSerial || active !== book) return;
-                // الصفحة المتخزنة ممكن تكون بايظة: نشيلها من الكاش عشان المحاولة الجاية تجيبها من جديد
-                if (book.cache.get(page) === url) {
-                    URL.revokeObjectURL(url);
-                    book.cache.delete(page);
-                }
-                skeleton.hidden = true;
-                setStatus(tr('reader.loadFailed', 'Could not load this page. Please try again.'), true);
+            sheet.img.onerror = () => {
+                if (sheet.serial !== serial) return;
+                dropUrl(book, page);
+                book.stored.delete(page);
+                sheet.el.classList.add('is-failed');
             };
-            pageImage.src = url;
-            book.currentPage = page;
-            updateControls();
-            viewport.scrollTo({ top: 0, behavior: 'auto' });
+            sheet.img.src = url;
         } catch (error) {
-            if (serial !== requestSerial || active !== book) return;
-            skeleton.hidden = true;
-            pageImage.hidden = true;
+            if (sheet.serial !== serial || active !== book) return;
+            sheet.el.classList.add('is-failed');
             showError(error);
         }
     };
 
-    // بنحمّل الصفحتين الجايين والسابقة مقدمًا (كل طلب بيتحسب في حد الطلبات، فالعدد قليل عمدًا)
-    function preloadNearbyPages(book) {
-        [book.currentPage + 1, book.currentPage + 2, book.currentPage - 1].forEach((page) => {
-            if (page < 1 || page > book.pageCount || book.cache.has(page) || book.inflight.has(page)) return;
-            getPageUrl(book, page).catch((error) => {
-                if (active === book && (error.status === 401 || error.status === 429)) setStatus(error.message, true);
-            });
-        });
-    }
+    const unloadSheet = (sheet) => {
+        sheet.serial += 1;
+        sheet.img.removeAttribute('src');
+        sheet.el.classList.remove('is-ready', 'is-failed');
+        sheet.book.pinned.delete(sheet.page);
+    };
 
+    let prefetchStartedFor = null;
+    const afterFirstPage = (book) => {
+        if (prefetchStartedFor === book) return;
+        prefetchStartedFor = book;
+        saveProgressSoon(book);
+        updateChip(book);
+        startPrefetch(book);
+    };
+
+    const preloadNearby = (book) => {
+        [book.currentPage + 1, book.currentPage + 2, book.currentPage - 1].forEach((page) => {
+            if (page < 1 || page > book.pageCount) return;
+            getBlob(book, page).catch(() => {});
+        });
+    };
+
+    const teardownStage = () => {
+        if (observer) { observer.disconnect(); observer = null; }
+        sheets.forEach((sheet) => { sheet.serial += 1; sheet.book.pinned.delete(sheet.page); });
+        sheets = [];
+        stage.replaceChildren();
+    };
+
+    // صفحة واحدة أو صفحتان: بنبني الصفحات الظاهرة بس
+    const renderPages = (book) => {
+        teardownStage();
+        const pages = visiblePages(book);
+        sheets = pages.map((page) => makeSheet(book, page));
+        stage.append(...sheets.map((sheet) => sheet.el));
+        applyLayout(false);
+        viewport.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        sheets.forEach(loadSheet);
+        preloadNearby(book);
+    };
+
+    // تمرير متواصل: كل الصفحات أماكنها موجودة، والصور بتتحمّل لما تقرّب من الشاشة
+    const renderScroll = (book) => {
+        teardownStage();
+        sheets = [];
+        for (let page = 1; page <= book.pageCount; page += 1) sheets.push(makeSheet(book, page));
+        stage.append(...sheets.map((sheet) => sheet.el));
+        applyLayout(false);
+        observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                const sheet = sheets[Number(entry.target.dataset.page) - 1];
+                if (!sheet) return;
+                if (entry.isIntersecting) { if (!sheet.el.classList.contains('is-ready') && !sheet.el.classList.contains('is-failed')) loadSheet(sheet); }
+                else unloadSheet(sheet);
+            });
+        }, { root: viewport, rootMargin: '150% 0px 150% 0px' });
+        sheets.forEach((sheet) => observer.observe(sheet.el));
+        scrollToSheet(book.currentPage, false);
+    };
+
+    const scrollToSheet = (page, smooth) => {
+        const sheet = sheets[page - 1];
+        if (!sheet) return;
+        viewport.scrollTo({ top: Math.max(0, sheet.el.offsetTop - 10), behavior: smooth ? 'smooth' : 'auto' });
+    };
+
+    const render = () => {
+        const book = active;
+        if (!book || !book.pageCount) return;
+        ++renderSerial;
+        if (effectiveLayout() === 'scroll') renderScroll(book);
+        else {
+            book.currentPage = effectiveLayout() === 'spread' ? spreadStart(book.currentPage) : book.currentPage;
+            renderPages(book);
+        }
+        updateControls();
+    };
+
+    const updateControls = () => {
+        const book = active;
+        if (!book || !book.pageCount) {
+            counter.textContent = '';
+            previous.disabled = true;
+            next.disabled = true;
+            return;
+        }
+        const pages = effectiveLayout() === 'spread' ? visiblePages(book) : [book.currentPage];
+        counter.textContent = pages.length > 1
+            ? L('spreadOf').replace('{a}', pages[0]).replace('{b}', pages[1]).replace('{total}', book.pageCount)
+            : tr('reader.pageOf', 'Page {page} of {total}').replace('{page}', pages[0]).replace('{total}', book.pageCount);
+        pageInput.value = book.currentPage;
+        pageInput.max = book.pageCount;
+        previous.disabled = book.currentPage <= 1;
+        const lastShown = pages[pages.length - 1];
+        next.disabled = lastShown >= book.pageCount;
+    };
+
+    const saveProgressSoon = (book) => {
+        clearTimeout(progressTimer);
+        progressTimer = setTimeout(() => {
+            api.saveProgress(book.productId, book.currentPage).catch((error) => {
+                console.error('Could not save reader progress:', error);
+            });
+        }, 1200);
+    };
+
+    // ---------- التنقل ----------
+    const showPage = (page) => {
+        const book = active;
+        if (!book || !Number.isInteger(page) || page < 1 || page > book.pageCount) return;
+        setStatus('');
+        book.currentPage = page;
+        if (effectiveLayout() === 'scroll') scrollToSheet(page, true);
+        else renderPages(book);
+        updateControls();
+        saveProgressSoon(book);
+    };
+    const goForward = () => {
+        const book = active;
+        if (!book) return;
+        if (effectiveLayout() === 'spread') {
+            const step = visiblePages(book).length;
+            showPage(Math.min(book.pageCount, spreadStart(book.currentPage) + step));
+        } else showPage(book.currentPage + 1);
+    };
+    const goBackward = () => {
+        const book = active;
+        if (!book) return;
+        if (effectiveLayout() === 'spread') {
+            const start = spreadStart(book.currentPage);
+            showPage(start <= 2 ? 1 : start - 2);
+        } else showPage(book.currentPage - 1);
+    };
+
+    // ---------- الجلسة والتابات ----------
     const getDeviceId = () => {
         let id = localStorage.getItem('sunbook_reader_device');
         if (!id) {
@@ -192,11 +476,14 @@
         if (!data.pageCount || !data.readToken) throw new Error(tr('reader.loadFailed', 'Could not open this book.'));
         book.readToken = data.readToken;
         book.pageCount = data.pageCount;
+        book.cacheScope = data.cacheScope || '';
+        if (data.pageWidth && data.pageHeight) book.aspect = data.pageWidth / data.pageHeight;
         book.currentPage = Math.min(Math.max(1, data.lastPage || 1), data.pageCount);
         if (data.title && !book.title) {
             book.title = data.title;
             if (book.tabButton) book.tabButton.textContent = data.title;
         }
+        await scanStored(book);
     };
 
     const rememberTab = (book) => {
@@ -209,10 +496,7 @@
     };
 
     const renderTabs = () => {
-        if (books.length < 2) {
-            tabsNav.hidden = true;
-            return;
-        }
+        if (books.length < 2) { tabsNav.hidden = true; return; }
         tabsNav.hidden = false;
         tabsNav.replaceChildren();
         books.forEach((book, index) => {
@@ -227,7 +511,6 @@
         });
         syncTabs();
     };
-
     const syncTabs = () => {
         books.forEach((book) => {
             if (!book.tabButton) return;
@@ -239,73 +522,198 @@
 
     const activate = async (book) => {
         if (active === book && book.readToken) return;
-        if (active && active !== book) trimToCurrent(active);
+        if (active && active !== book) { active.prefetchToken += 1; releaseAll(active); }
         active = book;
-        const serial = ++requestSerial;
+        prefetchStartedFor = null;
+        const serial = ++renderSerial;
         syncTabs();
         rememberTab(book);
+        chip.hidden = true;
+        setStatus('');
         if (!book.readToken) {
-            skeleton.hidden = false;
-            pageImage.hidden = true;
-            setStatus(tr('reader.loading', 'Loading page...'));
+            teardownStage();
+            const placeholder = makeSheet(book, 0);
+            stage.appendChild(placeholder.el);
+            applyLayout(false);
             updateControls();
             try {
                 await startBookSession(book);
             } catch (error) {
-                if (active !== book || serial !== requestSerial) return;
-                skeleton.hidden = true;
-                pageImage.hidden = true;
+                if (active !== book || serial !== renderSerial) return;
+                placeholder.el.remove();
                 showError(error);
                 return;
             }
-            if (active !== book || serial !== requestSerial) return;
+            if (active !== book || serial !== renderSerial) return;
         }
-        updateControls();
-        showPage(book.currentPage, false);
+        render();
     };
 
-    // اتجاه التقليب: forward = الصفحة التالية في الكتاب
-    const goForward = () => active && showPage(active.currentPage + 1);
-    const goBackward = () => active && showPage(active.currentPage - 1);
+    // ---------- قايمة العرض ----------
+    let noteEl = null;
+    const refreshMenuNote = () => {
+        if (!noteEl || !active) return;
+        const total = active.pageCount || 1;
+        const done = Math.min(active.stored.size, total);
+        noteEl.textContent = prefs.fastLoad && canStore(active) && done
+            ? (done >= total ? L('ready') : L('preparing').replace('{p}', Math.floor((done / total) * 100)))
+            : L('fastNote');
+    };
 
-    document.getElementById('goToPage').addEventListener('click', () => {
+    const buildMenu = () => {
+        viewBtn.textContent = L('view');
+        fullscreenBtn.textContent = '⛶';
+        fullscreenBtn.title = L('fullscreen');
+        fullscreenBtn.setAttribute('aria-label', L('fullscreen'));
+        immersiveExit.textContent = `✕ ${L('exit')}`;
+        viewMenu.replaceChildren();
+        const group = (title, key, options) => {
+            const wrap = document.createElement('div');
+            const h = document.createElement('h3');
+            h.textContent = title;
+            const seg = document.createElement('div');
+            seg.className = 'reader-seg';
+            options.forEach(([value, label]) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.textContent = label;
+                button.setAttribute('aria-pressed', String(prefs[key] === value));
+                button.addEventListener('click', () => {
+                    prefs[key] = value;
+                    savePrefs();
+                    buildMenu();
+                    viewMenu.hidden = false;
+                    if (key === 'bg') applyLayout(false);
+                    else render();
+                });
+                seg.appendChild(button);
+            });
+            wrap.append(h, seg);
+            viewMenu.appendChild(wrap);
+        };
+        const layouts = [['single', L('single')], ['scroll', L('scroll')]];
+        if (viewport.clientWidth >= 700) layouts.splice(1, 0, ['spread', L('spread')]);
+        group(L('layout'), 'layout', layouts);
+        group(L('fit'), 'fit', [['page', L('fitPage')], ['width', L('fitWidth')]]);
+        group(L('bg'), 'bg', [['dark', L('dark')], ['gray', L('gray')], ['light', L('light')]]);
+        if (hasCacheApi) {
+            const fastWrap = document.createElement('div');
+            const h = document.createElement('h3');
+            h.textContent = L('fast');
+            const seg = document.createElement('div');
+            seg.className = 'reader-seg';
+            [[true, L('fastOn')], [false, L('fastOff')]].forEach(([value, label]) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.textContent = label;
+                button.setAttribute('aria-pressed', String(prefs.fastLoad === value));
+                button.addEventListener('click', () => {
+                    prefs.fastLoad = value;
+                    savePrefs();
+                    buildMenu();
+                    viewMenu.hidden = false;
+                    if (active) { if (value) startPrefetch(active); else active.prefetchToken += 1; updateChip(active); }
+                });
+                seg.appendChild(button);
+            });
+            noteEl = document.createElement('p');
+            noteEl.className = 'reader-menu-note';
+            const clearButton = document.createElement('button');
+            clearButton.type = 'button';
+            clearButton.className = 'reader-link';
+            clearButton.textContent = L('clear');
+            clearButton.addEventListener('click', () => { if (active) clearStored(active); });
+            fastWrap.append(h, seg, noteEl, clearButton);
+            viewMenu.appendChild(fastWrap);
+            refreshMenuNote();
+        }
+    };
+
+    const toggleMenu = (open) => {
+        const show = typeof open === 'boolean' ? open : viewMenu.hidden;
+        viewMenu.hidden = !show;
+        viewBtn.setAttribute('aria-expanded', String(show));
+        if (show) buildMenu();
+    };
+    viewBtn.addEventListener('click', (event) => { event.stopPropagation(); toggleMenu(); });
+    viewMenu.addEventListener('click', (event) => event.stopPropagation());
+    document.addEventListener('click', () => toggleMenu(false));
+
+    // ---------- ملء الشاشة ----------
+    const enterImmersive = () => {
+        shell.classList.add('reader-immersive');
+        immersiveExit.hidden = false;
+        toggleMenu(false);
+        const root = document.documentElement;
+        if (root.requestFullscreen) root.requestFullscreen().catch(() => {});
+    };
+    const exitImmersive = () => {
+        shell.classList.remove('reader-immersive');
+        immersiveExit.hidden = true;
+        if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+    };
+    fullscreenBtn.addEventListener('click', () => (shell.classList.contains('reader-immersive') ? exitImmersive() : enterImmersive()));
+    immersiveExit.addEventListener('click', exitImmersive);
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement && shell.classList.contains('reader-immersive')) exitImmersive();
+    });
+
+    // ---------- الأزرار والكيبورد واللمس ----------
+    $('goToPage').addEventListener('click', () => {
         const page = Number(pageInput.value);
         if (Number.isInteger(page)) showPage(page);
     });
     pageInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') document.getElementById('goToPage').click();
+        if (event.key === 'Enter') $('goToPage').click();
     });
     previous.addEventListener('click', goBackward);
     next.addEventListener('click', goForward);
     const setZoom = (delta) => {
         if (!active) return;
-        active.zoom = Math.min(2, Math.max(0.75, active.zoom + delta));
-        pageImage.style.transform = `scale(${active.zoom})`;
+        active.zoom = Math.min(3, Math.max(0.5, Math.round((active.zoom + delta) * 100) / 100));
+        applyLayout();
     };
-    document.getElementById('zoomIn').addEventListener('click', () => setZoom(0.15));
-    document.getElementById('zoomOut').addEventListener('click', () => setZoom(-0.15));
+    $('zoomIn').addEventListener('click', () => setZoom(0.15));
+    $('zoomOut').addEventListener('click', () => setZoom(-0.15));
     document.addEventListener('keydown', (event) => {
         if (event.target === pageInput) return;
+        if (event.key === 'Escape') { toggleMenu(false); return; }
         if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        if (effectiveLayout() === 'scroll') return;
         // السهم اليمين = الصفحة اللي بعدها، السهم الشمال = اللي قبلها
-        const movesForward = event.key === 'ArrowRight';
-        if (movesForward) goForward();
+        if (event.key === 'ArrowRight') goForward();
         else goBackward();
     });
     let touchStartX = 0;
-    viewport.addEventListener('touchstart', (event) => {
-        touchStartX = event.changedTouches[0].clientX;
-    }, { passive: true });
+    viewport.addEventListener('touchstart', (event) => { touchStartX = event.changedTouches[0].clientX; }, { passive: true });
     viewport.addEventListener('touchend', (event) => {
-        // لو الصفحة متكبّرة، السحب معناه تحريك الصفحة مش تقليبها
-        if (!active || active.zoom > 1) return;
+        if (!active || active.zoom > 1 || effectiveLayout() === 'scroll') return;
         const distance = event.changedTouches[0].clientX - touchStartX;
         if (Math.abs(distance) <= 55) return;
-        const swipedRight = distance > 0;
-        const movesForward = BOOK_IS_RTL ? swipedRight : !swipedRight;
-        if (movesForward) goForward();
+        // الكتب عربية: السحب لليمين = الصفحة اللي بعدها
+        if (distance > 0) goForward();
         else goBackward();
     }, { passive: true });
+
+    // رقم الصفحة الحالية أثناء التمرير المتواصل
+    let scrollTick = false;
+    viewport.addEventListener('scroll', () => {
+        if (effectiveLayout() !== 'scroll' || !active || scrollTick || sheets.length < 2) return;
+        scrollTick = true;
+        requestAnimationFrame(() => {
+            scrollTick = false;
+            const stride = sheets[1].el.offsetTop - sheets[0].el.offsetTop;
+            if (stride <= 0) return;
+            const probe = viewport.scrollTop + viewport.clientHeight / 3 - sheets[0].el.offsetTop;
+            const page = Math.min(active.pageCount, Math.max(1, Math.floor(probe / stride) + 1));
+            if (page !== active.currentPage) {
+                active.currentPage = page;
+                updateControls();
+                saveProgressSoon(active);
+            }
+        });
+    }, { passive: true });
+
     ['contextmenu', 'selectstart', 'dragstart'].forEach((eventName) => {
         document.addEventListener(eventName, (event) => event.preventDefault());
     });
@@ -313,18 +721,24 @@
         document.body.classList.toggle('reader-blurred', document.visibilityState === 'hidden');
     });
     window.addEventListener('online', () => {
-        if (!pageImage.hidden || !active || !active.readToken) return;
-        showPage(active.currentPage, false);
+        if (active && active.readToken) sheets.filter((s) => s.el.classList.contains('is-failed')).forEach(loadSheet);
     });
-    window.addEventListener('beforeunload', () => {
-        books.forEach((book) => {
-            for (const url of book.cache.values()) URL.revokeObjectURL(url);
-        });
-    });
+    window.addEventListener('beforeunload', () => books.forEach(releaseAll));
+    document.addEventListener('sunbook:langChanged', () => { buildMenu(); viewMenu.hidden = true; updateControls(); updateChip(active || { pageCount: 0, stored: new Set() }); });
+
+    let resizeTimer = null;
+    if ('ResizeObserver' in window) {
+        new ResizeObserver(() => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => { if (active && active.pageCount) { applyLayout(); updateControls(); } }, 120);
+        }).observe(viewport);
+    }
 
     const init = async () => {
+        document.body.classList.add(`bg-${prefs.bg}`);
+        buildMenu();
+        viewMenu.hidden = true;
         if (!navigator.onLine) {
-            skeleton.hidden = true;
             setStatus(tr('reader.offline', 'Reading requires an internet connection.'), true);
             return;
         }
