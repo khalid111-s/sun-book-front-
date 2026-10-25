@@ -27,11 +27,14 @@
     const viewMenu = $('viewMenu');
     const fullscreenBtn = $('fullscreenBtn');
     const immersiveExit = $('immersiveExit');
-    const chip = $('cacheChip');
+    // مؤشر التحميل في الخلفية مبقاش بيظهر في الشريط العلوي (الحالة موجودة في قايمة العرض)
+    const chip = document.createElement('span');
     const zoomLabel = $('zoomLabel');
     const progressFill = $('progressFill');
     const dock = $('readerDock');
     const libraryBtn = $('libraryBtn');
+    const libraryLabel = $('libraryLabel');
+    const installLabel = $('installLabel');
     const installBtn = $('installBtn');
     const panel = $('readerPanel');
     const panelTitle = $('panelTitle');
@@ -53,11 +56,11 @@
             clear: 'مسح الكتاب المحمّل من جهازي',
             preparing: 'جارٍ تجهيز الكتاب للقراءة السريعة {p}%', ready: '✓ الكتاب جاهز للقراءة السريعة',
             spreadOf: 'الصفحتان {a}–{b} من {total}', retry: 'إعادة المحاولة',
-            appName: 'قارئ ذا صن بوك', library: '📚 مكتبتي', libraryTitle: 'مكتبتي الرقمية',
+            appName: 'قارئ ذا صن بوك', library: 'مكتبتي', libraryTitle: 'مكتبتي الرقمية',
             addTab: 'فتح كتاب آخر', closeTab: 'إغلاق', tabsLabel: 'الكتب المفتوحة', close: 'إغلاق',
             emptyLibrary: 'مكتبتك الرقمية فاضية. الكتب الإلكترونية اللي هتشتريها هتظهر هنا.',
             opened: 'مفتوح', notReady: 'غير جاهز بعد', pagesInfo: '{n} صفحة', resumeInfo: 'وصلت لصفحة {p} من {n}',
-            install: '⬇ تثبيت التطبيق', installTitle: 'تثبيت قارئ ذا صن بوك',
+            install: 'تثبيت', installTitle: 'تثبيت قارئ ذا صن بوك',
             iosSteps: 'اضغط زر المشاركة في متصفح Safari، ثم اختر «إضافة إلى الشاشة الرئيسية».',
             iosOpenSafari: 'افتح الصفحة دي من متصفح Safari الأول، وبعدها اضغط زر المشاركة واختر «إضافة إلى الشاشة الرئيسية».',
         },
@@ -71,11 +74,11 @@
             clear: 'Remove downloaded book from this device',
             preparing: 'Preparing book for fast reading {p}%', ready: '✓ Book ready for fast reading',
             spreadOf: 'Pages {a}–{b} of {total}', retry: 'Try again',
-            appName: 'Sun Reader', library: '📚 My library', libraryTitle: 'My digital library',
+            appName: 'Sun Reader', library: 'My library', libraryTitle: 'My digital library',
             addTab: 'Open another book', closeTab: 'Close', tabsLabel: 'Open books', close: 'Close',
             emptyLibrary: 'Your digital library is empty. E-books you buy will show up here.',
             opened: 'Open', notReady: 'Not ready yet', pagesInfo: '{n} pages', resumeInfo: 'On page {p} of {n}',
-            install: '⬇ Install app', installTitle: 'Install Sun Reader',
+            install: 'Install', installTitle: 'Install Sun Reader',
             iosSteps: 'In Safari, tap the Share button, then choose “Add to Home Screen”.',
             iosOpenSafari: 'Open this page in Safari first, then tap the Share button and choose “Add to Home Screen”.',
         },
@@ -884,8 +887,11 @@
 
     // ---------- النافذة السفلية (المكتبة / شرح التثبيت) ----------
     const applyStaticLabels = () => {
-        libraryBtn.textContent = L('library');
-        installBtn.textContent = L('install');
+        libraryLabel.textContent = L('library');
+        libraryBtn.setAttribute('aria-label', L('library'));
+        libraryBtn.title = L('library');
+        installLabel.textContent = L('install');
+        installBtn.setAttribute('aria-label', L('installTitle'));
         panelClose.setAttribute('aria-label', L('close'));
         tabsNav.setAttribute('aria-label', L('tabsLabel'));
     };

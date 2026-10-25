@@ -18,17 +18,20 @@
 <body class="reader-page">
     <main class="reader-shell" id="readerShell">
         <header class="reader-toolbar">
-            <div class="reader-toolbar-start">
-                <a class="reader-back" href="profile.html?tab=digital" data-i18n="reader.close">Back to my library</a>
-                <button type="button" id="libraryBtn" class="reader-toolbar-btn"></button>
-            </div>
-            <h1 id="readerTitle"></h1>
-            <div class="reader-toolbar-end">
-                <button type="button" id="installBtn" class="reader-toolbar-btn" hidden></button>
-                <div id="cacheChip" class="reader-chip" hidden></div>
-            </div>
+            <a class="reader-tool-btn reader-back" href="profile.html?tab=digital" aria-label="Back to my library" data-i18n-aria-label="reader.close">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+            </a>
+            <button type="button" id="libraryBtn" class="reader-tool-btn">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4" width="4.5" height="16" rx="1.2"/><rect x="9.8" y="4" width="4.5" height="16" rx="1.2"/><rect x="16.2" y="5" width="4.5" height="15" rx="1.2" transform="rotate(-12 18.45 12.5)"/></svg>
+                <span id="libraryLabel" class="reader-tool-label"></span>
+            </button>
+            <nav id="readerTabs" class="reader-tabs" role="tablist" aria-label="Open books" hidden></nav>
+            <h1 id="readerTitle" class="reader-title"></h1>
+            <button type="button" id="installBtn" class="reader-tool-btn reader-install" hidden>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="M7.5 11l4.5 4.5 4.5-4.5"/><path d="M5 20h14"/></svg>
+                <span id="installLabel"></span>
+            </button>
         </header>
-        <nav id="readerTabs" class="reader-tabs" role="tablist" aria-label="Open books" hidden></nav>
         <p id="readerStatus" class="reader-status" role="status" aria-live="polite"></p>
         <div id="readerViewport" class="reader-viewport">
             <div id="readerStage" class="reader-stage"></div>
