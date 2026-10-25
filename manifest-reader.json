@@ -1,0 +1,20 @@
+{
+  "id": "/reader.html",
+  "name": "Sun Reader - قارئ ذا صن بوك",
+  "short_name": "Sun Reader",
+  "description": "اقرأ كتبك الإلكترونية من ذا صن بوك | Read your Sun Book e-books",
+  "start_url": "/reader.html?source=pwa",
+  "scope": "/reader.html",
+  "display": "standalone",
+  "orientation": "any",
+  "dir": "auto",
+  "lang": "ar",
+  "background_color": "#0c0d0f",
+  "theme_color": "#0c0d0f",
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "/assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/assets/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

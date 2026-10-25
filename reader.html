@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0c0d0f">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Online book reader | The Sun Book</title>
-    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Sun Reader">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>Sun Reader | قارئ ذا صن بوك</title>
+    <link rel="manifest" href="manifest-reader.json">
     <link rel="icon" type="image/png" href="assets/sun-icon.png">
     <link rel="apple-touch-icon" href="assets/icon-192.png">
     <link rel="stylesheet" href="css/style.css">
@@ -15,11 +18,17 @@
 <body class="reader-page">
     <main class="reader-shell" id="readerShell">
         <header class="reader-toolbar">
-            <a class="reader-back" href="profile.html?tab=digital" data-i18n="reader.close">Back to my library</a>
-            <h1 id="readerTitle" data-i18n="reader.title">Online book reader</h1>
-            <div id="cacheChip" class="reader-chip" hidden></div>
+            <div class="reader-toolbar-start">
+                <a class="reader-back" href="profile.html?tab=digital" data-i18n="reader.close">Back to my library</a>
+                <button type="button" id="libraryBtn" class="reader-toolbar-btn"></button>
+            </div>
+            <h1 id="readerTitle"></h1>
+            <div class="reader-toolbar-end">
+                <button type="button" id="installBtn" class="reader-toolbar-btn" hidden></button>
+                <div id="cacheChip" class="reader-chip" hidden></div>
+            </div>
         </header>
-        <nav id="readerTabs" class="reader-tabs" role="tablist" aria-label="Books in this bundle" data-i18n-aria-label="reader.tabsLabel" hidden></nav>
+        <nav id="readerTabs" class="reader-tabs" role="tablist" aria-label="Open books" hidden></nav>
         <p id="readerStatus" class="reader-status" role="status" aria-live="polite"></p>
         <div id="readerViewport" class="reader-viewport">
             <div id="readerStage" class="reader-stage"></div>
@@ -51,6 +60,15 @@
             </div>
         </div>
         <button type="button" id="immersiveExit" class="reader-immersive-exit" hidden></button>
+        <div id="readerPanel" class="reader-overlay" hidden>
+            <div class="reader-panel" role="dialog" aria-modal="true" aria-labelledby="panelTitle">
+                <div class="reader-panel-head">
+                    <h2 id="panelTitle"></h2>
+                    <button type="button" id="panelClose" class="reader-icon-btn">✕</button>
+                </div>
+                <div id="panelBody" class="reader-panel-body"></div>
+            </div>
+        </div>
     </main>
     <script src="js/i18n.js"></script>
     <script src="js/api.js"></script>

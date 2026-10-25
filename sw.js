@@ -1,16 +1,13 @@
-const CACHE_NAME = 'sunbook-static-v6';
+// Service worker تطبيق القارئ (Sun Reader) فقط. الموقع الأساسي مش بيستخدم service worker.
+const CACHE_NAME = 'sunbook-reader-shell-v1';
 const APP_SHELL = [
-    '/',
-    '/index.html',
     '/css/style.css',
-    '/css/responsive.css',
+    '/css/reader.css',
     '/js/api.js',
     '/js/i18n.js',
-    '/js/script.js',
+    '/js/reader.js',
     '/js/pwa.js',
-    '/components/header.html',
-    '/components/footer.html',
-    '/manifest.json',
+    '/manifest-reader.json',
     '/assets/sun-icon.png',
     '/assets/icon-192.png',
     '/assets/icon-512.png',
@@ -24,7 +21,10 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys()
-            .then((keys) => Promise.all(keys.filter((key) => key.startsWith('sunbook-static-') && key !== CACHE_NAME).map((key) => caches.delete(key))))
+            .then((keys) => Promise.all(keys
+                // نمسح كاش الموقع القديم وأي نسخة قديمة من كاش القارئ (وبنسيب كاش صفحات الكتب sunbook-reader-pages زي ما هو)
+                .filter((key) => key.startsWith('sunbook-static-') || (key.startsWith('sunbook-reader-shell-') && key !== CACHE_NAME))
+                .map((key) => caches.delete(key))))
             .then(() => self.clients.claim())
     );
 });
@@ -38,13 +38,13 @@ self.addEventListener('fetch', (event) => {
 
     if (url.pathname.endsWith('/reader.html')) {
         event.respondWith(fetch(request, { cache: 'no-store' }).catch(() => new Response(
-            '<!doctype html><meta charset="utf-8"><title>Online reading required</title><main style="font:16px sans-serif;padding:2rem"><h1>Connect to the internet to read</h1><p>قراءة الكتب تحتاج إلى اتصال بالإنترنت. صفحات الكتب لا تُحفظ دون اتصال.</p></main>',
+            '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Online reading required</title><main style="font:16px sans-serif;padding:2rem"><h1>Connect to the internet to read</h1><p>قراءة الكتب تحتاج إلى اتصال بالإنترنت. صفحات الكتب لا تُحفظ دون اتصال.</p></main>',
             { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } }
         )));
         return;
     }
 
-    if (url.search || !/\.(html|css|js|png|webp|woff2|json)$/.test(url.pathname) && url.pathname !== '/') return;
+    if (url.search || !/\.(css|js|png|webp|woff2|json)$/.test(url.pathname)) return;
     event.respondWith(
         fetch(request).then((response) => {
             if (response.ok && response.type === 'basic') {
@@ -54,9 +54,7 @@ self.addEventListener('fetch', (event) => {
             return response;
         }).catch(async () => {
             const cached = await caches.match(request);
-            if (cached) return cached;
-            if (request.mode === 'navigate') return caches.match('/index.html');
-            return Response.error();
+            return cached || Response.error();
         })
     );
 });

@@ -11,10 +11,6 @@
         window.location.replace('login.html');
         return;
     }
-    if (!bookParam && !entryParam) {
-        window.location.replace('profile.html?tab=digital');
-        return;
-    }
 
     const $ = (id) => document.getElementById(id);
     const shell = $('readerShell');
@@ -35,6 +31,15 @@
     const zoomLabel = $('zoomLabel');
     const progressFill = $('progressFill');
     const dock = $('readerDock');
+    const libraryBtn = $('libraryBtn');
+    const installBtn = $('installBtn');
+    const panel = $('readerPanel');
+    const panelTitle = $('panelTitle');
+    const panelBody = $('panelBody');
+    const panelClose = $('panelClose');
+    // التطبيق مثبّت على الجهاز (مفتوح كتطبيق مش كصفحة في المتصفح)
+    const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+    if (standalone) document.body.classList.add('is-standalone');
 
     // ---------- النصوص (عربي/إنجليزي) ----------
     const STR = {
@@ -48,6 +53,13 @@
             clear: 'مسح الكتاب المحمّل من جهازي',
             preparing: 'جارٍ تجهيز الكتاب للقراءة السريعة {p}%', ready: '✓ الكتاب جاهز للقراءة السريعة',
             spreadOf: 'الصفحتان {a}–{b} من {total}', retry: 'إعادة المحاولة',
+            appName: 'قارئ ذا صن بوك', library: '📚 مكتبتي', libraryTitle: 'مكتبتي الرقمية',
+            addTab: 'فتح كتاب آخر', closeTab: 'إغلاق', tabsLabel: 'الكتب المفتوحة', close: 'إغلاق',
+            emptyLibrary: 'مكتبتك الرقمية فاضية. الكتب الإلكترونية اللي هتشتريها هتظهر هنا.',
+            opened: 'مفتوح', notReady: 'غير جاهز بعد', pagesInfo: '{n} صفحة', resumeInfo: 'وصلت لصفحة {p} من {n}',
+            install: '⬇ تثبيت التطبيق', installTitle: 'تثبيت قارئ ذا صن بوك',
+            iosSteps: 'اضغط زر المشاركة في متصفح Safari، ثم اختر «إضافة إلى الشاشة الرئيسية».',
+            iosOpenSafari: 'افتح الصفحة دي من متصفح Safari الأول، وبعدها اضغط زر المشاركة واختر «إضافة إلى الشاشة الرئيسية».',
         },
         en: {
             view: 'View ▾', fullscreen: 'Fullscreen', exit: 'Exit fullscreen',
@@ -59,6 +71,13 @@
             clear: 'Remove downloaded book from this device',
             preparing: 'Preparing book for fast reading {p}%', ready: '✓ Book ready for fast reading',
             spreadOf: 'Pages {a}–{b} of {total}', retry: 'Try again',
+            appName: 'Sun Reader', library: '📚 My library', libraryTitle: 'My digital library',
+            addTab: 'Open another book', closeTab: 'Close', tabsLabel: 'Open books', close: 'Close',
+            emptyLibrary: 'Your digital library is empty. E-books you buy will show up here.',
+            opened: 'Open', notReady: 'Not ready yet', pagesInfo: '{n} pages', resumeInfo: 'On page {p} of {n}',
+            install: '⬇ Install app', installTitle: 'Install Sun Reader',
+            iosSteps: 'In Safari, tap the Share button, then choose “Add to Home Screen”.',
+            iosOpenSafari: 'Open this page in Safari first, then tap the Share button and choose “Add to Home Screen”.',
         },
     };
     const lang = () => {
@@ -81,9 +100,15 @@
     const CACHE_ORIGIN = 'https://sunbook-reader.local/';
     const hasCacheApi = 'caches' in window;
 
-    let books = [];
+    const OPEN_KEY = 'sunbook_reader_open_tabs';
+    const ACTIVE_KEY = 'sunbook_reader_active';
+    const SESSION_REFRESH_MS = 6 * 60 * 60 * 1000;
+
+    let books = [];      // التابات المفتوحة
+    let library = [];    // كل الكتب اللي المستخدم اشتراها (كل كتاب لوحده)
+    let owned = true;    // false = أدمن بيفتح كتاب مش في مكتبته
+    let installEvent = null;
     let active = null;
-    let entryKey = '';
     let renderSerial = 0;
     let progressTimer = null;
     let sheets = [];
@@ -103,7 +128,9 @@
         stored: new Set(),
         pinned: new Set(),
         prefetchToken: 0,
+        sessionAt: 0,
         tabButton: null,
+        tabLabel: null,
     });
 
     const effectiveLayout = () => (prefs.layout === 'spread' && viewport.clientWidth < 700 ? 'single' : prefs.layout);
@@ -480,49 +507,85 @@
         const { data } = await api.startReadSession(book.productId, getDeviceId());
         if (!data.pageCount || !data.readToken) throw new Error(tr('reader.loadFailed', 'Could not open this book.'));
         book.readToken = data.readToken;
+        book.sessionAt = Date.now();
         book.pageCount = data.pageCount;
         book.cacheScope = data.cacheScope || '';
         if (data.pageWidth && data.pageHeight) book.aspect = data.pageWidth / data.pageHeight;
         book.currentPage = Math.min(Math.max(1, data.lastPage || 1), data.pageCount);
         if (data.title && !book.title) {
             book.title = data.title;
-            if (book.tabButton) book.tabButton.textContent = data.title;
+            if (book.tabLabel) book.tabLabel.textContent = data.title;
         }
         await scanStored(book);
     };
 
-    const rememberTab = (book) => {
-        if (!entryKey) return;
-        try { localStorage.setItem(`sunbook_reader_tab_${entryKey}`, book.productId); } catch (error) { /* مش مهم */ }
+    // ---------- التابات المفتوحة (بتتحفظ على الجهاز) ----------
+    const readJson = (key, fallback) => {
+        try { const value = JSON.parse(localStorage.getItem(key) || 'null'); return value == null ? fallback : value; } catch (error) { return fallback; }
     };
-    const recalledTab = () => {
-        if (!entryKey) return '';
-        try { return localStorage.getItem(`sunbook_reader_tab_${entryKey}`) || ''; } catch (error) { return ''; }
+    const persistTabs = () => {
+        if (!owned) return;
+        try {
+            localStorage.setItem(OPEN_KEY, JSON.stringify(books.map((book) => book.productId)));
+            if (active) localStorage.setItem(ACTIVE_KEY, active.productId);
+        } catch (error) { /* مش مهم */ }
     };
 
-    const renderTabs = () => {
-        if (books.length < 2) { tabsNav.hidden = true; return; }
-        tabsNav.hidden = false;
-        tabsNav.replaceChildren();
-        books.forEach((book, index) => {
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'reader-tab';
-            button.setAttribute('role', 'tab');
-            button.textContent = book.title || `${tr('reader.bookN', 'Book')} ${index + 1}`;
-            button.addEventListener('click', () => activate(book));
-            book.tabButton = button;
-            tabsNav.appendChild(button);
-        });
-        syncTabs();
+    const updateHeading = () => {
+        titleEl.textContent = (active && active.title) || L('appName');
+        document.title = active && active.title ? `${active.title} | ${L('appName')}` : L('appName');
     };
+
     const syncTabs = () => {
         books.forEach((book) => {
             if (!book.tabButton) return;
             const isActive = book === active;
             book.tabButton.classList.toggle('reader-tab-active', isActive);
-            book.tabButton.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            if (book.tabLabel) book.tabLabel.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            if (isActive && book.tabButton.scrollIntoView) book.tabButton.scrollIntoView({ inline: 'nearest', block: 'nearest' });
         });
+    };
+
+    const renderTabs = () => {
+        tabsNav.replaceChildren();
+        if (!owned || !books.length) { tabsNav.hidden = true; return; }
+        tabsNav.hidden = false;
+        tabsNav.setAttribute('aria-label', L('tabsLabel'));
+        books.forEach((book, index) => {
+            const tab = document.createElement('div');
+            tab.className = 'reader-tab';
+            const label = document.createElement('button');
+            label.type = 'button';
+            label.className = 'reader-tab-label';
+            label.setAttribute('role', 'tab');
+            label.textContent = book.title || `${tr('reader.bookN', 'Book')} ${index + 1}`;
+            label.addEventListener('click', () => activate(book));
+            tab.appendChild(label);
+            if (books.length > 1) {
+                const close = document.createElement('button');
+                close.type = 'button';
+                close.className = 'reader-tab-close';
+                close.textContent = '×';
+                close.setAttribute('aria-label', `${L('closeTab')}: ${label.textContent}`);
+                close.addEventListener('click', (event) => { event.stopPropagation(); closeTab(book); });
+                tab.appendChild(close);
+            }
+            book.tabButton = tab;
+            book.tabLabel = label;
+            tabsNav.appendChild(tab);
+        });
+        const hasClosedBooks = library.some((item) => item.pageCount > 0 && !books.some((book) => book.productId === item.productId));
+        if (hasClosedBooks) {
+            const add = document.createElement('button');
+            add.type = 'button';
+            add.className = 'reader-tab-add';
+            add.textContent = '+';
+            add.title = L('addTab');
+            add.setAttribute('aria-label', L('addTab'));
+            add.addEventListener('click', () => openLibrary());
+            tabsNav.appendChild(add);
+        }
+        syncTabs();
     };
 
     const activate = async (book) => {
@@ -531,8 +594,11 @@
         active = book;
         prefetchStartedFor = null;
         const serial = ++renderSerial;
+        // الجلسة قديمة (التاب كان مفتوح من زمان): بنبدأ جلسة جديدة بدل ما الصفحات تفشل
+        if (book.readToken && Date.now() - book.sessionAt > SESSION_REFRESH_MS) book.readToken = '';
         syncTabs();
-        rememberTab(book);
+        updateHeading();
+        persistTabs();
         chip.hidden = true;
         setStatus('');
         if (!book.readToken) {
@@ -550,8 +616,35 @@
                 return;
             }
             if (active !== book || serial !== renderSerial) return;
+            updateHeading();
         }
         render();
+    };
+
+    // فتح كتاب من المكتبة في تاب جديد (أو الانتقال له لو مفتوح)
+    const openBook = (productId) => {
+        let book = books.find((item) => item.productId === productId);
+        if (!book) {
+            const info = library.find((item) => item.productId === productId);
+            if (!info || !(info.pageCount > 0)) return null;
+            book = makeBook(info);
+            books.push(book);
+            renderTabs();
+        }
+        return activate(book);
+    };
+
+    const closeTab = (book) => {
+        const index = books.indexOf(book);
+        if (index < 0 || books.length < 2) return;
+        books.splice(index, 1);
+        book.prefetchToken += 1;
+        releaseAll(book);
+        const wasActive = active === book;
+        if (wasActive) active = null;
+        renderTabs();
+        if (wasActive) activate(books[Math.min(index, books.length - 1)]);
+        else persistTabs();
     };
 
     // ---------- قايمة العرض ----------
@@ -724,6 +817,7 @@
     viewport.addEventListener('touchend', (event) => { if (event.touches.length < 2) setTimeout(() => { pinch = null; }, 80); }, { passive: true });
     document.addEventListener('keydown', (event) => {
         if (event.target === pageInput || event.ctrlKey || event.metaKey || event.altKey) return;
+        if (!panel.hidden) { if (event.key === 'Escape') closePanel(); return; }
         if (event.key === 'Escape') { toggleMenu(false); return; }
         if (event.key === '+' || event.key === '=') { setZoom(0.2); event.preventDefault(); return; }
         if (event.key === '-' || event.key === '_') { setZoom(-0.2); event.preventDefault(); return; }
@@ -775,7 +869,10 @@
         if (active && active.readToken) sheets.filter((s) => s.el.classList.contains('is-failed')).forEach(loadSheet);
     });
     window.addEventListener('beforeunload', () => books.forEach(releaseAll));
-    document.addEventListener('sunbook:langChanged', () => { buildMenu(); viewMenu.hidden = true; updateControls(); updateChip(active || { pageCount: 0, stored: new Set() }); });
+    document.addEventListener('sunbook:langChanged', () => {
+        buildMenu(); viewMenu.hidden = true; updateControls(); updateChip(active || { pageCount: 0, stored: new Set() });
+        applyStaticLabels(); updateHeading(); renderTabs(); closePanel(); refreshInstall();
+    });
 
     let resizeTimer = null;
     if ('ResizeObserver' in window) {
@@ -785,44 +882,153 @@
         }).observe(viewport);
     }
 
+    // ---------- النافذة السفلية (المكتبة / شرح التثبيت) ----------
+    const applyStaticLabels = () => {
+        libraryBtn.textContent = L('library');
+        installBtn.textContent = L('install');
+        panelClose.setAttribute('aria-label', L('close'));
+        tabsNav.setAttribute('aria-label', L('tabsLabel'));
+    };
+    const openPanel = (title, node) => {
+        panelTitle.textContent = title;
+        panelBody.replaceChildren(node);
+        panel.hidden = false;
+        toggleMenu(false);
+    };
+    function closePanel() {
+        panel.hidden = true;
+        panelBody.replaceChildren();
+    }
+    panelClose.addEventListener('click', closePanel);
+    panel.addEventListener('click', (event) => { if (event.target === panel) closePanel(); });
+
+    function openLibrary() {
+        const list = document.createElement('div');
+        list.className = 'reader-library';
+        if (!library.length) {
+            const empty = document.createElement('p');
+            empty.className = 'reader-menu-note';
+            empty.textContent = L('emptyLibrary');
+            list.appendChild(empty);
+        }
+        library.forEach((item) => {
+            const open = books.find((book) => book.productId === item.productId);
+            const ready = item.pageCount > 0;
+            const row = document.createElement('button');
+            row.type = 'button';
+            row.className = 'reader-library-item';
+            row.disabled = !ready;
+            if (open && open === active) row.classList.add('is-current');
+            const name = document.createElement('strong');
+            name.textContent = item.title;
+            const meta = document.createElement('span');
+            const page = open ? open.currentPage : (item.lastPage || 1);
+            if (!ready) meta.textContent = L('notReady');
+            else {
+                const base = page > 1
+                    ? L('resumeInfo').replace('{p}', page).replace('{n}', item.pageCount)
+                    : L('pagesInfo').replace('{n}', item.pageCount);
+                meta.textContent = open ? `${base} • ${L('opened')}` : base;
+            }
+            row.append(name, meta);
+            row.addEventListener('click', () => { closePanel(); openBook(item.productId); });
+            list.appendChild(row);
+        });
+        openPanel(L('libraryTitle'), list);
+    }
+    libraryBtn.addEventListener('click', openLibrary);
+
+    // ---------- تثبيت التطبيق ----------
+    const ua = window.navigator.userAgent || '';
+    const isIos = /iphone|ipad|ipod/i.test(ua) || (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
+    const isIosOtherBrowser = isIos && /crios|fxios|edgios/i.test(ua);
+    function refreshInstall() {
+        installBtn.hidden = standalone || !(installEvent || isIos);
+    }
+    window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        installEvent = event;
+        refreshInstall();
+    });
+    window.addEventListener('appinstalled', () => { installEvent = null; refreshInstall(); });
+    installBtn.addEventListener('click', async () => {
+        if (installEvent) {
+            const promptEvent = installEvent;
+            installEvent = null;
+            refreshInstall();
+            try { await promptEvent.prompt(); await promptEvent.userChoice; } catch (error) { /* مش مهم */ }
+            return;
+        }
+        const note = document.createElement('p');
+        note.className = 'reader-menu-note reader-install-note';
+        note.textContent = isIosOtherBrowser ? L('iosOpenSafari') : L('iosSteps');
+        openPanel(L('installTitle'), note);
+    });
+
     const init = async () => {
         document.body.classList.add(`bg-${prefs.bg}`);
         buildMenu();
         viewMenu.hidden = true;
+        applyStaticLabels();
+        updateHeading();
+        refreshInstall();
         if (!navigator.onLine) {
             setStatus(tr('reader.offline', 'Reading requires an internet connection.'), true);
             return;
         }
 
-        // بنجيب كارت المكتبة اللي الكتاب ده تبعه: لو عرض (Bundle) بنعمل تاب لكل كتاب فيه
-        let entry = null;
+        // مكتبة المستخدم: كل كتاب اشتراه (حتى لو جه جوه عرض) بيبقى تاب لوحده
+        let rawLibrary = null;
         try {
-            const { data: library } = await api.getLibrary();
-            entry = library.find((item) => (entryParam && item.productId === entryParam)
-                || (bookParam && item.books.some((book) => book.productId === bookParam))) || null;
+            const { data } = await api.getLibrary();
+            rawLibrary = Array.isArray(data) ? data : [];
         } catch (error) {
             console.error('Could not load the library for the reader:', error);
         }
+        const seen = new Set();
+        (rawLibrary || []).forEach((entry) => (entry.books || []).forEach((item) => {
+            if (!item || seen.has(item.productId)) return;
+            seen.add(item.productId);
+            library.push(item);
+        }));
+        const libraryById = new Map(library.map((item) => [item.productId, item]));
+        const readyIds = library.filter((item) => item.pageCount > 0).map((item) => item.productId);
 
-        let startId = bookParam;
-        if (entry) {
-            books = entry.books.map(makeBook);
-            entryKey = entry.productId;
-            if (entry.title) titleEl.textContent = entry.title;
-            if (!startId) startId = recalledTab();
-        } else {
+        if (bookParam && !libraryById.has(bookParam)) {
             // الأدمن بيفتح كتاب من غير ما يكون اشتراه، أو المكتبة مفتحتش: بنفتح الكتاب لوحده
-            books = [makeBook({ productId: bookParam || entryParam })];
+            owned = false;
+            libraryBtn.hidden = true;
+            books = [makeBook({ productId: bookParam })];
+            renderTabs();
+            await activate(books[0]);
+            return;
         }
+        if (!rawLibrary) {
+            setStatus(tr('reader.couldNotLoadLibrary', 'Could not load your digital library right now.'), true);
+            return;
+        }
+        if (!readyIds.length) {
+            setStatus(L('emptyLibrary'));
+            return;
+        }
+
+        const entry = entryParam ? (rawLibrary.find((item) => item.productId === entryParam) || null) : null;
+        const entryIds = entry ? (entry.books || []).filter((item) => item.pageCount > 0).map((item) => item.productId) : [];
+        let ids = [...new Set(readJson(OPEN_KEY, []).filter((id) => readyIds.includes(id)))];
+        if (!ids.length) ids = readyIds.slice();
+        entryIds.forEach((id) => { if (!ids.includes(id)) ids.push(id); });
+        if (bookParam && readyIds.includes(bookParam) && !ids.includes(bookParam)) ids.push(bookParam);
+        books = ids.map((id) => makeBook(libraryById.get(id)));
+
+        let savedActive = '';
+        try { savedActive = localStorage.getItem(ACTIVE_KEY) || ''; } catch (error) { /* مش مهم */ }
+        let startId = '';
+        if (bookParam && ids.includes(bookParam)) startId = bookParam;
+        else if (entryIds.length) startId = entryIds.includes(savedActive) ? savedActive : entryIds[0];
+        else if (ids.includes(savedActive)) startId = savedActive;
         const first = books.find((book) => book.productId === startId) || books[0];
         renderTabs();
         await activate(first);
-        if (books.length === 1 && active && active.title) {
-            titleEl.textContent = active.title;
-            document.title = `${active.title} | The Sun Book`;
-        } else if (entry && entry.title) {
-            document.title = `${entry.title} | The Sun Book`;
-        }
     };
 
     init();
