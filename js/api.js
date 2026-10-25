@@ -339,23 +339,16 @@ const api = {
     overlay.setAttribute('aria-modal', 'true');
     overlay.dir = isAr ? 'rtl' : 'ltr';
     overlay.innerHTML =
-      '<div class="pay-card">' +
-        '<div class="pay-card-head">' +
-          '<img src="assets/sun-icon.png" alt="" class="pay-card-logo">' +
-          '<div class="pay-card-title">' +
-            '<strong>' + (isAr ? 'إتمام الدفع' : 'Secure Payment') + '</strong>' +
-            '<small>' + (isAr ? 'مدفوعاتك مؤمّنة ومشفّرة' : 'Your payment is encrypted & secure') + '</small>' +
-          '</div>' +
-          '<button type="button" class="pay-card-close" aria-label="Close">&times;</button>' +
-        '</div>' +
-        '<div class="pay-card-body">' +
+      '<div class="pay-wrap">' +
+        '<button type="button" class="pay-close" aria-label="' + (isAr ? 'إغلاق' : 'Close') + '">&times;</button>' +
+        '<div class="pay-box">' +
           '<div id="geidea-dropin" class="pay-dropin"></div>' +
-          '<div class="pay-card-status" hidden></div>' +
+          '<div class="pay-status" hidden></div>' +
         '</div>' +
       '</div>';
     document.body.appendChild(overlay);
     document.body.classList.add('pay-open');
-    const statusEl = overlay.querySelector('.pay-card-status');
+    const statusEl = overlay.querySelector('.pay-status');
     const dropEl = overlay.querySelector('#geidea-dropin');
     let closed = false;
     const closeOverlay = () => {
@@ -369,7 +362,7 @@ const api = {
       statusEl.hidden = false;
       statusEl.textContent = text;
     };
-    overlay.querySelector('.pay-card-close').addEventListener('click', () => {
+    overlay.querySelector('.pay-close').addEventListener('click', () => {
       closeOverlay();
       if (onAbort) onAbort();
     });
