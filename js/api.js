@@ -340,8 +340,8 @@ const api = {
     overlay.dir = isAr ? 'rtl' : 'ltr';
     overlay.innerHTML =
       '<div class="pay-wrap">' +
-        '<button type="button" class="pay-close" aria-label="' + (isAr ? 'إغلاق' : 'Close') + '">&times;</button>' +
         '<div class="pay-box">' +
+          '<button type="button" class="pay-close" aria-label="' + (isAr ? 'إغلاق' : 'Close') + '">&times;</button>' +
           '<div id="geidea-dropin" class="pay-dropin"></div>' +
           '<div class="pay-status" hidden></div>' +
         '</div>' +
