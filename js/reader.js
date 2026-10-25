@@ -287,7 +287,8 @@
     document.addEventListener('keydown', (event) => {
         if (event.target === pageInput) return;
         if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-        const movesForward = BOOK_IS_RTL ? event.key === 'ArrowLeft' : event.key === 'ArrowRight';
+        // السهم اليمين = الصفحة اللي بعدها، السهم الشمال = اللي قبلها
+        const movesForward = event.key === 'ArrowRight';
         if (movesForward) goForward();
         else goBackward();
     });
