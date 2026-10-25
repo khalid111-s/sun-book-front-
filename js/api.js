@@ -331,24 +331,76 @@ const api = {
       return abort(err.message);
     }
 
+    // ─── نافذة الدفع (Drop-in جوه مستطيل بشكل الموقع بدل ما تاخد الصفحة كلها) ───
+    const isAr = (window.SunBookI18n && window.SunBookI18n.getLang ? window.SunBookI18n.getLang() : 'en') === 'ar';
+    const overlay = document.createElement('div');
+    overlay.className = 'pay-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.dir = isAr ? 'rtl' : 'ltr';
+    overlay.innerHTML =
+      '<div class="pay-card">' +
+        '<div class="pay-card-head">' +
+          '<img src="assets/sun-icon.png" alt="" class="pay-card-logo">' +
+          '<div class="pay-card-title">' +
+            '<strong>' + (isAr ? 'إتمام الدفع' : 'Secure Payment') + '</strong>' +
+            '<small>' + (isAr ? 'مدفوعاتك مؤمّنة ومشفّرة' : 'Your payment is encrypted & secure') + '</small>' +
+          '</div>' +
+          '<button type="button" class="pay-card-close" aria-label="Close">&times;</button>' +
+        '</div>' +
+        '<div class="pay-card-body">' +
+          '<div id="geidea-dropin" class="pay-dropin"></div>' +
+          '<div class="pay-card-status" hidden></div>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    document.body.classList.add('pay-open');
+    const statusEl = overlay.querySelector('.pay-card-status');
+    const dropEl = overlay.querySelector('#geidea-dropin');
+    let closed = false;
+    const closeOverlay = () => {
+      if (closed) return;
+      closed = true;
+      overlay.remove();
+      document.body.classList.remove('pay-open');
+    };
+    const showStatus = (text) => {
+      dropEl.style.display = 'none';
+      statusEl.hidden = false;
+      statusEl.textContent = text;
+    };
+    overlay.querySelector('.pay-card-close').addEventListener('click', () => {
+      closeOverlay();
+      if (onAbort) onAbort();
+    });
+
     const onSuccess = async () => {
       let status = 'pending';
+      showStatus(isAr ? 'جاري تأكيد الدفع...' : 'Confirming your payment...');
       try {
         for (let i = 0; i < 4 && status !== 'paid'; i++) {
           if (i > 0) await sleep(1500);
           status = (await api.confirmPayment(session.paymentId)).data.status;
         }
       } catch (err) {
+        closeOverlay();
         return abort(err.message);
       }
       if (status !== 'paid') {
+        closeOverlay();
         return abort(tr('checkout.couldNotConfirmPayment', "We couldn't confirm your payment. Your cart is still saved - please try again."));
       }
+      closeOverlay();
       if (onPaid) await onPaid();
     };
-    const onFail = () => abort(tr('checkout.paymentNotCompleted', 'Payment not completed. Please try again.'));
+    const onFail = () => { closeOverlay(); abort(tr('checkout.paymentNotCompleted', 'Payment not completed. Please try again.')); };
 
-    new window.GeideaCheckout(onSuccess, onFail, onFail).startPayment(session.sessionId);
+    try {
+      new window.GeideaCheckout(onSuccess, onFail, onFail).startPayment(session.sessionId, null, 'geidea-dropin');
+    } catch (err) {
+      closeOverlay();
+      abort(err.message);
+    }
   },
 
   cancelOrder: (id) =>
