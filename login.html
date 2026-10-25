@@ -54,7 +54,7 @@
         <form id="registerForm" class="auth-form" onsubmit="handleAuth(event, 'register')">
             <input type="text" id="registerName" class="auth-input" placeholder="Full Name" required data-i18n-placeholder="auth.fullName">
             <input type="email" class="auth-input" placeholder="Email Address" required data-i18n-placeholder="auth.emailAddress">
-            <input type="password" class="auth-input" placeholder="Password" required data-i18n-placeholder="auth.password">
+            <input type="password" minlength="8" class="auth-input" placeholder="Password" required data-i18n-placeholder="auth.password">
             <button type="submit" class="btn-shop auth-submit-btn" data-i18n="auth.createAccount">Create Account</button>
         </form>
 

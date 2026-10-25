@@ -1018,9 +1018,9 @@ function initSmartCheckout() {
 
             listContainer.innerHTML += `
                 <div class="checkout-item-mini">
-                    <img src="${item.image}" alt="${item.type === 'booking' ? 'Session' : 'Book'}">
+                    <img src="${safeImg(item.image)}" alt="${item.type === 'booking' ? 'Session' : 'Book'}">
                     <div class="checkout-item-info">
-                        <h4>${item.title} ${qtyText}</h4>
+                        <h4>${esc(item.title)} ${qtyText}</h4>
                         <span class="item-type-badge" style="color: ${typeColor}; border-color: ${typeColor};">${typeLabel}</span>
                         ${sessionDetails}
                     </div>
@@ -1110,4 +1110,4 @@ function initSmartCheckout() {
 </script>
     <script src="js/pwa.js"></script>
 </body>
-</html>
+</html>

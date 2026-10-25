@@ -186,7 +186,7 @@ async function loadSingleProductPage() {
         const badgesEl = document.getElementById('product-badges');
         if (badgesEl) {
             badgesEl.innerHTML = (normalized.badges || [])
-                .map(b => `<span class="badge">${b}</span>`)
+                .map(b => `<span class="badge">${esc(b)}</span>`)
                 .join('');
         }
 
@@ -243,7 +243,7 @@ async function loadSingleProductPage() {
 function productCardHTML(product) {
     const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
     const badgesHTML = (product.badges || [])
-        .map(b => `<span class="badge">${b}</span>`)
+        .map(b => `<span class="badge">${esc(b)}</span>`)
         .join('');
     const egyptStripHTML = product.egyptOnly
         ? `<div class="egypt-only-strip">${tr('product.egyptOnly', 'Egypt Only')}</div>`
@@ -253,7 +253,7 @@ function productCardHTML(product) {
     const outOfStockOverlay = outOfStock ? `<div class="out-of-stock-overlay">${outOfStockLabel}</div>` : '';
     const addToCartBtn = outOfStock
         ? `<button class="add-to-cart-new add-to-cart" disabled style="opacity:0.5; cursor:not-allowed;">${outOfStockLabel}</button>`
-        : `<button class="add-to-cart-new add-to-cart" data-id="${product.id}" data-title="${product.title.replace(/"/g, '&quot;')}">${tr('product.addToCart', 'Add to cart')}</button>`;
+        : `<button class="add-to-cart-new add-to-cart" data-id="${esc(product.id)}" data-title="${esc(product.title)}">${tr('product.addToCart', 'Add to cart')}</button>`;
     // حجم/وضع الصورة جوه الكارت بييجي من لوحة الأدمن (cardImage) بدل ما يبقى مكتوب في الـ CSS
     const ci = product.cardImage || {};
     const cardImgStyle = `--img-max-width:${ci.width || 260}px; --img-max-height:${ci.height || 300}px; --img-offset-x:${ci.offsetX || 0}px; --img-offset-y:${ci.offsetY || 0}px; --img-max-width-mobile:${ci.mobileWidth || 135}px; --img-max-height-mobile:${ci.mobileHeight || 160}px; --img-offset-x-mobile:${ci.mobileOffsetX || 0}px; --img-offset-y-mobile:${ci.mobileOffsetY || 0}px;`;
@@ -264,13 +264,13 @@ function productCardHTML(product) {
             <div class="card-image-wrapper">
                 ${egyptStripHTML}
                 ${outOfStockOverlay}
-                <a href="product.html?id=${product.id}">
-                    <img src="${product.image}" alt="${product.title}" class="card-img" style="${cardImgStyle}" loading="lazy">
+                <a href="product.html?id=${encodeURIComponent(product.id)}">
+                    <img src="${safeImg(product.image)}" alt="${esc(product.title)}" class="card-img" style="${cardImgStyle}" loading="lazy">
                 </a>
             </div>
             <div class="card-info-wrapper">
-                <a href="product.html?id=${product.id}" style="text-decoration: none;">
-                    <h3 class="card-title">${product.title}</h3>
+                <a href="product.html?id=${encodeURIComponent(product.id)}" style="text-decoration: none;">
+                    <h3 class="card-title">${esc(product.title)}</h3>
                 </a>
                 <div class="card-badges">${badgesHTML}</div>
                 <p class="card-desc">${localizedDescription(product)}</p>
@@ -573,9 +573,9 @@ function renderCartItemsNow() {
         const typeColor = item.type === 'digital' ? '#34A853' : item.type === 'both' ? '#5b8def' : item.type === 'booking' ? '#d8b056' : 'var(--gold-color)';
         const itemHTML = `
             <div class="cart-item reveal active">
-                <img src="${item.image}" alt="Book" class="cart-item-img">
+                <img src="${safeImg(item.image)}" alt="Book" class="cart-item-img">
                 <div class="cart-item-info">
-                    <h3 class="cart-item-title">${item.title}</h3>
+                    <h3 class="cart-item-title">${esc(item.title)}</h3>
                     <span style="font-size: 0.75rem; color: ${typeColor}; border: 1px solid ${typeColor}; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 5px;">${typeLabel}</span>
                 </div>
                 <div class="cart-item-actions">
@@ -976,11 +976,11 @@ function renderReviewsList(reviews) {
     listEl.innerHTML = reviews.map((r) => `
         <div class="review-item">
             <div class="review-item-header">
-                <span class="review-item-name">${r.userName}</span>
+                <span class="review-item-name">${esc(r.userName)}</span>
                 <span class="review-item-date">${new Date(r.createdAt).toLocaleDateString(dateLocale)}</span>
             </div>
             <div class="review-item-stars">${starsToText(r.rating)}</div>
-            <p class="review-item-comment">${r.comment}</p>
+            <p class="review-item-comment">${esc(r.comment)}</p>
         </div>
     `).join('');
 }
@@ -1489,7 +1489,7 @@ function applyLoginState() {
             container.innerHTML = ''; 
         } else if (loggedInUser) {
             const firstLetter = loggedInUser.charAt(0).toUpperCase();
-            container.innerHTML = `<a href="profile.html" class="user-avatar" title="${loggedInUser}">${firstLetter}</a>`;
+            container.innerHTML = `<a href="profile.html" class="user-avatar" title="${esc(loggedInUser)}">${esc(firstLetter)}</a>`;
         } else {
             const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
             const signInLabel = tr('header.signIn', 'Sign In / Register');
@@ -1683,10 +1683,10 @@ document.addEventListener("DOMContentLoaded", revealOnScroll);
 
         if (matches.length > 0) {
             dropdown.innerHTML = matches.slice(0, 5).map(p => `
-                <a href="product.html?id=${p.id}" class="search-result-item">
-                    <img src="${p.image}" alt="${p.title}">
+                <a href="product.html?id=${encodeURIComponent(p.id)}" class="search-result-item">
+                    <img src="${safeImg(p.image)}" alt="${esc(p.title)}">
                     <div>
-                        <span class="search-result-title">${p.title}</span>
+                        <span class="search-result-title">${esc(p.title)}</span>
                         <span class="search-result-price">${p.price}</span>
                     </div>
                 </a>

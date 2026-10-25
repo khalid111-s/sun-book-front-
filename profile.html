@@ -457,14 +457,14 @@
                 <div class="history-card" style="flex-direction: column; align-items: stretch;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div class="history-info">
-                            <h4>${s.subject || s.booking?.subject || tr('profile.oneOnOneSessionDefault', 'One-on-One Session')}</h4>
+                            <h4>${esc(s.subject || s.booking?.subject || tr('profile.oneOnOneSessionDefault', 'One-on-One Session'))}</h4>
                             <p style="color: var(--gold-color); font-weight: bold; margin-top: 8px;">${dateStr} • ${s.duration || s.booking?.duration || 30} ${tr('profile.minSuffix', 'min')}</p>
                         </div>
                         <div class="history-status" style="color: ${isLive ? '#34A853' : '#ff4d4d'}; background: ${isLive ? 'rgba(52,168,83,0.1)' : 'rgba(255,77,77,0.1)'};">${tr('profile.status.' + s.status, s.status)}</div>
                     </div>
                     <div class="session-actions">
                         ${isLive ? `
-                            <button class="btn-join" onclick="window.location.href='session.html?id=${s._id}'">${tr('profile.joinSession', 'Join Session')}</button>
+                            <button class="btn-join" onclick="window.location.href='session.html?id=${encodeURIComponent(s._id)}'">${tr('profile.joinSession', 'Join Session')}</button>
                         ` : `<button class="btn-reschedule" disabled>${tr('profile.completedStatus', 'Completed')}</button>`}
                         ${canReschedule ? `<button class="reschedule-session-btn" data-id="${bookingId}" style="margin-left:10px; background:transparent; border:1px solid var(--gold-color); color:var(--gold-color); padding:8px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">${tr('profile.reschedule', 'Reschedule')}</button>` : ''}
                         ${canCancel ? `<button class="cancel-session-btn" data-id="${bookingId}" style="margin-left:10px; background:transparent; border:1px solid #e05252; color:#e05252; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">${tr('profile.cancelSession', 'Cancel Session')}</button>` : ''}
@@ -485,7 +485,7 @@
                 <div class="history-card" style="flex-direction: column; align-items: stretch;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div class="history-info">
-                            <h4>${b.subject}</h4>
+                            <h4>${esc(b.subject)}</h4>
                             <p style="color: var(--gold-color); margin-top: 8px;">${dateObj.toLocaleDateString(dateLocale)} • ${b.duration} ${tr('profile.minSuffix', 'min')}</p>
                         </div>
                         <div class="history-status">${tr('profile.status.' + b.status, b.status)}</div>
@@ -535,7 +535,7 @@
         }
     } catch (err) {
         console.error('Sessions load error:', err);
-        bookingsList.innerHTML = `<p style="color: #ff4d4d; text-align: center; padding: 20px 0;">${tr('profile.errorLoadingSessions', 'Error loading sessions:')} ${err.message}</p>`;
+        bookingsList.innerHTML = `<p style="color: #ff4d4d; text-align: center; padding: 20px 0;">${tr('profile.errorLoadingSessions', 'Error loading sessions:')} ${esc(err.message)}</p>`;
     }
 }
 

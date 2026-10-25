@@ -8,6 +8,16 @@ const API_URL = (() => {
   return isLocal ? 'http://localhost:5000/api' : PRODUCTION_API_URL;
 })();
 
+// حماية XSS: أي نص جاي من المستخدم أو من السيرفر لازم يعدّي من esc() قبل ما يتحط جوه innerHTML
+function esc(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+// روابط الصور: بنسمح بس بـ https/http أو مسار داخلي، وأي حاجة تانية (زي javascript:) بتتحول لصورة افتراضية
+function safeImg(value) {
+  const s = String(value ?? '').trim();
+  return /^(https?:\/\/|\/(?!\/)|assets\/|data:image\/(png|jpe?g|webp|gif);base64,)/i.test(s) ? esc(s) : 'assets/sun-icon.png';
+}
+
 const api = {
   async request(endpoint, options = {}) {
     const token = localStorage.getItem('sunbook_token');

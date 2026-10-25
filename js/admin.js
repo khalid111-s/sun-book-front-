@@ -66,13 +66,13 @@ function renderAdminAccountSwitcher(activeEmail) {
     function renderDropdown() {
         const optionsHtml = accounts.map((a) => {
             const isActive = a.email === activeEmail;
-            const initial = (a.name || a.email).charAt(0).toUpperCase();
+            const initial = esc((a.name || a.email).charAt(0).toUpperCase());
             return `
-                <button type="button" class="admin-account-option ${isActive ? 'active' : ''}" data-email="${a.email}">
+                <button type="button" class="admin-account-option ${isActive ? 'active' : ''}" data-email="${esc(a.email)}">
                     <span class="admin-avatar-circle">${initial}</span>
                     <span>
-                        <span class="acc-name">${a.name || 'Admin'}</span>
-                        <span class="acc-email">${a.email}</span>
+                        <span class="acc-name">${esc(a.name || 'Admin')}</span>
+                        <span class="acc-email">${esc(a.email)}</span>
                     </span>
                     ${isActive ? '<span class="acc-check">✓</span>' : ''}
                 </button>
@@ -206,11 +206,11 @@ async function loadProductsTable() {
             return `
             <tr draggable="true" data-id="${p._id}">
                 <td class="drag-handle" title="Drag to reorder">⠿</td>
-                <td><img src="${p.image}" alt="${p.title}" onerror="this.src='assets/sun-icon.png'"></td>
-                <td>${p.title}${p.hidden ? ' <span class="admin-badge-yes" style="background:#6b6b6b;">Hidden</span>' : ''}</td>
+                <td><img src="${safeImg(p.image)}" alt="${esc(p.title)}" onerror="this.src='assets/sun-icon.png'"></td>
+                <td>${esc(p.title)}${p.hidden ? ' <span class="admin-badge-yes" style="background:#6b6b6b;">Hidden</span>' : ''}</td>
                 <td>LE ${Number(p.price).toFixed(2)}</td>
                 <td>${p.priceEUR ? `€${Number(p.priceEUR).toFixed(2)}` : '—'}</td>
-                <td>${p.type}${['digital', 'both'].includes(p.type)
+                <td>${esc(p.type)}${['digital', 'both'].includes(p.type)
                 ? `<div style="font-size:0.75rem;color:var(--text-gray);margin-top:4px;">${(p.bundleItems || []).length ? `Bundle · ${p.bundleItems.length} books` : (p.digital?.pageCount ? `Ready · ${p.digital.pageCount} pages` : 'Book not processed')}${p.digital?.pageCount ? ` · <a href="reader.html?book=${encodeURIComponent(p._id)}" target="_blank" rel="noopener">Preview</a>` : ''}</div>`
                 : ''}</td>
                 <td>${p.featured ? '<span class="admin-badge-yes">Yes</span>' : '—'}</td>
@@ -239,7 +239,7 @@ async function loadProductsTable() {
             }
         });
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="11" style="color:#e05252;">Failed to load products: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" style="color:#e05252;">Failed to load products: ${esc(err.message)}</td></tr>`;
     }
 }
 
@@ -260,8 +260,8 @@ function renderBestOffersOrderList() {
     wrap.innerHTML = featured.map(p => `
         <div class="best-offer-order-item" draggable="true" data-id="${p._id}">
             <span class="drag-handle" title="Drag to reorder">⠿</span>
-            <img src="${p.image}" alt="${p.title}" onerror="this.src='assets/sun-icon.png'">
-            <span>${p.title}</span>
+            <img src="${safeImg(p.image)}" alt="${esc(p.title)}" onerror="this.src='assets/sun-icon.png'">
+            <span>${esc(p.title)}</span>
         </div>
     `).join('');
 
@@ -532,8 +532,8 @@ async function loadDashboardStats() {
         topProductsBody.innerHTML = orderStats.topProducts.length
             ? orderStats.topProducts.map(p => `
                 <tr>
-                    <td>${p.title}</td>
-                    <td>${p.quantitySold}</td>
+                    <td>${esc(p.title)}</td>
+                    <td>${Number(p.quantitySold)}</td>
                     <td>LE ${Number(p.revenue).toFixed(2)}</td>
                 </tr>
             `).join('')
@@ -542,27 +542,27 @@ async function loadDashboardStats() {
         // ---- أكتر المنتجات نقرًا على "Add to Cart" ----
         const topClickedBody = document.getElementById('topClickedBody');
         topClickedBody.innerHTML = clickStats.topClicked.length
-            ? clickStats.topClicked.map(c => `<tr><td>${c.title}</td><td>${c.clicks}</td></tr>`).join('')
+            ? clickStats.topClicked.map(c => `<tr><td>${esc(c.title)}</td><td>${Number(c.clicks)}</td></tr>`).join('')
             : '<tr><td colspan="2">No clicks recorded yet.</td></tr>';
 
         // ---- أكتر الصفحات زيارة ----
         const topPagesBody = document.getElementById('topPagesBody');
         if (topPagesBody) {
             topPagesBody.innerHTML = (visitStats.topPages || []).length
-                ? visitStats.topPages.map(p => `<tr><td>${p.path || '/'}</td><td>${p.pageViews}</td><td>${p.visitors}</td></tr>`).join('')
+                ? visitStats.topPages.map(p => `<tr><td>${esc(p.path || '/')}</td><td>${p.pageViews}</td><td>${p.visitors}</td></tr>`).join('')
                 : '<tr><td colspan="3">No visits recorded yet.</td></tr>';
         }
 
         // ---- الزوار حسب الدولة ----
         const topCountriesBody = document.getElementById('topCountriesBody');
         topCountriesBody.innerHTML = visitStats.topCountries.length
-            ? visitStats.topCountries.map(c => `<tr><td>${c.country}</td><td>${c.visitors}</td></tr>`).join('')
+            ? visitStats.topCountries.map(c => `<tr><td>${esc(c.country)}</td><td>${c.visitors}</td></tr>`).join('')
             : '<tr><td colspan="2">No visits recorded yet.</td></tr>';
 
         // ---- مصادر الزيارات ----
         const topReferrersBody = document.getElementById('topReferrersBody');
         topReferrersBody.innerHTML = visitStats.topReferrers.length
-            ? visitStats.topReferrers.map(r => `<tr><td>${r.referrer}</td><td>${r.visitors}</td></tr>`).join('')
+            ? visitStats.topReferrers.map(r => `<tr><td>${esc(r.referrer)}</td><td>${r.visitors}</td></tr>`).join('')
             : '<tr><td colspan="2">No visits recorded yet.</td></tr>';
 
         // ---- الإيرادات حسب النوع ----
@@ -578,8 +578,8 @@ async function loadDashboardStats() {
         const detailedOrdersBody = document.getElementById('detailedOrdersBody');
         detailedOrdersBody.innerHTML = orders.length
             ? orders.slice(0, 50).map(o => {
-                const itemsSummary = o.items.map(i => `${i.title} ×${i.qty}`).join(', ');
-                const accountName = o.user && o.user.name ? o.user.name : '—';
+                const itemsSummary = o.items.map(i => `${esc(i.title)} ×${Number(i.qty)}`).join(', ');
+                const accountName = o.user && o.user.name ? esc(o.user.name) : '—';
                 const hasPhysical = o.items.some(i => i.type === 'physical' || i.type === 'both');
                 const fulfillmentCell = hasPhysical
                     ? `<select class="fulfillment-select" data-id="${o._id}" style="background:#1a1b1d;color:#fff;border:1px solid #444;border-radius:4px;padding:4px 6px;font-size:0.8rem;">
@@ -592,11 +592,11 @@ async function loadDashboardStats() {
                     <tr>
                         <td>${new Date(o.createdAt).toLocaleDateString()}</td>
                         <td>${accountName}</td>
-                        <td>${o.customerName}</td>
+                        <td>${esc(o.customerName)}</td>
                         <td>${itemsSummary}</td>
                         <td>LE ${Number(o.totalAmount).toFixed(2)}</td>
-                        <td>${o.country || 'Unknown'}</td>
-                        <td>${o.status === 'paid' ? '<span class="admin-badge-yes">Paid</span>' : o.status}</td>
+                        <td>${esc(o.country || 'Unknown')}</td>
+                        <td>${o.status === 'paid' ? '<span class="admin-badge-yes">Paid</span>' : esc(o.status)}</td>
                         <td>${fulfillmentCell}</td>
                     </tr>
                 `;
@@ -1011,10 +1011,10 @@ async function loadSessionsTable() {
             return `
             <tr${soon ? ' style="background: rgba(216,176,86,0.12);"' : ''}>
                 <td>${new Date(b.date).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}${soon ? ' <span style="color:#d8b056; font-size:0.75rem;">● soon</span>' : ''}</td>
-                <td>${b.student?.name || '—'}</td>
-                <td>${b.student?.email || '—'}</td>
-                <td>${b.student?.phone || '—'}</td>
-                <td>${b.subject || '—'}</td>
+                <td>${esc(b.student?.name || '—')}</td>
+                <td>${esc(b.student?.email || '—')}</td>
+                <td>${esc(b.student?.phone || '—')}</td>
+                <td>${esc(b.subject || '—')}</td>
                 <td>LE ${Number(b.price).toFixed(2)}</td>
                 <td>${statusBadge(b.status)}</td>
                 <td>${sessionStatusBadge(b.sessionStatus)}</td>
@@ -1023,7 +1023,7 @@ async function loadSessionsTable() {
         `;
         }).join('');
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="9" style="color:#e05252;">Failed to load sessions: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="color:#e05252;">Failed to load sessions: ${esc(err.message)}</td></tr>`;
     }
 }
 
@@ -1039,14 +1039,14 @@ async function loadUsersTable() {
         }
         tbody.innerHTML = data.map(u => `
             <tr>
-                <td>${u.name}</td>
-                <td>${u.email}</td>
+                <td>${esc(u.name)}</td>
+                <td>${esc(u.email)}</td>
                 <td>${new Date(u.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                 <td>${u.orderCount ?? 0}</td>
             </tr>
         `).join('');
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="4" style="color:#e05252;">Failed to load users: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" style="color:#e05252;">Failed to load users: ${esc(err.message)}</td></tr>`;
     }
 }
 
@@ -1073,8 +1073,8 @@ async function loadPromoCodesTable() {
             return `
                 <tr>
                     <td>
-                        <strong style="color:var(--gold-color);">${p.code}</strong>
-                        <button class="copy-promo-btn" data-code="${p.code}" title="Copy code" style="background:transparent;border:1px solid rgba(216,176,86,0.4);color:var(--gold-color);border-radius:4px;padding:2px 7px;font-size:0.75rem;cursor:pointer;margin-left:6px;">Copy</button>
+                        <strong style="color:var(--gold-color);">${esc(p.code)}</strong>
+                        <button class="copy-promo-btn" data-code="${esc(p.code)}" title="Copy code" style="background:transparent;border:1px solid rgba(216,176,86,0.4);color:var(--gold-color);border-radius:4px;padding:2px 7px;font-size:0.75rem;cursor:pointer;margin-left:6px;">Copy</button>
                     </td>
                     <td>${discountLabel}</td>
                     <td>${usageLabel}<br><span style="color:var(--text-gray); font-size:0.75rem;">${perUserLabel}</span></td>
@@ -1090,7 +1090,7 @@ async function loadPromoCodesTable() {
             `;
         }).join('');
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="6" style="color:#e05252;">Failed to load promo codes: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="color:#e05252;">Failed to load promo codes: ${esc(err.message)}</td></tr>`;
     }
 }
 
@@ -1373,8 +1373,8 @@ async function loadArchivesList() {
         }
         wrap.innerHTML = months.map((m) => `
             <div style="display:flex; align-items:center; justify-content:space-between; padding: 14px 16px; border-bottom: 1px solid rgba(216,176,86,0.12);">
-                <span style="color:#f2f2f2;">${m.label}</span>
-                <button type="button" class="archive-download-btn" data-year="${m.year}" data-month="${m.month}" data-label="${m.label}" style="background: transparent; border: 1px solid var(--gold-color); color: var(--gold-color); padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">Download PDF</button>
+                <span style="color:#f2f2f2;">${esc(m.label)}</span>
+                <button type="button" class="archive-download-btn" data-year="${m.year}" data-month="${m.month}" data-label="${esc(m.label)}" style="background: transparent; border: 1px solid var(--gold-color); color: var(--gold-color); padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">Download PDF</button>
             </div>
         `).join('');
 
@@ -1382,7 +1382,7 @@ async function loadArchivesList() {
             btn.addEventListener('click', () => downloadMonthlyArchive(btn));
         });
     } catch (err) {
-        wrap.innerHTML = `<p style="color:#e05252; padding: 16px;">Failed to load: ${err.message}</p>`;
+        wrap.innerHTML = `<p style="color:#e05252; padding: 16px;">Failed to load: ${esc(err.message)}</p>`;
     }
 }
 
@@ -1525,14 +1525,14 @@ async function loadSiteContentTab() {
         let html = '';
         Object.keys(groups).forEach((groupKey) => {
             const groupLabel = groupDisplayNames[groupKey] || groupKey;
-            html += `<details class="site-content-group"><summary>${groupLabel} (${groups[groupKey].length})</summary>`;
+            html += `<details class="site-content-group"><summary>${esc(groupLabel)} (${groups[groupKey].length})</summary>`;
             groups[groupKey].forEach((item) => {
                 html += `
                 <div class="site-content-item">
-                    <label>${item.label}</label>
+                    <label>${esc(item.label)}</label>
                     <div class="site-content-item-fields">
-                        <textarea data-key="${item.key}" data-lang="en" dir="ltr" placeholder="English">${escapeHtmlForTextarea(item.en)}</textarea>
-                        <textarea data-key="${item.key}" data-lang="ar" dir="rtl" placeholder="عربي">${escapeHtmlForTextarea(item.ar)}</textarea>
+                        <textarea data-key="${esc(item.key)}" data-lang="en" dir="ltr" placeholder="English">${escapeHtmlForTextarea(item.en)}</textarea>
+                        <textarea data-key="${esc(item.key)}" data-lang="ar" dir="rtl" placeholder="عربي">${escapeHtmlForTextarea(item.ar)}</textarea>
                     </div>
                 </div>`;
             });
@@ -1541,7 +1541,7 @@ async function loadSiteContentTab() {
 
         wrap.innerHTML = html || '<p style="color: var(--text-gray); padding: 16px;">No content items found.</p>';
     } catch (err) {
-        wrap.innerHTML = `<p style="color: #ff4d4d; padding: 16px;">Failed to load content: ${err.message}</p>`;
+        wrap.innerHTML = `<p style="color: #ff4d4d; padding: 16px;">Failed to load content: ${esc(err.message)}</p>`;
     }
 }
 
