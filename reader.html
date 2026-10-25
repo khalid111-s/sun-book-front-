@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#111111">
+    <meta name="theme-color" content="#0c0d0f">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Online book reader | The Sun Book</title>
     <link rel="manifest" href="manifest.json">
@@ -17,28 +17,38 @@
         <header class="reader-toolbar">
             <a class="reader-back" href="profile.html?tab=digital" data-i18n="reader.close">Back to my library</a>
             <h1 id="readerTitle" data-i18n="reader.title">Online book reader</h1>
-            <div class="reader-controls">
-                <button type="button" id="zoomOut" aria-label="Zoom out" data-i18n-aria-label="reader.zoomOut">−</button>
-                <button type="button" id="zoomIn" aria-label="Zoom in" data-i18n-aria-label="reader.zoomIn">+</button>
-                <button type="button" id="viewBtn" class="reader-text-btn" aria-haspopup="true" aria-expanded="false"></button>
-                <button type="button" id="fullscreenBtn" class="reader-text-btn" aria-label="Fullscreen">⛶</button>
-            </div>
-            <div id="viewMenu" class="reader-menu" hidden></div>
+            <div id="cacheChip" class="reader-chip" hidden></div>
         </header>
         <nav id="readerTabs" class="reader-tabs" role="tablist" aria-label="Books in this bundle" data-i18n-aria-label="reader.tabsLabel" hidden></nav>
-        <section class="reader-navigation" aria-label="Reader navigation">
-            <button type="button" id="previousPage" data-i18n="reader.previous">Previous page</button>
-            <div class="reader-page-jump">
-                <span id="pageCounter" class="reader-counter"></span>
-                <input id="pageNumber" type="number" min="1" step="1" inputmode="numeric" aria-label="Go to page" data-i18n-aria-label="reader.jump">
-                <button type="button" id="goToPage" data-i18n="reader.jump">Go to page</button>
-            </div>
-            <button type="button" id="nextPage" data-i18n="reader.next">Next page</button>
-            <div id="cacheChip" class="reader-chip" hidden></div>
-        </section>
         <p id="readerStatus" class="reader-status" role="status" aria-live="polite"></p>
         <div id="readerViewport" class="reader-viewport">
             <div id="readerStage" class="reader-stage"></div>
+        </div>
+        <div class="reader-progress" aria-hidden="true"><span id="progressFill"></span></div>
+
+        <div id="readerDock" class="reader-dock">
+            <div id="viewMenu" class="reader-menu" hidden></div>
+            <div class="reader-bar" role="toolbar" aria-label="Reader controls">
+                <div class="reader-group">
+                    <button type="button" id="previousPage" class="reader-icon-btn" aria-label="Previous page" data-i18n-aria-label="reader.previous">‹</button>
+                    <div class="reader-page-jump" dir="ltr">
+                        <input id="pageNumber" type="number" min="1" step="1" inputmode="numeric" aria-label="Go to page" data-i18n-aria-label="reader.jump">
+                        <span id="pageCounter" class="reader-counter"></span>
+                    </div>
+                    <button type="button" id="nextPage" class="reader-icon-btn" aria-label="Next page" data-i18n-aria-label="reader.next">›</button>
+                </div>
+                <span class="reader-sep" aria-hidden="true"></span>
+                <div class="reader-group">
+                    <button type="button" id="zoomOut" class="reader-icon-btn" aria-label="Zoom out" data-i18n-aria-label="reader.zoomOut">−</button>
+                    <button type="button" id="zoomLabel" class="reader-zoom-label">100%</button>
+                    <button type="button" id="zoomIn" class="reader-icon-btn" aria-label="Zoom in" data-i18n-aria-label="reader.zoomIn">+</button>
+                </div>
+                <span class="reader-sep" aria-hidden="true"></span>
+                <div class="reader-group">
+                    <button type="button" id="viewBtn" class="reader-pill-btn" aria-haspopup="true" aria-expanded="false"></button>
+                    <button type="button" id="fullscreenBtn" class="reader-icon-btn" aria-label="Fullscreen">⛶</button>
+                </div>
+            </div>
         </div>
         <button type="button" id="immersiveExit" class="reader-immersive-exit" hidden></button>
     </main>

@@ -1,34 +1,35 @@
-html, body.reader-page { min-height: 100%; margin: 0; background: #0c0d0f; color: #f7f7f7; }
-body.reader-page { --reader-bg: #0c0d0f; }
+:root { --r-bg: #0c0d0f; --r-surface: #16171a; --r-line: #2a2b2f; --r-text: #f3f3f4; --r-muted: #9b9ba2; --r-gold: var(--gold-color, #d8b056); --r-dock: 76px; }
+html, body.reader-page { min-height: 100%; margin: 0; background: var(--r-bg); color: var(--r-text); }
+body.reader-page { --reader-bg: #0c0d0f; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; overflow: hidden; }
 body.reader-page.bg-gray { --reader-bg: #3a3b3f; }
 body.reader-page.bg-light { --reader-bg: #e6e2d8; }
-body.reader-page { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; overflow: hidden; }
 body.reader-page.reader-blurred .reader-shell { filter: blur(18px); }
-.reader-shell { height: 100dvh; display: flex; flex-direction: column; }
-.reader-toolbar, .reader-navigation { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px clamp(12px, 3vw, 28px); background: #151619; border-bottom: 1px solid #2b2c2f; }
-.reader-toolbar h1 { font-size: 1rem; margin: 0; color: var(--gold-color, #d8b056); text-align: center; }
-.reader-back { color: #e5c574; text-decoration: none; font-size: .9rem; }
-.reader-controls, .reader-page-jump { display: flex; align-items: center; gap: 8px; }
-.reader-controls button, .reader-navigation button { min-height: 38px; padding: 7px 12px; border: 1px solid #46474b; border-radius: 8px; background: #202124; color: #fff; cursor: pointer; }
-.reader-controls button { min-width: 42px; font-size: 1.2rem; }
-.reader-navigation { flex-wrap: wrap; }
-.reader-navigation button:disabled { opacity: .4; cursor: default; }
-.reader-page-jump { font-size: .9rem; }
-.reader-page-jump input { width: 74px; padding: 8px; border: 1px solid #46474b; border-radius: 6px; background: #0f1012; color: #fff; text-align: center; }
-.reader-status-error { color: #ff8a8a; }
+.reader-shell { position: relative; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* الشريط العلوي: رفيع ومش واخد مساحة */
+.reader-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: calc(env(safe-area-inset-top, 0px) + 8px) clamp(12px, 3vw, 24px) 8px; background: var(--r-surface); border-bottom: 1px solid var(--r-line); transition: transform .25s ease, opacity .25s ease; }
+.reader-toolbar h1 { flex: 1; margin: 0; font-size: .98rem; font-weight: 600; color: var(--r-gold); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.reader-back { color: #e5c574; text-decoration: none; font-size: .88rem; white-space: nowrap; }
+.reader-back:hover { text-decoration: underline; }
+.reader-chip { font-size: .74rem; color: #e2c778; background: #1d1e21; border: 1px solid #3a3b3f; border-radius: 999px; padding: 4px 11px; white-space: nowrap; }
+.reader-chip[hidden] { display: none; }
 .reader-status { margin: 6px 12px; color: #e2c778; text-align: center; font-size: .88rem; }
-/* الحالة: بنخفيها لو فاضية، وبتظهر بس للأخطاء */
 .reader-status:empty { display: none; }
-.reader-counter { font-size: .9rem; color: #d7d7da; white-space: nowrap; }
-.reader-text-btn { font-size: .9rem !important; white-space: nowrap; }
-.reader-toolbar { position: relative; }
+.reader-status-error { color: #ff8a8a; }
+
+/* تابات الكتب */
+.reader-tabs { display: flex; gap: 4px; padding: 8px clamp(12px, 3vw, 24px) 0; background: var(--r-surface); overflow-x: auto; scrollbar-width: thin; }
+.reader-tabs[hidden] { display: none; }
+.reader-tab { flex: 0 0 auto; max-width: 260px; min-height: 36px; padding: 7px 18px; border: 1px solid var(--r-line); border-bottom: none; border-radius: 10px 10px 0 0; background: #1d1e21; color: #b9b9bd; font-size: .9rem; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reader-tab:hover { background: #26272b; color: #fff; }
+.reader-tab-active { background: var(--r-bg); color: var(--r-gold); border-color: #46474b; box-shadow: inset 0 3px 0 var(--r-gold); }
 
 /* منطقة القراءة */
-.reader-viewport { position: relative; flex: 1; min-height: 0; overflow: auto; display: flex; padding: 10px; background: var(--reader-bg); overscroll-behavior: contain; touch-action: pan-x pan-y pinch-zoom; }
+.reader-viewport { position: relative; flex: 1; min-height: 0; overflow: auto; display: flex; padding: 12px 12px var(--r-dock); background: var(--reader-bg); overscroll-behavior: contain; touch-action: pan-x pan-y; scrollbar-width: thin; scrollbar-color: #3a3b3f transparent; }
 .reader-stage { width: max-content; margin: auto; display: flex; align-items: flex-start; gap: 12px; }
 .reader-stage.layout-spread { direction: rtl; gap: 3px; }
 .reader-stage.layout-scroll { flex-direction: column; align-items: center; margin: 0 auto; }
-.reader-sheet { position: relative; flex: 0 0 auto; width: var(--page-w, 600px); aspect-ratio: var(--aspect, 0.707); background: #18191c; box-shadow: 0 4px 30px rgba(0,0,0,.5); overflow: hidden; }
+.reader-sheet { position: relative; flex: 0 0 auto; width: var(--page-w, 600px); aspect-ratio: var(--aspect, 0.707); background: #18191c; border-radius: 3px; box-shadow: 0 8px 36px rgba(0,0,0,.45); overflow: hidden; }
 .reader-sheet img { display: block; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .18s ease; -webkit-user-drag: none; user-select: none; }
 .reader-sheet.is-ready img { opacity: 1; }
 /* الهيكل اللامع بيظهر بعد 200ms بس: لو الصفحة جت بسرعة محدش بيشوفه */
@@ -39,38 +40,57 @@ body.reader-page.reader-blurred .reader-shell { filter: blur(18px); }
 .reader-retry { position: absolute; inset: 0; margin: auto; width: max-content; height: max-content; padding: 9px 16px; border: 1px solid #5a5b60; border-radius: 8px; background: #202124; color: #fff; cursor: pointer; display: none; }
 .reader-sheet.is-failed .reader-retry { display: block; }
 
-/* شريط التحميل الصغير (القراءة السريعة) */
-.reader-chip { font-size: .78rem; color: #e2c778; background: #1d1e21; border: 1px solid #3a3b3f; border-radius: 999px; padding: 4px 12px; white-space: nowrap; }
-.reader-chip[hidden] { display: none; }
+/* خط تقدم القراءة */
+.reader-progress { position: absolute; inset-inline: 0; bottom: 0; height: 3px; background: rgba(255,255,255,.07); z-index: 5; pointer-events: none; }
+.reader-progress span { display: block; height: 100%; width: 0; background: var(--r-gold); transition: width .25s ease; margin-inline-start: auto; }
 
-/* قايمة العرض */
-.reader-menu { position: absolute; top: 100%; inset-inline-end: 12px; z-index: 20; width: min(340px, calc(100vw - 24px)); padding: 14px; border: 1px solid #3a3b3f; border-radius: 12px; background: #1a1b1e; box-shadow: 0 12px 40px rgba(0,0,0,.6); display: grid; gap: 14px; }
+/* شريط التحكم العايم تحت */
+.reader-dock { position: absolute; inset-inline: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-inline: 10px; pointer-events: none; transition: opacity .3s ease, transform .3s ease; }
+.reader-dock > * { pointer-events: auto; }
+.reader-bar { direction: ltr; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 10px; max-width: 100%; padding: 7px 12px; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; background: rgba(22,23,26,.82); box-shadow: 0 10px 34px rgba(0,0,0,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.reader-group { display: flex; align-items: center; gap: 4px; }
+.reader-sep { width: 1px; height: 22px; background: rgba(255,255,255,.14); }
+.reader-icon-btn, .reader-pill-btn, .reader-zoom-label { min-height: 38px; border: none; border-radius: 999px; background: transparent; color: var(--r-text); cursor: pointer; font-size: 1.15rem; line-height: 1; transition: background .15s ease, color .15s ease; }
+.reader-icon-btn { min-width: 38px; padding: 0 8px; }
+.reader-pill-btn { padding: 0 14px; font-size: .85rem; }
+.reader-zoom-label { min-width: 52px; padding: 0 6px; font-size: .8rem; color: var(--r-muted); }
+.reader-icon-btn:hover, .reader-pill-btn:hover, .reader-zoom-label:hover { background: rgba(255,255,255,.1); color: #fff; }
+.reader-icon-btn:disabled { opacity: .3; cursor: default; background: transparent; }
+.reader-icon-btn:focus-visible, .reader-pill-btn:focus-visible, .reader-zoom-label:focus-visible { outline: 2px solid var(--r-gold); outline-offset: 1px; }
+.reader-page-jump { display: flex; align-items: center; gap: 6px; font-size: .88rem; }
+.reader-page-jump input { width: 56px; padding: 7px 4px; border: 1px solid #3a3b3f; border-radius: 8px; background: rgba(0,0,0,.35); color: #fff; text-align: center; font-size: .9rem; -moz-appearance: textfield; }
+.reader-page-jump input::-webkit-outer-spin-button, .reader-page-jump input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.reader-counter { color: var(--r-muted); white-space: nowrap; }
+
+/* قايمة العرض: بتفتح لفوق من الشريط */
+.reader-menu { width: min(350px, calc(100vw - 20px)); padding: 16px; border: 1px solid #34353a; border-radius: 16px; background: rgba(24,25,28,.96); box-shadow: 0 16px 50px rgba(0,0,0,.65); display: grid; gap: 15px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); max-height: calc(100dvh - 190px); overflow: auto; }
 .reader-menu[hidden] { display: none; }
-.reader-menu h3 { margin: 0 0 7px; font-size: .78rem; font-weight: 600; color: #9d9da3; }
+.reader-menu h3 { margin: 0 0 7px; font-size: .76rem; font-weight: 600; letter-spacing: .02em; color: var(--r-muted); }
 .reader-seg { display: flex; flex-wrap: wrap; gap: 6px; }
-.reader-seg button { flex: 1 1 auto; min-height: 36px; padding: 6px 10px; border: 1px solid #46474b; border-radius: 8px; background: #202124; color: #e8e8ea; cursor: pointer; font-size: .85rem; }
-.reader-seg button[aria-pressed="true"] { border-color: var(--gold-color, #d8b056); color: var(--gold-color, #d8b056); background: #26231a; }
-.reader-menu-note { margin: 0; font-size: .76rem; color: #9d9da3; line-height: 1.5; }
+.reader-seg button { flex: 1 1 auto; min-height: 38px; padding: 6px 10px; border: 1px solid #3a3b3f; border-radius: 10px; background: #1e1f22; color: #e8e8ea; cursor: pointer; font-size: .84rem; }
+.reader-seg button:hover { background: #26272b; }
+.reader-seg button[aria-pressed="true"] { border-color: var(--r-gold); color: var(--r-gold); background: #26231a; }
+.reader-menu-note { margin: 0; font-size: .76rem; color: var(--r-muted); line-height: 1.55; }
 .reader-menu .reader-link { background: none; border: none; padding: 0; color: #e5c574; cursor: pointer; font-size: .78rem; text-decoration: underline; justify-self: start; }
 
-/* وضع ملء الشاشة: بنخفي الأشرطة ونسيب زرار صغير للخروج */
-.reader-shell.reader-immersive .reader-toolbar, .reader-shell.reader-immersive .reader-tabs, .reader-shell.reader-immersive .reader-navigation, .reader-shell.reader-immersive .reader-status:not(:empty) { display: none; }
-.reader-shell.reader-immersive .reader-viewport { padding: 0; }
-.reader-immersive-exit { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 10px); inset-inline-end: 10px; z-index: 30; padding: 8px 14px; border: 1px solid rgba(255,255,255,.25); border-radius: 999px; background: rgba(20,20,22,.72); color: #fff; font-size: .82rem; cursor: pointer; opacity: .55; backdrop-filter: blur(6px); }
-.reader-immersive-exit:hover, .reader-immersive-exit:focus-visible { opacity: 1; }
+/* وضع ملء الشاشة: الأشرطة العلوية تختفي، والتحكم السفلي (فيه التكبير والتصغير) بيفضل ويختفي لوحده لما تسيبه */
+.reader-shell.reader-immersive .reader-toolbar, .reader-shell.reader-immersive .reader-tabs, .reader-shell.reader-immersive .reader-status:not(:empty) { display: none; }
+.reader-shell.reader-immersive .reader-viewport { padding: 0 0 0; }
+.reader-shell.reader-immersive.ui-idle .reader-dock { opacity: 0; transform: translateY(14px); pointer-events: none; }
+.reader-shell.reader-immersive.ui-idle .reader-dock > * { pointer-events: none; }
+.reader-shell.reader-immersive.ui-idle .reader-immersive-exit { opacity: 0; pointer-events: none; }
+.reader-shell.reader-immersive.ui-idle { cursor: none; }
+.reader-immersive-exit { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 10px); inset-inline-end: 10px; z-index: 30; padding: 8px 14px; border: 1px solid rgba(255,255,255,.25); border-radius: 999px; background: rgba(20,20,22,.72); color: #fff; font-size: .82rem; cursor: pointer; backdrop-filter: blur(6px); transition: opacity .3s ease; }
 .reader-immersive-exit[hidden] { display: none; }
-/* تابات الكتب (زي تابات المتصفح) لما المشتري يكون اشترى عرض فيه كذا كتاب */
-.reader-tabs { display: flex; gap: 4px; padding: 8px clamp(12px, 3vw, 28px) 0; background: #151619; overflow-x: auto; scrollbar-width: thin; }
-.reader-tabs[hidden] { display: none; }
-.reader-tab { flex: 0 0 auto; max-width: 260px; min-height: 38px; padding: 8px 18px; border: 1px solid #2b2c2f; border-bottom: none; border-radius: 10px 10px 0 0; background: #1d1e21; color: #b9b9bd; font-size: .92rem; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.reader-tab:hover { background: #26272b; color: #fff; }
-.reader-tab-active { background: #0c0d0f; color: var(--gold-color, #d8b056); border-color: #46474b; box-shadow: inset 0 3px 0 var(--gold-color, #d8b056); }
+
 @media (max-width: 620px) {
+    :root { --r-dock: 118px; }
+    .reader-back { font-size: .78rem; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+    .reader-toolbar h1 { font-size: .86rem; }
     .reader-tab { padding: 7px 12px; font-size: .82rem; max-width: 160px; }
-    .reader-toolbar { padding: 8px 10px; }
-    .reader-toolbar h1 { font-size: .88rem; }
-    .reader-back { font-size: .78rem; max-width: 110px; }
-    .reader-navigation { justify-content: center; gap: 7px; padding: 8px 6px; }
-    .reader-page-jump { order: -1; width: 100%; justify-content: center; }
+    .reader-bar { border-radius: 22px; padding: 6px 8px; }
+    .reader-sep { display: none; }
+    .reader-viewport { padding-inline: 6px; }
 }
+@media (prefers-reduced-motion: reduce) { .reader-sheet-skeleton { animation: none; } .reader-dock, .reader-progress span { transition: none; } }
 @media print { body.reader-page { display: none !important; } }

@@ -32,6 +32,9 @@
     const fullscreenBtn = $('fullscreenBtn');
     const immersiveExit = $('immersiveExit');
     const chip = $('cacheChip');
+    const zoomLabel = $('zoomLabel');
+    const progressFill = $('progressFill');
+    const dock = $('readerDock');
 
     // ---------- النصوص (عربي/إنجليزي) ----------
     const STR = {
@@ -250,9 +253,11 @@
         document.body.classList.remove('bg-dark', 'bg-gray', 'bg-light');
         document.body.classList.add(`bg-${prefs.bg}`);
         if (!book) return;
+        zoomLabel.textContent = `${Math.round(book.zoom * 100)}%`;
         const aspect = book.aspect || 0.707;
-        const availableW = Math.max(120, viewport.clientWidth - 20);
-        const availableH = Math.max(120, viewport.clientHeight - 20);
+        const css = getComputedStyle(viewport);
+        const availableW = Math.max(120, viewport.clientWidth - parseFloat(css.paddingLeft) - parseFloat(css.paddingRight));
+        const availableH = Math.max(120, viewport.clientHeight - parseFloat(css.paddingTop) - parseFloat(css.paddingBottom));
         const columns = layout === 'spread' && stage.children.length > 1 ? 2 : 1;
         const columnW = (availableW - (columns - 1) * 3) / columns;
         let base;
@@ -407,14 +412,14 @@
         const book = active;
         if (!book || !book.pageCount) {
             counter.textContent = '';
+            progressFill.style.width = '0';
             previous.disabled = true;
             next.disabled = true;
             return;
         }
         const pages = effectiveLayout() === 'spread' ? visiblePages(book) : [book.currentPage];
-        counter.textContent = pages.length > 1
-            ? L('spreadOf').replace('{a}', pages[0]).replace('{b}', pages[1]).replace('{total}', book.pageCount)
-            : tr('reader.pageOf', 'Page {page} of {total}').replace('{page}', pages[0]).replace('{total}', book.pageCount);
+        counter.textContent = pages.length > 1 ? `– ${pages[1]} / ${book.pageCount}` : `/ ${book.pageCount}`;
+        progressFill.style.width = `${Math.min(100, (pages[pages.length - 1] / book.pageCount) * 100)}%`;
         pageInput.value = book.currentPage;
         pageInput.max = book.pageCount;
         previous.disabled = book.currentPage <= 1;
@@ -633,6 +638,7 @@
         const show = typeof open === 'boolean' ? open : viewMenu.hidden;
         viewMenu.hidden = !show;
         viewBtn.setAttribute('aria-expanded', String(show));
+        wake();
         if (show) buildMenu();
     };
     viewBtn.addEventListener('click', (event) => { event.stopPropagation(); toggleMenu(); });
@@ -640,15 +646,29 @@
     document.addEventListener('click', () => toggleMenu(false));
 
     // ---------- ملء الشاشة ----------
+    // في ملء الشاشة: شريط التحكم بيختفي لوحده بعد 3 ثواني، ويرجع لما تحرّك الماوس أو تلمس الشاشة
+    let idleTimer = null;
+    const wake = () => {
+        shell.classList.remove('ui-idle');
+        clearTimeout(idleTimer);
+        if (shell.classList.contains('reader-immersive') && viewMenu.hidden) {
+            idleTimer = setTimeout(() => shell.classList.add('ui-idle'), 3000);
+        }
+    };
+    ['pointermove', 'pointerdown', 'touchstart', 'keydown', 'wheel'].forEach((name) => {
+        document.addEventListener(name, wake, { passive: true });
+    });
     const enterImmersive = () => {
         shell.classList.add('reader-immersive');
+        wake();
         immersiveExit.hidden = false;
         toggleMenu(false);
         const root = document.documentElement;
         if (root.requestFullscreen) root.requestFullscreen().catch(() => {});
     };
     const exitImmersive = () => {
-        shell.classList.remove('reader-immersive');
+        shell.classList.remove('reader-immersive', 'ui-idle');
+        clearTimeout(idleTimer);
         immersiveExit.hidden = true;
         if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
     };
@@ -659,25 +679,56 @@
     });
 
     // ---------- الأزرار والكيبورد واللمس ----------
-    $('goToPage').addEventListener('click', () => {
+    const jumpToInput = () => {
         const page = Number(pageInput.value);
-        if (Number.isInteger(page)) showPage(page);
-    });
+        if (Number.isInteger(page)) showPage(Math.min(Math.max(1, page), active ? active.pageCount : 1));
+    };
     pageInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') $('goToPage').click();
+        if (event.key === 'Enter') { jumpToInput(); pageInput.blur(); }
     });
+    pageInput.addEventListener('change', jumpToInput);
+    pageInput.addEventListener('focus', () => pageInput.select());
     previous.addEventListener('click', goBackward);
     next.addEventListener('click', goForward);
-    const setZoom = (delta) => {
+    const setZoomTo = (value, keepPosition = true) => {
         if (!active) return;
-        active.zoom = Math.min(3, Math.max(0.5, Math.round((active.zoom + delta) * 100) / 100));
-        applyLayout();
+        active.zoom = Math.min(4, Math.max(0.5, Math.round(value * 100) / 100));
+        applyLayout(keepPosition);
     };
-    $('zoomIn').addEventListener('click', () => setZoom(0.15));
-    $('zoomOut').addEventListener('click', () => setZoom(-0.15));
+    const setZoom = (delta) => active && setZoomTo(active.zoom + delta);
+    $('zoomIn').addEventListener('click', () => setZoom(0.2));
+    $('zoomOut').addEventListener('click', () => setZoom(-0.2));
+    zoomLabel.addEventListener('click', () => setZoomTo(1));
+    // Ctrl + عجلة الماوس = تكبير/تصغير الصفحة (من غير ما المتصفح يكبّر الموقع كله)
+    viewport.addEventListener('wheel', (event) => {
+        if (!event.ctrlKey || !active) return;
+        event.preventDefault();
+        setZoom(event.deltaY < 0 ? 0.1 : -0.1);
+    }, { passive: false });
+    // ضغطتين على الصفحة = تكبير، وضغطتين تاني = رجوع
+    viewport.addEventListener('dblclick', () => active && setZoomTo(active.zoom > 1.05 ? 1 : 2));
+    // الضغط بصباعين (Pinch) على الموبايل
+    let pinch = null;
+    viewport.addEventListener('touchstart', (event) => {
+        if (event.touches.length === 2 && active) {
+            const [a, b] = event.touches;
+            pinch = { distance: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), zoom: active.zoom };
+        }
+    }, { passive: true });
+    viewport.addEventListener('touchmove', (event) => {
+        if (!pinch || event.touches.length !== 2 || !active) return;
+        event.preventDefault();
+        const [a, b] = event.touches;
+        setZoomTo(pinch.zoom * (Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) / pinch.distance), false);
+    }, { passive: false });
+    viewport.addEventListener('touchend', (event) => { if (event.touches.length < 2) setTimeout(() => { pinch = null; }, 80); }, { passive: true });
     document.addEventListener('keydown', (event) => {
-        if (event.target === pageInput) return;
+        if (event.target === pageInput || event.ctrlKey || event.metaKey || event.altKey) return;
         if (event.key === 'Escape') { toggleMenu(false); return; }
+        if (event.key === '+' || event.key === '=') { setZoom(0.2); event.preventDefault(); return; }
+        if (event.key === '-' || event.key === '_') { setZoom(-0.2); event.preventDefault(); return; }
+        if (event.key === '0') { setZoomTo(1); return; }
+        if (event.key === 'f' || event.key === 'F') { fullscreenBtn.click(); return; }
         if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
         if (effectiveLayout() === 'scroll') return;
         // السهم اليمين = الصفحة اللي بعدها، السهم الشمال = اللي قبلها
@@ -687,7 +738,7 @@
     let touchStartX = 0;
     viewport.addEventListener('touchstart', (event) => { touchStartX = event.changedTouches[0].clientX; }, { passive: true });
     viewport.addEventListener('touchend', (event) => {
-        if (!active || active.zoom > 1 || effectiveLayout() === 'scroll') return;
+        if (!active || pinch || active.zoom > 1 || effectiveLayout() === 'scroll') return;
         const distance = event.changedTouches[0].clientX - touchStartX;
         if (Math.abs(distance) <= 55) return;
         // الكتب عربية: السحب لليمين = الصفحة اللي بعدها
