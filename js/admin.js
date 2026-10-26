@@ -1244,10 +1244,50 @@ function initAdminPanel() {
     });
 
     // ---- سعر الصرف الاحتياطي (fallback) ----
+    // ---- إيقاف / تشغيل حجز الجلسات ----
+    let bookingsPaused = false;
+    const bookingStatusText = document.getElementById('bookingStatusText');
+    const toggleBookingsBtn = document.getElementById('toggleBookingsBtn');
+    const bookingToggleMsg = document.getElementById('bookingToggleMsg');
+    const renderBookingState = (paused) => {
+        bookingsPaused = paused;
+        if (bookingStatusText) {
+            bookingStatusText.innerText = paused ? 'Bookings are PAUSED' : 'Bookings are OPEN';
+            bookingStatusText.style.color = paused ? '#e05252' : '#34A853';
+        }
+        if (toggleBookingsBtn) {
+            toggleBookingsBtn.innerText = paused ? 'Resume bookings' : 'Pause bookings';
+            toggleBookingsBtn.disabled = false;
+        }
+    };
+    if (toggleBookingsBtn) {
+        toggleBookingsBtn.addEventListener('click', async () => {
+            const next = !bookingsPaused;
+            if (next && !confirm('Pause session bookings? Visitors will not be able to book a session until you resume.')) return;
+            toggleBookingsBtn.disabled = true;
+            bookingToggleMsg.innerText = '';
+            try {
+                const { data } = await api.updateSettings({ bookingsPaused: next });
+                renderBookingState(data.bookingsPaused === true);
+                bookingToggleMsg.style.color = '#34A853';
+                bookingToggleMsg.innerText = 'Saved.';
+                setTimeout(() => { bookingToggleMsg.innerText = ''; }, 2500);
+            } catch (err) {
+                toggleBookingsBtn.disabled = false;
+                bookingToggleMsg.style.color = '#e05252';
+                bookingToggleMsg.innerText = err.message || 'Failed to save.';
+            }
+        });
+    }
+
     api.getSettings().then(({ data }) => {
         const input = document.getElementById('eurToEgpRateInput');
         if (input) input.value = data.eurToEgpRate;
-    }).catch((err) => console.error('Failed to load settings:', err));
+        renderBookingState(data.bookingsPaused === true);
+    }).catch((err) => {
+        console.error('Failed to load settings:', err);
+        if (bookingStatusText) bookingStatusText.innerText = 'Could not load the booking status.';
+    });
 
     document.getElementById('saveRateBtn').addEventListener('click', async (e) => {
         const btn = e.target;

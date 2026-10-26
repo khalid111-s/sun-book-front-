@@ -648,6 +648,13 @@
                 <button id="exportOrdersBtn" class="admin-logout-btn" style="width: 100%; margin-top: 10px;">Download Orders CSV</button>
             </div>
             <div class="dashboard-box">
+                <h3><svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Session Bookings</h3>
+                <p class="dashboard-note" style="margin-top:0;">Pause new session bookings when you are not available. Visitors will see "Bookings paused" and cannot book or pay for a session. Sessions that are already booked are not affected.</p>
+                <p id="bookingStatusText" style="margin:10px 0 0; font-weight:600; color:var(--text-gray);">Loading...</p>
+                <button id="toggleBookingsBtn" class="admin-logout-btn" style="width: 100%; margin-top: 10px;" disabled>Pause bookings</button>
+                <p class="admin-error" id="bookingToggleMsg" style="margin-top:6px;"></p>
+            </div>
+            <div class="dashboard-box">
                 <h3><svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Fallback Exchange Rate</h3>
                 <p class="dashboard-note" style="margin-top:0;">Legacy setting from the old Paymob integration (which only accepted EGP). Not used by the current payment flow (EUR orders are sent in EUR) — kept here only for reference on old orders.</p>
                 <div style="display:flex; gap:8px; align-items:center; margin-top:10px;">

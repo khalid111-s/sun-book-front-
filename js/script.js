@@ -1172,9 +1172,37 @@ if (modal) {
     const closeBtn = document.getElementById('closeModalBtn');
     const triggerBtns = document.querySelectorAll('.slot-btn.available, .book-now-btn');
 
+    // ─── إيقاف الحجز مؤقتًا (بيتحكم فيه الأدمن من لوحة التحكم) ───
+    let bookingsPaused = false;
+    const pausedStrings = () => {
+        const lang = (window.SunBookI18n && window.SunBookI18n.getLang && window.SunBookI18n.getLang()) || document.documentElement.lang || 'en';
+        return String(lang).startsWith('ar')
+            ? { short: 'الحجز متوقف مؤقتًا', long: 'حجز الجلسات متوقف حاليًا، ارجع لنا قريبًا.' }
+            : { short: 'Bookings paused', long: 'Session booking is paused right now. Please check back soon.' };
+    };
+    const notifyBookingsPaused = () => {
+        if (typeof showToast === 'function') showToast(pausedStrings().long, 'error');
+    };
+    const applyBookingsPaused = () => {
+        if (!bookingsPaused) return;
+        const text = pausedStrings();
+        modal.classList.remove('active');
+        document.querySelectorAll('.book-now-btn').forEach(btn => {
+            btn.removeAttribute('data-i18n');
+            btn.textContent = text.short;
+            btn.style.opacity = '0.55';
+            btn.style.cursor = 'not-allowed';
+            btn.setAttribute('aria-disabled', 'true');
+        });
+        const availableLabel = document.querySelector('.booking-slot-label');
+        if (availableLabel) availableLabel.style.display = 'none';
+        renderHomeQuickDates();
+    };
+
     triggerBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
+            if (bookingsPaused) { notifyBookingsPaused(); return; }
             modal.classList.add('active');
             renderCalendar();
         });
@@ -1263,6 +1291,7 @@ if (modal) {
     // نعرّضها للخارج (زي أزرار "Book now" السريعة في الصفحة الرئيسية) عشان تقدر تفتح
     // الكالندر وتحدد يوم معين مباشرة بضغطة واحدة
     window.openBookingModalForDate = function (targetDate) {
+        if (bookingsPaused) { notifyBookingsPaused(); return; }
         modal.classList.add('active');
         currentDate = new Date(targetDate);
         renderCalendar();
@@ -1283,6 +1312,13 @@ if (modal) {
     function renderHomeQuickDates() {
         if (!quickDatesContainer) return;
         quickDatesContainer.innerHTML = '';
+        if (bookingsPaused) {
+            const note = document.createElement('span');
+            note.style.cssText = 'color: var(--gold-color, #d8b056); font-size: 0.85rem;';
+            note.textContent = pausedStrings().long;
+            quickDatesContainer.appendChild(note);
+            return;
+        }
         const dayNames = window.SunBookI18n ? window.SunBookI18n.getCalendarNames().dayNamesShort : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const startDay = new Date();
         startDay.setHours(0, 0, 0, 0);
@@ -1302,7 +1338,14 @@ if (modal) {
     document.addEventListener('sunbook:langChanged', () => {
         renderHomeQuickDates();
         renderCalendar();
+        applyBookingsPaused();
     });
+
+    // نسأل السيرفر: هل الأدمن موقّف الحجز؟ (لو السؤال فشل بنفترض إنه شغال، والسيرفر هو اللي بيرفض فعليًا)
+    api.request('/settings/public').then(({ data }) => {
+        bookingsPaused = Boolean(data && data.bookingsPaused);
+        applyBookingsPaused();
+    }).catch(() => { /* مش مهم */ });
 
     const prevMonthBtn = document.getElementById('prevMonth');
     const nextMonthBtn = document.getElementById('nextMonth');
