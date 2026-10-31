@@ -170,3 +170,7 @@ body.bg-light .reader-sheet-skeleton { background: linear-gradient(100deg, #f1ee
 .reader-chip:empty { display: none; }
 .reader-shell.ui-scrolling .reader-chip { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .reader-chip { transition: none; } }
+
+/* الصفحة كاملة + تمرير: كل صفحة بتثبت على الشاشة كاملة وإنت بتنزل (من غير ما تقف نص صفحة ونص صفحة) */
+.reader-viewport.snap-pages { scroll-snap-type: y proximity; scroll-padding-top: 12px; }
+.reader-viewport.snap-pages .reader-sheet { scroll-snap-align: start; }

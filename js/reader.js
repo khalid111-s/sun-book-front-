@@ -94,13 +94,13 @@
 
     // ---------- الإعدادات (بتتحفظ على الجهاز) ----------
     const PREFS_KEY = 'sunbook_reader_prefs';
-    // الافتراضي: تمرير متواصل لتحت بعرض الصفحة. أول مرة بعد التحديث بنطبّقه حتى على اللي كان مخزّن عنده الافتراضي القديم
-    const PREFS_VERSION = 2;
-    const prefs = { v: PREFS_VERSION, layout: 'scroll', fit: 'width', bg: 'dark', fastLoad: true };
+    // الافتراضي: تمرير متواصل لتحت والصفحة كاملة على الشاشة. أول مرة بعد التحديث بنطبّقه حتى على اللي كان مخزّن عنده الافتراضي القديم
+    const PREFS_VERSION = 3;
+    const prefs = { v: PREFS_VERSION, layout: 'scroll', fit: 'page', bg: 'dark', fastLoad: true };
     try {
         const stored = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
         Object.assign(prefs, stored);
-        if (!(stored.v >= PREFS_VERSION)) { prefs.layout = 'scroll'; prefs.fit = 'width'; prefs.v = PREFS_VERSION; }
+        if (!(stored.v >= PREFS_VERSION)) { prefs.layout = 'scroll'; prefs.fit = 'page'; prefs.v = PREFS_VERSION; }
     } catch (error) { /* مش مهم */ }
     const savePrefs = () => { try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (error) { /* مش مهم */ } };
 
@@ -299,6 +299,7 @@
         const layout = effectiveLayout();
         stage.className = `reader-stage layout-${layout}`;
         if (layout !== 'scroll') shell.classList.remove('ui-scrolling');
+        viewport.classList.toggle('snap-pages', layout === 'scroll' && prefs.fit === 'page' && (!book || book.zoom <= 1.05));
         document.body.classList.remove('bg-dark', 'bg-gray', 'bg-light');
         document.body.classList.add(`bg-${prefs.bg}`);
         if (!book) return;
