@@ -98,7 +98,9 @@
     const savePrefs = () => { try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (error) { /* مش مهم */ } };
 
     const MAX_MEMORY_PAGES = 8;
-    const PREFETCH_DELAY_MS = 1500;
+    // 3 صفحات مع بعض وانتظار ثانية تقريبًا بعد كل صفحة (حوالي 140 صفحة في الدقيقة، تحت حد السيرفر)
+    const PREFETCH_DELAY_MS = 900;
+    const PREFETCH_WORKERS = 3;
     const CACHE_NAME = 'sunbook-reader-pages-v1';
     const CACHE_ORIGIN = 'https://sunbook-reader.local/';
     const hasCacheApi = 'caches' in window;
@@ -258,21 +260,29 @@
         const order = [];
         for (let page = book.currentPage + 1; page <= book.pageCount; page += 1) order.push(page);
         for (let page = 1; page < book.currentPage; page += 1) order.push(page);
+        let next = 0;
         let failures = 0;
-        for (const page of order) {
-            if (token !== book.prefetchToken || active !== book || !prefs.fastLoad) return;
-            if (book.stored.has(page)) continue;
-            try {
-                await getBlob(book, page);
-                failures = 0;
-                await sleep(PREFETCH_DELAY_MS);
-            } catch (error) {
-                if (error.status === 401 || error.status === 403 || error.status === 409) return;
-                failures += 1;
-                if (failures >= 6) return;
-                await sleep(error.status === 429 ? 30000 : 4000);
+        let stop = false;
+        const worker = async () => {
+            while (!stop) {
+                if (token !== book.prefetchToken || active !== book || !prefs.fastLoad) return;
+                const page = order[next];
+                next += 1;
+                if (page === undefined) return;
+                if (book.stored.has(page)) continue;
+                try {
+                    await getBlob(book, page);
+                    failures = 0;
+                    await sleep(PREFETCH_DELAY_MS);
+                } catch (error) {
+                    if (error.status === 401 || error.status === 403 || error.status === 409) { stop = true; return; }
+                    failures += 1;
+                    if (failures >= 6) { stop = true; return; }
+                    await sleep(error.status === 429 ? 30000 : 4000);
+                }
             }
-        }
+        };
+        await Promise.all(Array.from({ length: PREFETCH_WORKERS }, worker));
     };
 
     // ---------- الحجم والتخطيط ----------
