@@ -27,6 +27,7 @@
     const viewMenu = $('viewMenu');
     const fullscreenBtn = $('fullscreenBtn');
     const immersiveExit = $('immersiveExit');
+    const pageChip = $('pageChip');
     // مؤشر التحميل في الخلفية مبقاش بيظهر في الشريط العلوي (الحالة موجودة في قايمة العرض)
     const chip = document.createElement('span');
     const zoomLabel = $('zoomLabel');
@@ -93,8 +94,14 @@
 
     // ---------- الإعدادات (بتتحفظ على الجهاز) ----------
     const PREFS_KEY = 'sunbook_reader_prefs';
-    const prefs = { layout: 'single', fit: 'page', bg: 'dark', fastLoad: true };
-    try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS_KEY) || '{}')); } catch (error) { /* مش مهم */ }
+    // الافتراضي: تمرير متواصل لتحت بعرض الصفحة. أول مرة بعد التحديث بنطبّقه حتى على اللي كان مخزّن عنده الافتراضي القديم
+    const PREFS_VERSION = 2;
+    const prefs = { v: PREFS_VERSION, layout: 'scroll', fit: 'width', bg: 'dark', fastLoad: true };
+    try {
+        const stored = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
+        Object.assign(prefs, stored);
+        if (!(stored.v >= PREFS_VERSION)) { prefs.layout = 'scroll'; prefs.fit = 'width'; prefs.v = PREFS_VERSION; }
+    } catch (error) { /* مش مهم */ }
     const savePrefs = () => { try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (error) { /* مش مهم */ } };
 
     const MAX_MEMORY_PAGES = 8;
@@ -116,6 +123,7 @@
     let active = null;
     let renderSerial = 0;
     let progressTimer = null;
+    let dockLockUntil = 0;
     let sheets = [];
     let observer = null;
 
@@ -290,6 +298,7 @@
         const book = active;
         const layout = effectiveLayout();
         stage.className = `reader-stage layout-${layout}`;
+        if (layout !== 'scroll') shell.classList.remove('ui-scrolling');
         document.body.classList.remove('bg-dark', 'bg-gray', 'bg-light');
         document.body.classList.add(`bg-${prefs.bg}`);
         if (!book) return;
@@ -301,7 +310,7 @@
         const columns = layout === 'spread' && stage.children.length > 1 ? 2 : 1;
         const columnW = (availableW - (columns - 1) * 3) / columns;
         let base;
-        if (layout === 'scroll') base = prefs.fit === 'page' ? Math.min(columnW, availableH * aspect) : Math.min(columnW, 1500);
+        if (layout === 'scroll') base = prefs.fit === 'page' ? Math.min(columnW, availableH * aspect) : Math.min(columnW, 1000);
         else base = prefs.fit === 'page' ? Math.min(columnW, availableH * aspect) : columnW;
         const width = Math.max(80, base * book.zoom);
         stage.style.setProperty('--page-w', `${width}px`);
@@ -433,6 +442,7 @@
     const scrollToSheet = (page, smooth) => {
         const sheet = sheets[page - 1];
         if (!sheet) return;
+        if (smooth) dockLockUntil = Date.now() + 1200;
         viewport.scrollTo({ top: Math.max(0, sheet.el.offsetTop - 10), behavior: smooth ? 'smooth' : 'auto' });
     };
 
@@ -452,6 +462,7 @@
         const book = active;
         if (!book || !book.pageCount) {
             counter.textContent = '';
+            if (pageChip) pageChip.textContent = '';
             progressFill.style.width = '0';
             previous.disabled = true;
             next.disabled = true;
@@ -461,6 +472,7 @@
         counter.textContent = pages.length > 1 ? `– ${pages[1]} / ${book.pageCount}` : `/ ${book.pageCount}`;
         progressFill.style.width = `${Math.min(100, (pages[pages.length - 1] / book.pageCount) * 100)}%`;
         pageInput.value = book.currentPage;
+        if (pageChip) pageChip.textContent = `${book.currentPage} / ${book.pageCount}`;
         pageInput.max = book.pageCount;
         previous.disabled = book.currentPage <= 1;
         const lastShown = pages[pages.length - 1];
@@ -702,8 +714,8 @@
             wrap.append(h, seg);
             viewMenu.appendChild(wrap);
         };
-        const layouts = [['single', L('single')], ['scroll', L('scroll')]];
-        if (viewport.clientWidth >= 700) layouts.splice(1, 0, ['spread', L('spread')]);
+        const layouts = [['scroll', L('scroll')], ['single', L('single')]];
+        if (viewport.clientWidth >= 700) layouts.push(['spread', L('spread')]);
         group(L('layout'), 'layout', layouts);
         group(L('fit'), 'fit', [['page', L('fitPage')], ['width', L('fitWidth')]]);
         group(L('bg'), 'bg', [['dark', L('dark')], ['gray', L('gray')], ['light', L('light')]]);
@@ -851,6 +863,23 @@
         // الكتب عربية: السحب لليمين = الصفحة اللي بعدها
         if (distance > 0) goForward();
         else goBackward();
+    }, { passive: true });
+
+    // الشريط السفلي بيختفي لما تنزل بالتمرير وبيرجع لما تطلع لفوق أو تقرّب الماوس من تحت،
+    // ورقم الصفحة بيفضل ظاهر في كبسولة صغيرة (الشريط عايم فوق الصفحة فمفيش حاجة بتتحرك)
+    let lastScrollTop = 0;
+    const setDockHidden = (hidden) => shell.classList.toggle('ui-scrolling', hidden);
+    viewport.addEventListener('scroll', () => {
+        const top = viewport.scrollTop;
+        const delta = top - lastScrollTop;
+        lastScrollTop = top;
+        if (effectiveLayout() !== 'scroll' || !viewMenu.hidden || top < 80) { setDockHidden(false); return; }
+        if (Date.now() < dockLockUntil) return;
+        if (delta > 6) setDockHidden(true);
+        else if (delta < -6) setDockHidden(false);
+    }, { passive: true });
+    document.addEventListener('mousemove', (event) => {
+        if (event.clientY > window.innerHeight - 110) setDockHidden(false);
     }, { passive: true });
 
     // رقم الصفحة الحالية أثناء التمرير المتواصل
