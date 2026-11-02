@@ -235,7 +235,7 @@ const api = {
     }),
 
   /** حجز session عبر الـ Backend (يستخدم من checkout و booking) */
-  bookSession: async ({ dateStr, timeStr, subject, price, notes }) => {
+  bookSession: async ({ dateStr, timeStr, subject, notes, currency }) => {
     const startTime = (timeStr || '').split('-')[0].trim();
     const parsed = new Date(`${dateStr} ${startTime}`);
     if (Number.isNaN(parsed.getTime())) {
@@ -252,7 +252,8 @@ const api = {
       subject: subject || 'Exclusive One-on-One Session',
       date: parsed.toISOString(),
       duration: 30,
-      price: price || 1300,
+      // السعر والعملة بيحددهم السيرفر (من إعدادات الأدمن وبلد الزائر)، والعملة هنا بس عشان نتأكد إن العميل شاف نفس العملة اللي هتتخصم منه
+      expectedCurrency: currency,
       paymentMethod: 'card',
       notes: notes || `Preferred time: ${timeStr}`,
     });
@@ -480,10 +481,10 @@ const api = {
   deletePromoCode: (id) =>
     api.request(`/promocodes/${id}`, { method: 'DELETE' }),
 
-  validatePromoCode: (code) =>
+  validatePromoCode: (code, currency) =>
     api.request('/promocodes/validate', {
       method: 'POST',
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ code, currency }),
     }),
 
   // ---- Reviews (تقييم + تعليق على كتاب معين) ----

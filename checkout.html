@@ -290,7 +290,7 @@
                         dateStr: item.bookingDetails.date,
                         timeStr: item.bookingDetails.time,
                         subject: item.title,
-                        price: parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 1300,
+                        currency: getCartCurrency(cart),
                         notes: `Preferred time: ${item.bookingDetails.time}`,
                     });
                     if (bookingRes?.data?.booking?._id) createdBookingIds.push(bookingRes.data.booking._id);
@@ -342,7 +342,8 @@
                         product: item.id,
                         qty: item.qty || 1,
                     })),
-                    promoCode: (typeof getStoredPromo === 'function' && getStoredPromo()) ? getStoredPromo().code : undefined,
+                    expectedCurrency: getCartCurrency(cart),
+                    promoCode: (typeof getStoredPromoFor === 'function' && getStoredPromoFor(getCartCurrency(cart))) ? getStoredPromoFor(getCartCurrency(cart)).code : undefined,
                 });
 
                 createdOrderId = orderRes?.data?.order?._id || null;
@@ -1041,7 +1042,7 @@ function initSmartCheckout() {
     const promoDiscountRow = document.getElementById('promoDiscountRow');
     const promoDiscountAmountEl = document.getElementById('promoDiscountAmount');
     const promoDiscountLabelEl = document.getElementById('promoDiscountLabel');
-    const storedPromo = typeof getStoredPromo === 'function' ? getStoredPromo() : null;
+    const storedPromo = typeof getStoredPromoFor === 'function' ? getStoredPromoFor(getCartCurrency(cart)) : null;
     if (storedPromo) {
         const discount = storedPromo.discountType === 'percentage'
             ? finalTotal * (storedPromo.discountValue / 100)

@@ -121,6 +121,65 @@ function formatMoney(n, currency) {
     return currency === 'EUR' ? formatPriceEUR(n) : formatPrice(n);
 }
 
+// ---- سعر الجلسة: بيتحدد من الأدمن (جنيه للزوار من مصر، يورو لبرّه) ويتعرض بنفس منطق أسعار الكتب ----
+let sessionPriceSettings = null;
+
+async function getSessionPrice() {
+    await detectVisitorCurrency();
+    if (!sessionPriceSettings && typeof api !== 'undefined') {
+        try {
+            const { data } = await api.request('/settings/public');
+            sessionPriceSettings = data || null;
+        } catch (e) { /* بنكمل بالسعر الافتراضي، والسيرفر هو اللي بيحدد السعر الفعلي وقت الحجز */ }
+    }
+    const eur = Number(sessionPriceSettings && sessionPriceSettings.sessionPriceEUR) || 0;
+    const egp = Number(sessionPriceSettings && sessionPriceSettings.sessionPriceEGP) || 1300;
+    const useEuro = visitorCurrency === 'EUR' && eur > 0;
+    const currency = useEuro ? 'EUR' : 'EGP';
+    const amount = useEuro ? eur : egp;
+    return { currency, amount, text: formatMoney(amount, currency) };
+}
+
+// بيحط سعر الجلسة في أي عنصر عليه data-session-price (السعر بس) أو data-session-from-price ("من ...")
+async function applySessionPriceToDom() {
+    const priceEls = document.querySelectorAll('[data-session-price]');
+    const fromEls = document.querySelectorAll('[data-session-from-price]');
+    if (!priceEls.length && !fromEls.length) return;
+    const { text } = await getSessionPrice();
+    const fromLabel = window.SunBookI18n ? window.SunBookI18n.t('index.fromPriceLabel') : 'From';
+    priceEls.forEach((el) => { el.textContent = text; });
+    fromEls.forEach((el) => { el.textContent = `${fromLabel} ${text}`; });
+}
+document.addEventListener('sunbook:langChanged', () => { applySessionPriceToDom(); });
+
+// ---- منع خلط عملتين في سلة واحدة (جنيه + يورو) ----
+// بيرجّع عملة السلة الحالية لو العنصر الجديد بعملة مختلفة عنها، وإلا null
+function cartCurrencyConflict(newPriceStr, items) {
+    const list = Array.isArray(items) ? items : [];
+    if (list.length === 0) return null;
+    const cartCur = getCartCurrency(list);
+    return currencyOfPrice(newPriceStr) !== cartCur ? cartCur : null;
+}
+
+function notifyCurrencyConflict(cartCur) {
+    const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
+    const name = cartCur === 'EUR' ? tr('cart.currencyEuro', 'Euro (€)') : tr('cart.currencyEgp', 'Egyptian Pounds (LE)');
+    const msg = tr('cart.currencyConflict', 'Your cart has items priced in {cur}. Items in different currencies cannot be bought together. Please check out your current cart first.').replace('{cur}', name);
+    if (typeof showToast === 'function') showToast(msg, 'error'); else alert(msg);
+}
+
+// الكوبون المخزّن: لو عملته مش نفس عملة السلة بنشيله (كود اليورو مينفعش مع سلة بالجنيه والعكس)
+function storedPromoCurrency(p) {
+    return p.currency || (p.discountType === 'fixed' ? 'EGP' : 'ANY');
+}
+function getStoredPromoFor(currency) {
+    const p = getStoredPromo();
+    if (!p) return null;
+    const pc = storedPromoCurrency(p);
+    if (pc !== 'ANY' && pc !== currency) { setStoredPromo(null); return null; }
+    return p;
+}
+
 // بيحوّل شكل المنتج الجاي من الـ API لنفس الشكل اللي باقي الكود متعود عليه
 function normalizeProduct(p) {
     // لو trackStock مفعّل، التوفر بيتحدد فعليًا بعدد النسخ المتبقية؛ غير كده بنعتمد على inStock اليدوي
@@ -497,6 +556,7 @@ async function ensureProductsLoaded() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     await detectVisitorCurrency();
+    applySessionPriceToDom();
     await loadHomepageProducts();
     await loadSingleProductPage();
     await ensureProductsLoaded();
@@ -647,7 +707,7 @@ function updateOrderSummary(total) {
     }
 
     // ---- كود الخصم (لو المستخدم طبّق واحد قبل كده) ----
-    const storedPromo = getStoredPromo();
+    const storedPromo = getStoredPromoFor(cartCurrency);
     let promoDiscount = 0;
     if (storedPromo && total > 0) {
         promoDiscount = storedPromo.discountType === 'percentage'
@@ -733,7 +793,7 @@ function attachPromoEvents(rawTotal) {
             applyBtn.disabled = true;
             applyBtn.innerText = tr('cart.checking', 'Checking...');
             try {
-                const { data } = await api.validatePromoCode(code);
+                const { data } = await api.validatePromoCode(code, getCartCurrency(cartItems));
                 setStoredPromo(data);
                 renderCartItemsNow();
             } catch (err) {
@@ -820,6 +880,8 @@ function addToCart(id, qty = 1) {
     if (existingItem) {
         existingItem.qty += qty;
     } else {
+        const conflict = cartCurrencyConflict(product.price, cartItems);
+        if (conflict) { notifyCurrencyConflict(conflict); return; }
         cartItems.push({ ...product, qty: qty });
     }
 
@@ -1617,6 +1679,12 @@ function attachCheckoutEvent(finalAmount) {
             return;
         }
 
+        if (cartHasMixedCurrency(cartItems)) {
+            e.preventDefault();
+            if (typeof showToast === 'function') showToast(tr('cart.mixedCurrency', 'Your cart mixes Euro and Egyptian Pound items. Please remove some items so everything is in one currency.'), 'error');
+            return;
+        }
+
         const loggedInUser = localStorage.getItem('sunbook_username');
         if (!loggedInUser) {
             e.preventDefault();
@@ -1633,7 +1701,7 @@ function attachCheckoutEvent(finalAmount) {
    ========================================= */
 const confirmBookingBtn = document.querySelector('.confirm-booking-btn');
 if (confirmBookingBtn && !document.body.classList.contains('use-api-booking')) {
-    confirmBookingBtn.addEventListener('click', () => {
+    confirmBookingBtn.addEventListener('click', async () => {
         
         // 1. هل اختار وقت؟
         const selectedTimeBtn = document.querySelector('.time-slot-btn.selected');
@@ -1678,10 +1746,11 @@ if (confirmBookingBtn && !document.body.classList.contains('use-api-booking')) {
         }
 
         // ✅ NEW: بنضيف الحجز كـ "منتج" في السلة ونروح ندفع
+        const sessionPrice = await getSessionPrice();
         const bookingItem = {
             id: 'booking-' + Date.now(),
             title: 'Exclusive One-on-One Session',
-            price: 'LE 1300.00',
+            price: sessionPrice.text,
             image: 'assets/sun-icon.png',
             description: `Session on ${selectedDateStr} at ${selectedTimeBtn.innerText.trim()}`,
             type: 'booking',
@@ -1695,6 +1764,8 @@ if (confirmBookingBtn && !document.body.classList.contains('use-api-booking')) {
         // نضيفه للسلة (نشيل أي حجز قديم من السلة عشان ميتكررش)
         let cart = JSON.parse(localStorage.getItem('sunbook_cart')) || [];
         cart = cart.filter(item => item.type !== 'booking');
+        const bookingConflict = cartCurrencyConflict(bookingItem.price, cart);
+        if (bookingConflict) { notifyCurrencyConflict(bookingConflict); return; }
         cart.push(bookingItem);
         localStorage.setItem('sunbook_cart', JSON.stringify(cart));
         if (typeof updateCartBadge === 'function') updateCartBadge();

@@ -117,7 +117,7 @@
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px; color: #c4c4c4; font-size: 0.95rem;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d8b056" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                        <span data-i18n="index.fromPrice">From LE 1300.00</span>
+                        <span data-session-from-price></span>
                     </div>
                 </div>
 
@@ -195,7 +195,7 @@
                 </p>
                 <div class="quantity-price">
                     <span data-i18n="modal.quantity">Quantity 1</span>
-                    <span class="gold-text">LE 1300.00</span>
+                    <span class="gold-text" data-session-price></span>
                 </div>
             </div>
             <div class="time-selection">
@@ -258,11 +258,12 @@ document.addEventListener('DOMContentLoaded', () => {
     confirmBtn.disabled = true;
 
     try {
+      const sessionPrice = await getSessionPrice();
       const res = await api.bookSession({
         dateStr: selectedDay.dataset.iso,
         timeStr,
         subject: 'Exclusive One-on-One Session',
-        price: 1300,
+        currency: sessionPrice.currency,
         notes: `Preferred time: ${timeStr}`,
       });
 

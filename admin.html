@@ -864,6 +864,22 @@
     <!-- ====== تاب الجلسات: تاريخ/وقت، حالة الدفع، بيانات الطالب ====== -->
     <div id="tabSessions" class="admin-tab-panel" style="display:none;">
         <div class="dashboard-box" style="margin-bottom: 20px;">
+            <h3><svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Session Price</h3>
+            <p class="dashboard-note" style="margin-top:0;">The price of one 30-minute session. Visitors from Egypt see and pay the EGP price. Visitors from any other country see and pay the EUR price (same as the books). If the EUR price is left at 0, visitors outside Egypt will see the EGP price instead. Sessions that are already booked keep the price they were booked at.</p>
+            <div class="admin-grid" style="margin-top:10px;">
+                <div class="admin-field">
+                    <label for="sessionPriceEgpInput">Price in Egypt (EGP)</label>
+                    <input type="number" id="sessionPriceEgpInput" step="0.01" min="0.01" placeholder="e.g. 1300">
+                </div>
+                <div class="admin-field">
+                    <label for="sessionPriceEurInput">Price outside Egypt (EUR)</label>
+                    <input type="number" id="sessionPriceEurInput" step="0.01" min="0" placeholder="e.g. 25 (0 = not set)">
+                </div>
+            </div>
+            <button id="saveSessionPriceBtn" class="admin-logout-btn" style="width: 100%; margin-top: 10px;">Save Session Price</button>
+            <p class="admin-error" id="sessionPriceMsg" style="margin-top:6px;"></p>
+        </div>
+        <div class="dashboard-box" style="margin-bottom: 20px;">
             <h3><svg class="icon-gold-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Booked Sessions</h3>
             <p class="dashboard-note" style="margin-top:0;">Every one-on-one session booking with date, time, payment status, and student info.</p>
             <button id="exportSessionsBtn" class="admin-logout-btn" style="width: 100%; margin-top: 10px;">Download Sessions CSV</button>
@@ -928,11 +944,19 @@
                         <label>Discount Type</label>
                         <select id="promoFieldDiscountType">
                             <option value="percentage">Percentage (%)</option>
-                            <option value="fixed">Fixed Amount (LE)</option>
+                            <option value="fixed">Fixed Amount (in the currency chosen)</option>
                         </select>
                     </div>
                     <div class="admin-field">
-                        <label>Discount Value</label>
+                        <label>Currency / Who can use it</label>
+                        <select id="promoFieldCurrency">
+                            <option value="EGP">EGP: visitors in Egypt (pay in LE)</option>
+                            <option value="EUR">EUR: visitors outside Egypt (pay in €)</option>
+                            <option value="ANY">Any currency (percentage only)</option>
+                        </select>
+                    </div>
+                    <div class="admin-field">
+                        <label id="promoFieldValueLabel">Discount Value</label>
                         <input type="number" id="promoFieldDiscountValue" step="0.01" min="0" required placeholder="e.g. 20">
                     </div>
                     <div class="admin-field">
@@ -971,6 +995,7 @@
                     <tr>
                         <th>Code</th>
                         <th>Discount</th>
+                        <th>Currency</th>
                         <th>Usage</th>
                         <th>Expires</th>
                         <th>Status</th>
@@ -978,7 +1003,7 @@
                     </tr>
                 </thead>
                 <tbody id="promoCodesTableBody">
-                    <tr><td colspan="6">Loading...</td></tr>
+                    <tr><td colspan="7">Loading...</td></tr>
                 </tbody>
             </table>
         </div>

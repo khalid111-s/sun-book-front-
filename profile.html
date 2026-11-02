@@ -336,7 +336,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div class="history-info">
                             <h4>${tr('profile.orderHash', 'Order #')}${shortId}</h4>
-                            <p>${tr('profile.totalLabel', 'Total:')} LE ${Number(order.totalAmount).toFixed(2)} • ${tr('profile.dateLabel', 'Date:')} ${orderDate}</p>
+                            <p>${tr('profile.totalLabel', 'Total:')} ${order.currency === 'EUR' ? '€' : 'LE '}${Number(order.totalAmount).toFixed(2)} • ${tr('profile.dateLabel', 'Date:')} ${orderDate}</p>
                         </div>
                         <div class="history-status">${order.status === 'cancelled' ? tr('profile.statusCancelled', 'Cancelled') : (statusLabels[order.fulfillmentStatus] || statusLabels.processing)}</div>
                     </div>

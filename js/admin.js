@@ -594,7 +594,7 @@ async function loadDashboardStats() {
                         <td>${accountName}</td>
                         <td>${esc(o.customerName)}</td>
                         <td>${itemsSummary}</td>
-                        <td>LE ${Number(o.totalAmount).toFixed(2)}</td>
+                        <td>${o.currency === 'EUR' ? '€' : 'LE '}${Number(o.totalAmount).toFixed(2)}</td>
                         <td>${esc(o.country || 'Unknown')}</td>
                         <td>${o.status === 'paid' ? '<span class="admin-badge-yes">Paid</span>' : esc(o.status)}</td>
                         <td>${fulfillmentCell}</td>
@@ -859,13 +859,14 @@ function renderOrdersChart(dailyRevenue, unit) {
 
 // ---------- Export orders to CSV ----------
 function downloadOrdersCSV(orders) {
-    const headers = ['Date', 'Customer', 'Phone', 'Items', 'Total (LE)', 'Status'];
+    const headers = ['Date', 'Customer', 'Phone', 'Items', 'Total', 'Currency', 'Status'];
     const rows = orders.map(o => [
         new Date(o.createdAt).toLocaleString(),
         o.customerName,
         o.phone || '',
         o.items.map(i => `${i.title} x${i.qty}`).join(' | '),
         o.totalAmount,
+        o.currency || 'EGP',
         o.status,
     ]);
 
@@ -903,7 +904,7 @@ function downloadCSV(headers, rows, filenamePrefix) {
 
 // ---------- Export sessions (bookings) to CSV ----------
 function downloadSessionsCSV(bookings) {
-    const headers = ['Date & Time', 'Student Name', 'Student Email', 'Student Phone', 'Subject', 'Price (LE)', 'Payment Status'];
+    const headers = ['Date & Time', 'Student Name', 'Student Email', 'Student Phone', 'Subject', 'Price', 'Currency', 'Payment Status'];
     const rows = bookings.map(b => [
         new Date(b.date).toLocaleString(),
         b.student?.name || '',
@@ -911,6 +912,7 @@ function downloadSessionsCSV(bookings) {
         b.student?.phone || '',
         b.subject || '',
         b.price,
+        b.currency || 'EGP',
         b.status,
     ]);
     downloadCSV(headers, rows, 'sunbook-sessions');
@@ -1015,7 +1017,7 @@ async function loadSessionsTable() {
                 <td>${esc(b.student?.email || '—')}</td>
                 <td>${esc(b.student?.phone || '—')}</td>
                 <td>${esc(b.subject || '—')}</td>
-                <td>LE ${Number(b.price).toFixed(2)}</td>
+                <td>${b.currency === 'EUR' ? '€' : 'LE '}${Number(b.price).toFixed(2)}</td>
                 <td>${statusBadge(b.status)}</td>
                 <td>${sessionStatusBadge(b.sessionStatus)}</td>
                 <td>${joinCell(b)}</td>
@@ -1053,17 +1055,20 @@ async function loadUsersTable() {
 // ---------- تاب أكواد الخصم ----------
 async function loadPromoCodesTable() {
     const tbody = document.getElementById('promoCodesTableBody');
-    tbody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7">Loading...</td></tr>';
     try {
         const { data } = await api.getPromoCodes();
         if (!data.length) {
-            tbody.innerHTML = '<tr><td colspan="6">No promo codes yet. Generate one above.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7">No promo codes yet. Generate one above.</td></tr>';
             return;
         }
         const now = Date.now();
         tbody.innerHTML = data.map(p => {
             const expired = new Date(p.expiresAt).getTime() < now;
-            const discountLabel = p.discountType === 'percentage' ? `${p.discountValue}%` : `LE ${p.discountValue}`;
+            // الكوبونات القديمة من غير عملة: الثابت = جنيه، والنسبة بتشتغل بأي عملة
+            const promoCur = p.currency || (p.discountType === 'fixed' ? 'EGP' : 'ANY');
+            const discountLabel = p.discountType === 'percentage' ? `${p.discountValue}%` : `${promoCur === 'EUR' ? '€' : 'LE '}${p.discountValue}`;
+            const currencyLabel = promoCur === 'EUR' ? 'EUR (outside Egypt)' : promoCur === 'EGP' ? 'EGP (Egypt)' : 'Any';
             const usageLabel = p.usageLimit ? `${p.timesUsed} / ${p.usageLimit}` : `${p.timesUsed} / ∞`;
             const perUserLabel = p.perUserLimit ? `${p.perUserLimit}x per person` : 'Unlimited per person';
             let statusLabel;
@@ -1077,6 +1082,7 @@ async function loadPromoCodesTable() {
                         <button class="copy-promo-btn" data-code="${esc(p.code)}" title="Copy code" style="background:transparent;border:1px solid rgba(216,176,86,0.4);color:var(--gold-color);border-radius:4px;padding:2px 7px;font-size:0.75rem;cursor:pointer;margin-left:6px;">Copy</button>
                     </td>
                     <td>${discountLabel}</td>
+                    <td>${currencyLabel}</td>
                     <td>${usageLabel}<br><span style="color:var(--text-gray); font-size:0.75rem;">${perUserLabel}</span></td>
                     <td>${new Date(p.expiresAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                     <td>${statusLabel}</td>
@@ -1090,7 +1096,7 @@ async function loadPromoCodesTable() {
             `;
         }).join('');
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="6" style="color:#e05252;">Failed to load promo codes: ${esc(err.message)}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="color:#e05252;">Failed to load promo codes: ${esc(err.message)}</td></tr>`;
     }
 }
 
@@ -1280,7 +1286,61 @@ function initAdminPanel() {
         });
     }
 
+    // ---- سعر الجلسة (جنيه + يورو) ----
+    const sessionPriceEgpInput = document.getElementById('sessionPriceEgpInput');
+    const sessionPriceEurInput = document.getElementById('sessionPriceEurInput');
+    const sessionPriceMsg = document.getElementById('sessionPriceMsg');
+    const saveSessionPriceBtn = document.getElementById('saveSessionPriceBtn');
+    if (saveSessionPriceBtn) {
+        saveSessionPriceBtn.addEventListener('click', async () => {
+            const egp = parseFloat(sessionPriceEgpInput.value);
+            const eurRaw = sessionPriceEurInput.value.trim();
+            const eur = eurRaw === '' ? 0 : parseFloat(eurRaw);
+            sessionPriceMsg.style.color = '#e05252';
+            if (!egp || egp <= 0) { sessionPriceMsg.innerText = 'Enter a valid EGP price greater than 0.'; return; }
+            if (Number.isNaN(eur) || eur < 0) { sessionPriceMsg.innerText = 'Enter a valid EUR price (0 or more).'; return; }
+            saveSessionPriceBtn.disabled = true;
+            try {
+                const { data } = await api.updateSettings({ sessionPriceEGP: egp, sessionPriceEUR: eur });
+                sessionPriceEgpInput.value = data.sessionPriceEGP;
+                sessionPriceEurInput.value = data.sessionPriceEUR || '';
+                sessionPriceMsg.style.color = '#34A853';
+                sessionPriceMsg.innerText = 'Saved. New bookings use these prices.';
+                setTimeout(() => { sessionPriceMsg.innerText = ''; }, 3500);
+            } catch (err) {
+                sessionPriceMsg.innerText = err.message || 'Failed to save.';
+            } finally {
+                saveSessionPriceBtn.disabled = false;
+            }
+        });
+    }
+
+    // ---- فورم الكوبون: المبلغ الثابت لازم يبقى بعملة محددة (مفيش "أي عملة") ----
+    const promoTypeSel = document.getElementById('promoFieldDiscountType');
+    const promoCurSel = document.getElementById('promoFieldCurrency');
+    const promoValueLabel = document.getElementById('promoFieldValueLabel');
+    const syncPromoForm = () => {
+        if (!promoTypeSel || !promoCurSel) return;
+        const fixed = promoTypeSel.value === 'fixed';
+        const anyOpt = promoCurSel.querySelector('option[value="ANY"]');
+        if (anyOpt) anyOpt.disabled = fixed;
+        if (fixed && promoCurSel.value === 'ANY') promoCurSel.value = 'EGP';
+        if (!fixed && promoCurSel.dataset.userChoice !== '1') promoCurSel.value = 'ANY';
+        if (promoValueLabel) {
+            const sym = promoCurSel.value === 'EUR' ? '€' : 'LE';
+            promoValueLabel.innerText = fixed ? `Discount Value (${sym})` : 'Discount Value (%)';
+        }
+    };
+    if (promoTypeSel && promoCurSel) {
+        promoTypeSel.addEventListener('change', syncPromoForm);
+        promoCurSel.addEventListener('change', () => { promoCurSel.dataset.userChoice = '1'; syncPromoForm(); });
+        promoCurSel.value = 'ANY';
+        syncPromoForm();
+    }
+
     api.getSettings().then(({ data }) => {
+        if (sessionPriceEgpInput) sessionPriceEgpInput.value = data.sessionPriceEGP || '';
+        if (sessionPriceEurInput) sessionPriceEurInput.value = data.sessionPriceEUR || '';
         const input = document.getElementById('eurToEgpRateInput');
         if (input) input.value = data.eurToEgpRate;
         renderBookingState(data.bookingsPaused === true);
@@ -1321,6 +1381,7 @@ function initAdminPanel() {
             code: document.getElementById('promoFieldCode').value.trim(),
             discountType: document.getElementById('promoFieldDiscountType').value,
             discountValue: parseFloat(document.getElementById('promoFieldDiscountValue').value),
+            currency: document.getElementById('promoFieldCurrency').value,
             usageLimit: document.getElementById('promoFieldUsageLimit').value
                 ? parseInt(document.getElementById('promoFieldUsageLimit').value, 10)
                 : null,
@@ -1343,6 +1404,7 @@ function initAdminPanel() {
         try {
             await api.createPromoCode(payload);
             document.getElementById('promoCodeForm').reset();
+            if (promoCurSel) { delete promoCurSel.dataset.userChoice; promoCurSel.value = 'ANY'; syncPromoForm(); }
             document.getElementById('promoFieldDurationAmount').value = 1;
             loadPromoCodesTable();
         } catch (err) {
