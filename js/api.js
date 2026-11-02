@@ -387,7 +387,12 @@ const api = {
       closeOverlay();
       if (onPaid) await onPaid();
     };
-    const onFail = () => { closeOverlay(); abort(tr('checkout.paymentNotCompleted', 'Payment not completed. Please try again.')); };
+    const onFail = (data) => {
+      console.error('Geidea payment failed/cancelled:', data);
+      closeOverlay();
+      const reason = data && (data.detailResponseMessage || data.detailedResponseMessage || data.responseMessage);
+      abort(reason || tr('checkout.paymentNotCompleted', 'Payment not completed. Please try again.'));
+    };
 
     try {
       new window.GeideaCheckout(onSuccess, onFail, onFail).startPayment(session.sessionId, null, 'geidea-dropin');
