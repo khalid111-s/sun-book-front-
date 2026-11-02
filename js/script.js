@@ -99,6 +99,28 @@ function displayPriceFor(priceEGP, priceEUR) {
     return formatPrice(priceEGP);
 }
 
+// عملة السلة بتتحدد من سعر العناصر نفسها (€ = يورو، غير كده جنيه) مش من كلمة ثابتة
+// عشان الزائر اللي من برّه مصر يشوف الملخص والإجمالي باليورو زي أسعار الكتب بالظبط
+function currencyOfPrice(priceStr) {
+    return String(priceStr || '').includes('€') ? 'EUR' : 'EGP';
+}
+
+function getCartCurrency(items) {
+    const list = Array.isArray(items) ? items : [];
+    if (list.length === 0) return visitorCurrency;
+    return list.every((i) => currencyOfPrice(i.price) === 'EUR') ? 'EUR' : 'EGP';
+}
+
+// السلة فيها عملتين مع بعض (مثلًا كتاب باليورو + جلسة بالجنيه)؟ مينفعش نجمعهم في رقم واحد
+function cartHasMixedCurrency(items) {
+    const set = new Set((Array.isArray(items) ? items : []).map((i) => currencyOfPrice(i.price)));
+    return set.size > 1;
+}
+
+function formatMoney(n, currency) {
+    return currency === 'EUR' ? formatPriceEUR(n) : formatPrice(n);
+}
+
 // بيحوّل شكل المنتج الجاي من الـ API لنفس الشكل اللي باقي الكود متعود عليه
 function normalizeProduct(p) {
     // لو trackStock مفعّل، التوفر بيتحدد فعليًا بعدد النسخ المتبقية؛ غير كده بنعتمد على inStock اليدوي
@@ -614,6 +636,8 @@ function updateOrderSummary(total) {
     if (!summaryBox) return;
 
     const loggedInUser = localStorage.getItem('sunbook_username');
+    const cartCurrency = getCartCurrency(cartItems);
+    const money = (n) => formatMoney(n, cartCurrency);
     let finalTotal = total;
     let discount = 0;
 
@@ -636,7 +660,7 @@ function updateOrderSummary(total) {
         <h3 class="summary-title" data-i18n="cart.orderSummary">Order Summary</h3>
         <div class="summary-row">
             <span data-i18n="cart.subtotal">Subtotal</span>
-            <span>LE ${total.toFixed(2)}</span>
+            <span>${money(total)}</span>
         </div>
     `;
 
@@ -646,7 +670,7 @@ function updateOrderSummary(total) {
         summaryHTML += `
         <div class="summary-row" style="color: var(--gold-color); font-weight: bold;">
             <span>${tr('cart.memberDiscount', 'Member Discount (5%)')}</span>
-            <span>-LE ${discount.toFixed(2)}</span>
+            <span>-${money(discount)}</span>
         </div>
         `;
     }
@@ -655,9 +679,13 @@ function updateOrderSummary(total) {
         summaryHTML += `
         <div class="summary-row" style="color: #34A853; font-weight: bold;">
             <span>${tr('cart.promoLabel', 'Promo')} "${storedPromo.code}" <a href="#" id="removePromoLink" style="color: var(--text-gray); font-weight: normal; text-decoration: underline; font-size: 0.75rem;">(${tr('cart.remove', 'Remove').toLowerCase()})</a></span>
-            <span>-LE ${promoDiscount.toFixed(2)}</span>
+            <span>-${money(promoDiscount)}</span>
         </div>
         `;
+    }
+
+    if (cartHasMixedCurrency(cartItems)) {
+        summaryHTML += `<p style="font-size: 0.8rem; color: #e0a052; margin: 8px 0;">${tr('cart.mixedCurrency', 'Your cart mixes Euro and Egyptian Pound items, so the total below is not accurate. Please check out sessions and books separately.')}</p>`;
     }
 
     summaryHTML += `
@@ -669,7 +697,7 @@ function updateOrderSummary(total) {
         <hr class="summary-divider">
         <div class="summary-row total-row">
             <span data-i18n="cart.total">Total</span>
-            <span>LE ${finalTotal.toFixed(2)}</span>
+            <span>${money(finalTotal)}</span>
         </div>
         <a href="checkout.html" class="btn-shop checkout-btn" style="text-align: center; text-decoration: none; display: block;" id="mainCheckoutBtn">${tr('cart.proceedCheckout', 'Proceed to Checkout')}</a>
     `;
@@ -687,11 +715,19 @@ function attachPromoEvents(rawTotal) {
     const removeLink = document.getElementById('removePromoLink');
 
     if (applyBtn && promoInput && !getStoredPromo()) {
+        // زرار "Apply" مقفول لحد ما يكتب كود، وأي رسالة قديمة بتتمسح أول ما يكتب
+        const syncApplyState = () => {
+            applyBtn.disabled = !promoInput.value.trim();
+            if (promoMsg) promoMsg.innerText = '';
+        };
+        promoInput.addEventListener('input', syncApplyState);
+        applyBtn.disabled = !promoInput.value.trim();
         applyBtn.addEventListener('click', async () => {
             const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
             const code = promoInput.value.trim();
             if (!code) {
-                if (promoMsg) { promoMsg.style.color = '#e05252'; promoMsg.innerText = tr('cart.enterCode', 'Please enter a code.'); }
+                // الكود اختياري: مجرد تلميح هادي مش رسالة خطأ حمراء
+                if (promoMsg) { promoMsg.style.color = 'var(--text-gray)'; promoMsg.innerText = tr('cart.enterCode', 'Have a promo code? Type it above. You can also continue without one.'); }
                 return;
             }
             applyBtn.disabled = true;

@@ -91,7 +91,7 @@
 
                         <div class="phone-input-wrapper">
                             <span class="country-code">+20</span>
-                            <input type="tel" id="phoneNumber" class="contact-input phone-field" placeholder="1XX XXX XXXX" required maxlength="11" pattern="^01[0-2,5]{1}[0-9]{8}$" dir="ltr" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11); if(this.value.length > 0 && !this.value.startsWith('0')) this.value = '0' + this.value;">
+                            <input type="tel" id="phoneNumber" class="contact-input phone-field" placeholder="1XX XXX XXXX" required dir="ltr">
                         </div>
                     </div>
                 </div>
@@ -104,7 +104,7 @@
                         <input type="text" id="digital-name" class="contact-input" placeholder="Full Name" dir="auto" autocomplete="name" data-i18n-placeholder="checkout.fullName">
                         <div class="phone-input-wrapper">
                             <span class="country-code">+20</span>
-                            <input type="tel" id="digital-phone" class="contact-input phone-field" placeholder="1XX XXX XXXX" maxlength="11" dir="ltr" autocomplete="tel" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11); if(this.value.length > 0 && !this.value.startsWith('0')) this.value = '0' + this.value;">
+                            <input type="tel" id="digital-phone" class="contact-input phone-field" placeholder="1XX XXX XXXX" dir="ltr" autocomplete="tel">
                         </div>
                     </div>
                 </div>
@@ -216,6 +216,7 @@
 <script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
 <script src="js/script.js"></script>
+<script src="js/phone.js"></script>
 <script>
     // ====== حماية: لو مش مسجل دخول، يرجع لصفحة تسجيل الدخول فوراً ======
     (function() {
@@ -553,13 +554,13 @@
 
             const phoneField = document.getElementById('phoneNumber');
             if (phoneField && phoneField.value.trim()) {
-                const phoneRegex = /^01[0-2,5][0-9]{8}$/;
-                if (!phoneRegex.test(phoneField.value.trim())) {
+                const phoneCheck = window.SunBookPhone ? window.SunBookPhone.validate(phoneField) : { valid: true };
+                if (!phoneCheck.valid) {
                     isValid = false;
                     phoneField.parentNode.style.borderColor = 'rgba(255, 77, 77, 0.6)';
                     const errorMsg = document.createElement('div');
                     errorMsg.className = 'field-error show';
-                    errorMsg.textContent = tr('checkout.invalidEgyptianPhone', 'Please enter a valid Egyptian number (11 digits starting with 01)');
+                    errorMsg.textContent = window.SunBookPhone.errorMessage(phoneCheck);
                     phoneField.parentNode.parentNode.appendChild(errorMsg);
                     if (!firstError) firstError = phoneField;
                 }
@@ -592,8 +593,9 @@
 
             if (!dPhone.value.trim()) {
                 showError(dPhone, tr('checkout.fieldRequired', 'This field is required'), dPhone.parentNode);
-            } else if (!/^01[0-2,5][0-9]{8}$/.test(dPhone.value.trim())) {
-                showError(dPhone, tr('checkout.invalidEgyptianPhone', 'Please enter a valid Egyptian number (11 digits starting with 01)'), dPhone.parentNode);
+            } else {
+                const dPhoneCheck = window.SunBookPhone ? window.SunBookPhone.validate(dPhone) : { valid: true };
+                if (!dPhoneCheck.valid) showError(dPhone, window.SunBookPhone.errorMessage(dPhoneCheck), dPhone.parentNode);
             }
         }
 
@@ -1047,13 +1049,13 @@ function initSmartCheckout() {
         finalTotal = Math.max(0, finalTotal - discount);
         if (promoDiscountRow) promoDiscountRow.style.display = 'flex';
         if (promoDiscountLabelEl) promoDiscountLabelEl.innerText = `${tr('cart.promoLabel', 'Promo')} "${storedPromo.code}"`;
-        if (promoDiscountAmountEl) promoDiscountAmountEl.innerText = `- LE ${discount.toFixed(2)}`;
+        if (promoDiscountAmountEl) promoDiscountAmountEl.innerText = `- ${formatMoney(discount, getCartCurrency(cart))}`;
     } else if (promoDiscountRow) {
         promoDiscountRow.style.display = 'none';
     }
 
     const totalPriceEl = document.getElementById('checkout-total-price');
-    if (totalPriceEl) totalPriceEl.innerText = `LE ${finalTotal.toFixed(2)}`;
+    if (totalPriceEl) totalPriceEl.innerText = formatMoney(finalTotal, getCartCurrency(cart));
 }
 
     // =========================================

@@ -6663,3 +6663,44 @@ body.pay-open { overflow: hidden; }
     .pay-wrap { width: 100%; height: calc(100vh - 24px); height: calc(100dvh - 24px); }
     .pay-box { border-radius: 14px; }
 }
+
+/* زرار تطبيق كود الخصم وهو مقفول (لحد ما المستخدم يكتب كود) */
+.apply-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+.apply-btn:disabled:hover {
+    background: transparent;
+    color: var(--gold-color);
+}
+
+/* قائمة كود الدولة في حقول التليفون (js/phone.js) */
+select.country-code-select {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    border-right: 1px solid rgba(216, 176, 86, 0.2);
+    border-radius: 0;
+    outline: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding-right: 24px;
+    min-width: 96px;
+    max-width: 120px;
+    background-color: rgba(216, 176, 86, 0.05);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d8b056' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    background-size: 14px;
+}
+select.country-code-select option {
+    background: #0b0d10;
+    color: #fff;
+}
+
+/* على الموبايل خانة التليفون (حتى في قسم الكتب الديجيتال) ياخدوا السطر كله عشان الرقم يبان كامل */
+@media (max-width: 768px) {
+    .checkout-box .input-grid.two-cols .phone-input-wrapper {
+        grid-column: 1 / -1;
+    }
+}

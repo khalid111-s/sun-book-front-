@@ -131,7 +131,7 @@
                                     <!-- حقل رقم التليفون بنفس ستايل الدفع -->
                                     <div class="phone-input-wrapper profile-phone-wrapper">
                                         <span class="country-code profile-country-code">+20</span>
-                                        <input type="tel" id="profilePhoneInput" class="profile-input phone-field profile-phone-input" placeholder="1XX XXX XXXX" maxlength="11" pattern="^01[0-2,5]{1}[0-9]{8}$" dir="ltr" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11); if(this.value.length > 0 && !this.value.startsWith('0')) this.value = '0' + this.value;">
+                                        <input type="tel" id="profilePhoneInput" class="profile-input phone-field profile-phone-input" placeholder="1XX XXX XXXX" dir="ltr">
                                     </div>
 
                                 </div>
@@ -250,6 +250,7 @@
 <script src="js/i18n.js"></script>
 <script src="js/script.js"></script>
 <script src="js/api.js"></script>
+<script src="js/phone.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const loggedInUser = localStorage.getItem('sunbook_username');
@@ -664,6 +665,15 @@
     if (!nameInput.value.trim()) {
         showToast(tr('profile.nameRequired', 'Name is required'), 'error');
         return;
+    }
+
+    // التليفون اختياري، بس لو مكتوب لازم يبقى رقم صحيح للدولة المختارة
+    if (phoneInput && phoneInput.value.trim() && window.SunBookPhone) {
+        const phoneCheck = window.SunBookPhone.validate(phoneInput);
+        if (!phoneCheck.valid) {
+            showToast(window.SunBookPhone.errorMessage(phoneCheck), 'error');
+            return;
+        }
     }
 
     try {
