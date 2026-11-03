@@ -41,6 +41,16 @@
     const panelTitle = $('panelTitle');
     const panelBody = $('panelBody');
     const panelClose = $('panelClose');
+    // شريط التنقل الدهبي (سحب سريع بين الصفحات)
+    const scrubber = $('pageScrubber');
+    const scrubThumb = $('scrubberThumb');
+    const scrubFill = $('scrubberFill');
+    const scrubBubble = $('scrubberBubble');
+    const SCRUB_THUMB = 48;
+    let scrubDragging = false;
+    let scrubPage = 1;
+    let scrubGrab = 0;
+    let scrubHideTimer = null;
     // التطبيق مثبّت على الجهاز (مفتوح كتطبيق مش كصفحة في المتصفح)
     const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
     if (standalone) document.body.classList.add('is-standalone');
@@ -48,7 +58,7 @@
     // ---------- النصوص (عربي/إنجليزي) ----------
     const STR = {
         ar: {
-            view: 'العرض ▾', fullscreen: 'ملء الشاشة', exit: 'خروج من ملء الشاشة',
+            scrubber: 'التنقل بين الصفحات', view: 'العرض ▾', fullscreen: 'ملء الشاشة', exit: 'خروج من ملء الشاشة',
             layout: 'شكل العرض', single: 'صفحة واحدة', spread: 'صفحتان', scroll: 'تمرير متواصل',
             fit: 'حجم الصفحة', fitPage: 'الصفحة كاملة', fitWidth: 'ملء العرض',
             bg: 'لون الخلفية', dark: 'داكن', gray: 'رمادي', light: 'فاتح',
@@ -66,7 +76,7 @@
             iosOpenSafari: 'افتح الصفحة دي من متصفح Safari الأول، وبعدها اضغط زر المشاركة واختر «إضافة إلى الشاشة الرئيسية».',
         },
         en: {
-            view: 'View ▾', fullscreen: 'Fullscreen', exit: 'Exit fullscreen',
+            scrubber: 'Navigate pages', view: 'View ▾', fullscreen: 'Fullscreen', exit: 'Exit fullscreen',
             layout: 'Layout', single: 'Single page', spread: 'Two pages', scroll: 'Continuous scroll',
             fit: 'Page size', fitPage: 'Whole page', fitWidth: 'Fit width',
             bg: 'Background', dark: 'Dark', gray: 'Gray', light: 'Light',
@@ -432,7 +442,7 @@
             entries.forEach((entry) => {
                 const sheet = sheets[Number(entry.target.dataset.page) - 1];
                 if (!sheet) return;
-                if (entry.isIntersecting) { if (!sheet.el.classList.contains('is-ready') && !sheet.el.classList.contains('is-failed')) loadSheet(sheet); }
+                if (entry.isIntersecting) { if (scrubDragging) return; if (!sheet.el.classList.contains('is-ready') && !sheet.el.classList.contains('is-failed')) loadSheet(sheet); }
                 else unloadSheet(sheet);
             });
         }, { root: viewport, rootMargin: '150% 0px 150% 0px' });
@@ -467,6 +477,7 @@
             progressFill.style.width = '0';
             previous.disabled = true;
             next.disabled = true;
+            updateScrubber();
             return;
         }
         const pages = effectiveLayout() === 'spread' ? visiblePages(book) : [book.currentPage];
@@ -478,6 +489,7 @@
         previous.disabled = book.currentPage <= 1;
         const lastShown = pages[pages.length - 1];
         next.disabled = lastShown >= book.pageCount;
+        updateScrubber();
     };
 
     const saveProgressSoon = (book) => {
@@ -902,6 +914,142 @@
         });
     }, { passive: true });
 
+
+    // ---------- شريط التنقل الدهبي ----------
+    // شريط بيتسحب بصباعك (أو الماوس) وبينقلك بين الصفحات بسرعة، وبيظهر لما تتمرّر أو تلمس الشاشة وبيختفي لوحده.
+    function scrubGeometry() {
+        const dockVar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--r-dock')) || 76;
+        const padTop = 10;
+        const padBottom = Math.max(14, dockVar - 6);
+        const travel = Math.max(1, viewport.clientHeight - padTop - padBottom - SCRUB_THUMB);
+        return { padTop, padBottom, travel };
+    }
+
+    function scrollPageAt() {
+        const book = active;
+        if (!book) return 1;
+        if (sheets.length < 2) return book.currentPage;
+        const stride = sheets[1].el.offsetTop - sheets[0].el.offsetTop;
+        if (stride <= 0) return book.currentPage;
+        const probe = viewport.scrollTop + viewport.clientHeight / 3 - sheets[0].el.offsetTop;
+        return Math.min(book.pageCount, Math.max(1, Math.floor(probe / stride) + 1));
+    }
+
+    function updateScrubber() {
+        const book = active;
+        const show = Boolean(book && book.pageCount > 1);
+        scrubber.hidden = !show;
+        viewport.classList.toggle('scrub-scroll', show && effectiveLayout() === 'scroll');
+        if (!show) return;
+        const g = scrubGeometry();
+        scrubber.style.top = `${viewport.offsetTop}px`;
+        scrubber.style.height = `${viewport.clientHeight}px`;
+        scrubber.style.setProperty('--sb-pt', `${g.padTop}px`);
+        scrubber.style.setProperty('--sb-pb', `${g.padBottom}px`);
+        let ratio;
+        if (scrubDragging && effectiveLayout() !== 'scroll') ratio = (scrubPage - 1) / (book.pageCount - 1);
+        else if (effectiveLayout() === 'scroll') {
+            const max = viewport.scrollHeight - viewport.clientHeight;
+            ratio = max > 0 ? viewport.scrollTop / max : 0;
+        } else ratio = (book.currentPage - 1) / (book.pageCount - 1);
+        ratio = Math.min(1, Math.max(0, ratio));
+        const y = g.padTop + ratio * g.travel;
+        scrubThumb.style.transform = `translateY(${y}px)`;
+        scrubFill.style.height = `${Math.max(0, y + SCRUB_THUMB / 2 - g.padTop)}px`;
+        scrubBubble.style.transform = `translateY(${y + SCRUB_THUMB / 2}px) translateY(-50%)`;
+        const shown = scrubDragging ? scrubPage : book.currentPage;
+        scrubBubble.textContent = `${shown} / ${book.pageCount}`;
+        scrubber.setAttribute('aria-valuemax', String(book.pageCount));
+        scrubber.setAttribute('aria-valuenow', String(shown));
+        scrubber.setAttribute('aria-valuetext', `${shown} / ${book.pageCount}`);
+    }
+
+    const pokeScrubber = () => {
+        scrubber.classList.add('is-awake');
+        clearTimeout(scrubHideTimer);
+        if (!scrubDragging) scrubHideTimer = setTimeout(() => scrubber.classList.remove('is-awake'), 2400);
+    };
+
+    // بعد ما تسيب الشريط: نحمّل الصفحات اللي قدامك بس (أثناء السحب مبنحمّلش عشان منضغطش على السيرفر)
+    const loadVisibleSheets = () => {
+        if (!active || effectiveLayout() !== 'scroll') return;
+        const from = viewport.scrollTop - viewport.clientHeight * 1.5;
+        const to = viewport.scrollTop + viewport.clientHeight * 2.5;
+        sheets.forEach((sheet) => {
+            const top = sheet.el.offsetTop;
+            if (top + sheet.el.offsetHeight < from || top > to) return;
+            if (sheet.el.classList.contains('is-ready') || sheet.el.classList.contains('is-failed') || sheet.img.getAttribute('src')) return;
+            loadSheet(sheet);
+        });
+    };
+
+    const scrubTo = (clientY) => {
+        const book = active;
+        if (!book) return;
+        const rect = scrubber.getBoundingClientRect();
+        const g = scrubGeometry();
+        const ratio = Math.min(1, Math.max(0, (clientY - scrubGrab - rect.top - g.padTop - SCRUB_THUMB / 2) / g.travel));
+        if (effectiveLayout() === 'scroll') {
+            const max = viewport.scrollHeight - viewport.clientHeight;
+            viewport.scrollTop = ratio * Math.max(0, max);
+            scrubPage = scrollPageAt();
+        } else scrubPage = Math.round(ratio * (book.pageCount - 1)) + 1;
+        updateScrubber();
+    };
+
+    scrubber.addEventListener('pointerdown', (event) => {
+        if (!active || active.pageCount < 2 || (event.pointerType === 'mouse' && event.button !== 0)) return;
+        event.preventDefault();
+        const thumbRect = scrubThumb.getBoundingClientRect();
+        const onThumb = event.clientY >= thumbRect.top - 8 && event.clientY <= thumbRect.bottom + 8;
+        // على اللمس: لازم تمسك المقبض نفسه، عشان لمسة عابرة جنب الصفحة متنقلكش بالغلط
+        if (!onThumb && event.pointerType !== 'mouse') return;
+        try { scrubber.setPointerCapture(event.pointerId); } catch (error) { /* مش مهم */ }
+        scrubDragging = true;
+        scrubPage = active.currentPage;
+        scrubGrab = onThumb ? event.clientY - (thumbRect.top + thumbRect.height / 2) : 0;
+        scrubber.classList.add('is-dragging');
+        shell.classList.add('is-scrubbing');
+        viewport.classList.add('scrubbing');
+        pokeScrubber();
+        scrubTo(event.clientY);
+    });
+    scrubber.addEventListener('pointermove', (event) => { if (scrubDragging) scrubTo(event.clientY); });
+    const endScrub = (event) => {
+        if (!scrubDragging) return;
+        scrubDragging = false;
+        try { scrubber.releasePointerCapture(event.pointerId); } catch (error) { /* مش مهم */ }
+        scrubber.classList.remove('is-dragging');
+        shell.classList.remove('is-scrubbing');
+        viewport.classList.remove('scrubbing');
+        if (effectiveLayout() !== 'scroll') showPage(scrubPage);
+        else { setTimeout(loadVisibleSheets, 120); loadVisibleSheets(); }
+        updateScrubber();
+        pokeScrubber();
+    };
+    scrubber.addEventListener('pointerup', endScrub);
+    scrubber.addEventListener('pointercancel', endScrub);
+    // لوحة المفاتيح: أسهم فوق/تحت، Home / End
+    scrubber.addEventListener('keydown', (event) => {
+        const book = active;
+        if (!book) return;
+        const keys = { ArrowUp: book.currentPage - 1, ArrowDown: book.currentPage + 1, PageUp: book.currentPage - 5, PageDown: book.currentPage + 5, Home: 1, End: book.pageCount };
+        if (!(event.key in keys)) return;
+        event.preventDefault();
+        showPage(Math.min(book.pageCount, Math.max(1, keys[event.key])));
+        pokeScrubber();
+    });
+    // عجلة الماوس فوق الشريط بتحرّك الصفحات برضه
+    scrubber.addEventListener('wheel', (event) => { viewport.scrollBy({ top: event.deltaY }); }, { passive: true });
+
+    let scrubTick = false;
+    viewport.addEventListener('scroll', () => {
+        if (effectiveLayout() !== 'scroll' || scrubTick) return;
+        scrubTick = true;
+        requestAnimationFrame(() => { scrubTick = false; updateScrubber(); pokeScrubber(); });
+    }, { passive: true });
+    viewport.addEventListener('pointerdown', pokeScrubber, { passive: true });
+
     ['contextmenu', 'selectstart', 'dragstart'].forEach((eventName) => {
         document.addEventListener(eventName, (event) => event.preventDefault());
     });
@@ -934,6 +1082,7 @@
         installBtn.setAttribute('aria-label', L('installTitle'));
         panelClose.setAttribute('aria-label', L('close'));
         tabsNav.setAttribute('aria-label', L('tabsLabel'));
+        scrubber.setAttribute('aria-label', L('scrubber'));
     };
     const openPanel = (title, node) => {
         panelTitle.textContent = title;

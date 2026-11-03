@@ -174,3 +174,33 @@ body.bg-light .reader-sheet-skeleton { background: linear-gradient(100deg, #f1ee
 /* الصفحة كاملة + تمرير: كل صفحة بتثبت على الشاشة كاملة وإنت بتنزل (من غير ما تقف نص صفحة ونص صفحة) */
 .reader-viewport.snap-pages { scroll-snap-type: y proximity; scroll-padding-top: 12px; }
 .reader-viewport.snap-pages .reader-sheet { scroll-snap-align: start; }
+
+/* ===== شريط التنقل الدهبي (سحب سريع بين الصفحات) ===== */
+.reader-scrubber { --sb-pt: 10px; --sb-pb: 76px; position: absolute; right: env(safe-area-inset-right, 0px); width: 44px; z-index: 11; opacity: 0; transition: opacity .25s ease; pointer-events: none; touch-action: none; user-select: none; -webkit-user-select: none; outline: none; }
+.reader-scrubber[hidden] { display: none; }
+.reader-scrubber.is-awake, .reader-scrubber.is-dragging, .reader-scrubber:focus-visible, .reader-scrubber:hover { opacity: 1; }
+.reader-scrubber-rail { position: absolute; top: var(--sb-pt); bottom: var(--sb-pb); right: 20px; width: 4px; border-radius: 4px; background: rgba(216,176,86,.2); overflow: hidden; }
+.reader-scrubber-rail::before { content: ""; position: absolute; inset: 0 -9px; }
+.reader-scrubber-fill { display: block; width: 100%; height: 0; border-radius: 4px; background: linear-gradient(180deg, #f6e2a0, var(--r-gold)); }
+.reader-scrubber-thumb { position: absolute; top: 0; right: 12px; width: 20px; height: 48px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(160deg, #f6e2a0 0%, #d8b056 45%, #b98a2c 100%); box-shadow: 0 2px 10px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,238,178,.4), 0 0 14px rgba(216,176,86,.35); cursor: grab; transition: box-shadow .15s ease, filter .15s ease; will-change: transform; }
+.reader-scrubber-thumb::before { content: ""; position: absolute; inset: -8px -14px; }
+.reader-scrubber-grip { width: 8px; height: 14px; opacity: .65; background: repeating-linear-gradient(180deg, #5f4410 0 1.5px, transparent 1.5px 4.5px); }
+.reader-scrubber.is-dragging .reader-scrubber-thumb { cursor: grabbing; filter: brightness(1.08); box-shadow: 0 3px 14px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,238,178,.55), 0 0 22px rgba(216,176,86,.6); }
+.reader-scrubber-bubble { position: absolute; top: 0; right: 42px; padding: 6px 12px; border-radius: 10px; background: var(--r-gold); color: #17140b; font-size: .85rem; font-weight: 700; font-variant-numeric: tabular-nums; direction: ltr; white-space: nowrap; box-shadow: 0 6px 18px rgba(0,0,0,.45); opacity: 0; pointer-events: none; transition: opacity .15s ease; }
+.reader-scrubber.is-dragging .reader-scrubber-bubble { opacity: 1; }
+/* الماوس: الشريط ظاهر بهدوء دايمًا ويتقفل عليه بالضغط في أي مكان على المسار. اللمس: المقبض بس هو اللي بيتمسك وبيظهر لما تتمرّر */
+@media (hover: hover) and (pointer: fine) {
+    .reader-scrubber { opacity: .5; }
+    .reader-scrubber-rail, .reader-scrubber-thumb { pointer-events: auto; }
+}
+@media (hover: none), (pointer: coarse) {
+    .reader-scrubber.is-awake .reader-scrubber-thumb, .reader-scrubber.is-dragging .reader-scrubber-thumb { pointer-events: auto; }
+}
+/* التمرير الأصلي (الرأسي) بيختفي لأن الشريط الدهبي مكانه، والأفقي يفضل لو الصفحة متكبّرة */
+.reader-viewport.scrub-scroll { scrollbar-width: none; }
+.reader-viewport.scrub-scroll::-webkit-scrollbar { width: 0; height: 8px; }
+.reader-viewport.scrubbing { scroll-snap-type: none !important; }
+.reader-shell.is-scrubbing .reader-dock { opacity: 0; transform: translateY(18px); pointer-events: none; }
+.reader-shell.is-scrubbing .reader-dock > * { pointer-events: none; }
+.reader-shell.is-scrubbing .reader-chip { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .reader-scrubber, .reader-scrubber-thumb, .reader-scrubber-bubble { transition: none; } }
