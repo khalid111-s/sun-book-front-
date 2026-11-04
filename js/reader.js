@@ -46,7 +46,7 @@
     const scrubThumb = $('scrubberThumb');
     const scrubFill = $('scrubberFill');
     const scrubBubble = $('scrubberBubble');
-    const SCRUB_THUMB = 48;
+    const SCRUB_THUMB = 14;
     let scrubDragging = false;
     let scrubPage = 1;
     let scrubGrab = 0;
@@ -1001,7 +1001,7 @@
         if (!active || active.pageCount < 2 || (event.pointerType === 'mouse' && event.button !== 0)) return;
         event.preventDefault();
         const thumbRect = scrubThumb.getBoundingClientRect();
-        const onThumb = event.clientY >= thumbRect.top - 8 && event.clientY <= thumbRect.bottom + 8;
+        const onThumb = event.clientY >= thumbRect.top - 16 && event.clientY <= thumbRect.bottom + 16;
         // على اللمس: لازم تمسك المقبض نفسه، عشان لمسة عابرة جنب الصفحة متنقلكش بالغلط
         if (!onThumb && event.pointerType !== 'mouse') return;
         try { scrubber.setPointerCapture(event.pointerId); } catch (error) { /* مش مهم */ }
