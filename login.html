@@ -117,6 +117,9 @@ function switchTab(tabName) {
   }
 }
 
+// فتح تاب التسجيل مباشرة لو جاي من تذكير العضوية
+if (new URLSearchParams(location.search).get('tab') === 'register') switchTab('register');
+
 // ─── تسجيل الدخول / إنشاء حساب ────────────────────────
 async function handleAuth(event, type) {
   event.preventDefault();

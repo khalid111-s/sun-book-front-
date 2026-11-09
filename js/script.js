@@ -765,6 +765,23 @@ function updateOrderSummary(total) {
     summaryBox.innerHTML = summaryHTML;
     attachCheckoutEvent(finalTotal);
     attachPromoEvents(total);
+
+    // تذكير العضوية للزائر غير المسجل: نحسب الإجمالي لو كان عضو بنفس منطق الباك اند (5% ثم كود الخصم)
+    if (!loggedInUser && total > 0 && !cartHasMixedCurrency(cartItems)) {
+        let memberTotal = total * 0.95;
+        if (storedPromo) {
+            const pd = storedPromo.discountType === 'percentage'
+                ? memberTotal * (storedPromo.discountValue / 100)
+                : Math.min(storedPromo.discountValue, memberTotal);
+            memberTotal = Math.max(0, memberTotal - pd);
+        }
+        const saving = Math.round((finalTotal - memberTotal) * 100) / 100;
+        document.dispatchEvent(new CustomEvent('sunbook:cartSummary', { detail: {
+            guest: true, saving: money(saving), before: money(finalTotal), after: money(memberTotal)
+        } }));
+    } else {
+        document.dispatchEvent(new CustomEvent('sunbook:cartSummary', { detail: { guest: false } }));
+    }
 }
 
 // بيربط زرار "Apply" ولينك "remove" في صفحة السلة بمنطق التحقق من كود الخصم
@@ -901,6 +918,7 @@ function addToCart(id, qty = 1) {
 
     localStorage.setItem('sunbook_cart', JSON.stringify(cartItems));
     updateCartBadge();
+    document.dispatchEvent(new CustomEvent('sunbook:cartAdded'));
     showToast(window.SunBookI18n ? window.SunBookI18n.t('product.addedToCart') : 'Product successfully added to cart!');
 }
 
@@ -1632,12 +1650,6 @@ function applyLoginState() {
 
     const loggedInUser = localStorage.getItem('sunbook_username');
     const isProfilePage = window.location.pathname.includes('profile.html');
-    const promoBanner = document.getElementById('promo-banner');
-
-    if (promoBanner) {
-        promoBanner.style.display = loggedInUser ? 'none' : 'block';
-    }
-
     authContainers.forEach(container => {
         // حماية للكود: لو الزرار اتغير خلاص، متعملش حاجة تاني عشان نوفر في أداء المتصفح
         if (container.dataset.loaded === 'true') return; 
@@ -1978,8 +1990,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // بنستنى نص ثانية عشان ملف الـ loader يحقن الهيدر في الصفحة
     setTimeout(() => {
         const header = document.querySelector('.header');
-        const promoBanner = document.getElementById('promo-banner');
-        
         if (header) {
             // هنعمل عنصر وهمي (Spacer) ياخد مكان الناف بار وهو Fixed
             const spacer = document.createElement('div');
@@ -1990,9 +2000,9 @@ document.addEventListener('DOMContentLoaded', () => {
             header.parentNode.insertBefore(spacer, header);
 
             window.addEventListener('scroll', () => {
-                const bannerHeight = promoBanner ? promoBanner.offsetHeight : 40;
+                const bannerHeight = 10; // الهيدر بقى أول عنصر في الصفحة، فنثبته بعد سكرول بسيط
                 
-                // لو نزلنا بالماوس مسافة أكبر من ارتفاع البنر الإعلاني
+                // لو نزلنا بالماوس مسافة بسيطة
                 if (window.scrollY > bannerHeight) {
                     // نتأكد إنه لسه ماخدش كلاس التثبيت عشان ما نعملش لود عالفاضي
                     if (!header.classList.contains('scrolled')) {

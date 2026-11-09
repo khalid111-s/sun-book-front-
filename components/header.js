@@ -1,9 +1,5 @@
 window.sunbookComponents = window.sunbookComponents || {};
 window.sunbookComponents.header = `
-<div id="promo-banner" class="promo-banner">
-    <span data-i18n="header.promoText">✨ Become a member today and get 5% off all books and exclusive sessions!</span>
-    <a href="login.html" class="promo-banner-link" data-i18n="header.promoLink">Sign Up Now</a>
-</div>
 <header class="header">
     <nav class="navbar">
         <a href="index.html" class="logo">
