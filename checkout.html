@@ -113,26 +113,10 @@
                 <div class="checkout-box">
                     <h3 class="checkout-title" data-i18n="checkout.paymentMethod">Payment Method</h3>
 
-                    <!-- اختيار طريقة الدفع: فيزا / محفظة (أونلاين عبر بوابة الدفع) أو كاش عند الاستلام (للكتب الفيزيكال بس) -->
+                    <!-- الدفع الإلكتروني متوقف حاليًا (بوابات الدفع اتشالت)، فالمتاح هو الكاش عند الاستلام للكتب الفيزيكال بس -->
                     <div class="payment-methods" id="payment-methods" role="radiogroup">
-                        <label class="pay-method-option active" data-method="card">
-                            <input type="radio" name="paymentMethod" value="card" checked>
-                            <span class="pay-method-radio"></span>
-                            <span class="pay-method-body">
-                                <strong data-i18n="checkout.payCard">Credit / Debit Card</strong>
-                                <small data-i18n="checkout.payCardDesc">Visa, Mastercard or Meeza</small>
-                            </span>
-                        </label>
-                        <label class="pay-method-option" data-method="wallet">
-                            <input type="radio" name="paymentMethod" value="wallet">
-                            <span class="pay-method-radio"></span>
-                            <span class="pay-method-body">
-                                <strong data-i18n="checkout.payWallet">Mobile Wallet</strong>
-                                <small data-i18n="checkout.payWalletDesc">Vodafone Cash, Orange Cash, Etisalat Cash...</small>
-                            </span>
-                        </label>
-                        <label class="pay-method-option" data-method="cod" id="codOption" style="display:none;">
-                            <input type="radio" name="paymentMethod" value="cod">
+                        <label class="pay-method-option active" data-method="cod" id="codOption" style="display:none;">
+                            <input type="radio" name="paymentMethod" value="cod" checked>
                             <span class="pay-method-radio"></span>
                             <span class="pay-method-body">
                                 <strong data-i18n="checkout.payCod">Cash on Delivery</strong>
@@ -140,15 +124,15 @@
                             </span>
                         </label>
                     </div>
-                    <p id="pay-method-note" style="color: var(--text-gray); font-size: 0.9rem; margin-top: 14px;" data-i18n="checkout.securePaymentNotice">
-                        You'll be redirected to our secure payment page to enter your card or mobile wallet details safely.
+                    <p id="pay-method-note" style="color: var(--text-gray); font-size: 0.9rem; margin-top: 14px;" data-i18n="checkout.codNotice">
+                        No payment now. You will pay in cash to the courier when your order arrives.
                     </p>
-                    <p id="cod-unavailable-note" style="display:none; color: var(--text-gray); font-size: 0.82rem; margin-top: 8px;" data-i18n="checkout.codUnavailableNote">
-                        Cash on delivery is only available for orders that contain physical books only.
+                    <p id="cod-unavailable-note" style="display:none; color: var(--text-gray); font-size: 0.82rem; margin-top: 8px;" data-i18n="payment.onlineUnavailable">
+                        We're sorry — online payment is currently paused and unavailable. Please try again later.
                     </p>
                 </div>
 
-                <button class="book-now-btn checkout-submit-btn" id="confirmPaymentBtn" onclick="return validateCheckoutForm(event);">Pay Now & Complete Order</button>
+                <button class="book-now-btn checkout-submit-btn" id="confirmPaymentBtn" onclick="return validateCheckoutForm(event);">Confirm Order (Pay on Delivery)</button>
 
             </div>
 
@@ -185,7 +169,7 @@
                 <polyline class="success-check-mark" points="7.5 12.5 10.3 15.3 16.5 9"></polyline>
             </svg>
         </div>
-        <h2 class="success-title" data-i18n="checkout.paymentSuccessful">Payment Successful!</h2>
+        <h2 class="success-title" data-i18n="checkout.orderPlacedTitle">Order Placed!</h2>
 
         <div class="order-ref-chip" id="orderRefChip" style="display:none;">
             <span data-i18n="checkout.orderNumberLabel">Order Number</span>
@@ -230,84 +214,30 @@
 
 </script>
 <script>
-    // لو الدفع اتلغى والعميل ضغط تاني على نفس السلة، بنكمّل على نفس الطلب/الحجز المعلّق بدل ما نعمل طلب جديد
-    let pendingCheckout = null;
-
     async function processPayment() {
         const confirmBtn = document.getElementById('confirmPaymentBtn');
         const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
-        const originalBtnText = confirmBtn ? confirmBtn.innerText : '';
         const resetPayBtn = () => {
-            if (confirmBtn) {
-                confirmBtn.innerText = originalBtnText;
-                confirmBtn.disabled = false;
-            }
+            if (confirmBtn) confirmBtn.disabled = false;
             if (typeof refreshPaymentOptions === 'function') refreshPaymentOptions();
         };
-        if (confirmBtn) {
-            confirmBtn.innerText = tr('checkout.processing', 'Processing...');
-            confirmBtn.disabled = true;
-        }
 
-        let cart = JSON.parse(localStorage.getItem('sunbook_cart')) || [];
+        const cart = JSON.parse(localStorage.getItem('sunbook_cart')) || [];
         if (cart.length === 0) {
             window.location.href = 'cart.html';
             return;
         }
 
-        // طريقة الدفع المختارة (الكاش بيترفض تلقائيًا لو السلة مش كلها كتب فيزيكال)
-        const paymentMethod = (getSelectedPaymentMethod() === 'cod' && !isCodAvailable(cart)) ? 'card' : getSelectedPaymentMethod();
+        // الدفع الإلكتروني متوقف حاليًا: الكاش عند الاستلام متاح للكتب الفيزيكال بس
+        if (!isCodAvailable(cart)) {
+            if (typeof showPaymentUnavailable === 'function') showPaymentUnavailable();
+            resetPayBtn();
+            return;
+        }
 
-        // 'both' بيتحسب ضمن digitalBooks (عشان يتحمّل ويتحط في المكتبة الرقمية) وبرضو ضمن physicalBooks (عشان يتشحن)
-        const digitalBooks = cart.filter(item => item.type === 'digital' || item.type === 'both');
-
-        const physicalBooks = cart.filter(item => item.type === 'physical' || item.type === 'both');
-        const bookingItems = cart.filter(item => item.type === 'booking');
-
-        const cartSig = JSON.stringify(cart.map(i => [i.id, i.type, i.qty, i.bookingDetails || null]));
-        const reused = !!(pendingCheckout && pendingCheckout.sig === cartSig);
-        const createdBookingIds = reused ? [...pendingCheckout.bookingIds] : [];
-        let createdOrderId = reused ? pendingCheckout.orderId : null;
-
-        // ─── حفظ الحجز في الـ Backend (بيفضل "pending" لحد ما الدفع يتأكد) ───────────
-        if (!reused && bookingItems.length > 0) {
-            const token = localStorage.getItem('sunbook_token');
-            if (!token || token === 'social_dummy_token') {
-                if (typeof showToast === 'function') {
-                    showToast(tr('checkout.signInToBookSession', 'Please sign in with your account to book a session.'), 'error');
-                }
-                if (confirmBtn) {
-                    confirmBtn.innerText = tr('checkout.payConfirmSession', 'Pay & Confirm Session');
-                    confirmBtn.disabled = false;
-                }
-                return;
-            }
-
-            try {
-                for (const item of bookingItems) {
-                    if (!item.bookingDetails) continue;
-                    const bookingRes = await api.bookSession({
-                        dateStr: item.bookingDetails.date,
-                        timeStr: item.bookingDetails.time,
-                        subject: item.title,
-                        currency: getCartCurrency(cart),
-                        notes: `Preferred time: ${item.bookingDetails.time}`,
-                    });
-                    if (bookingRes?.data?.booking?._id) createdBookingIds.push(bookingRes.data.booking._id);
-                }
-            } catch (err) {
-                if (typeof showToast === 'function') {
-                    showToast(err.message || tr('checkout.bookingFailed', 'Booking failed'), 'error');
-                } else {
-                    alert(err.message || tr('checkout.bookingFailed', 'Booking failed'));
-                }
-                if (confirmBtn) {
-                    confirmBtn.innerText = tr('checkout.payConfirmSession', 'Pay & Confirm Session');
-                    confirmBtn.disabled = false;
-                }
-                return;
-            }
-
+        if (confirmBtn) {
+            confirmBtn.innerText = tr('checkout.processing', 'Processing...');
+            confirmBtn.disabled = true;
         }
 
         let totalPrice = 0;
@@ -321,66 +251,46 @@
             finalTotal = totalPrice - (totalPrice * 0.05);
         }
 
-        // ─── تسجيل طلب الكتب (فيزيكال/ديجيتال/الاتنين مع بعض) في الباك اند + الدفع عبر Geidea ───
-        // ملحوظة: بنفلتر من الـ cart الأصلي مباشرة (مش من دمج digitalBooks+physicalBooks) عشان
-        // عنصر type='both' ميتبعتش للباك اند مرتين كأنه صنفين منفصلين (كان هيدبل السعر والمخزون)
-        const bookItems = cart.filter(item => item.type === 'physical' || item.type === 'digital' || item.type === 'both');
-        if (!reused && bookItems.length > 0) {
-            try {
-                const fName = document.getElementById('ship-firstname')?.value || '';
-                const lName = document.getElementById('ship-lastname')?.value || '';
-                const digitalName = document.getElementById('digital-name')?.value.trim() || '';
-                const fullName = (fName + ' ' + lName).trim() || digitalName || localStorage.getItem('sunbook_username') || 'Guest';
+        try {
+            const fName = document.getElementById('ship-firstname')?.value || '';
+            const lName = document.getElementById('ship-lastname')?.value || '';
+            const fullName = (fName + ' ' + lName).trim() || localStorage.getItem('sunbook_username') || 'Guest';
 
-                const orderRes = await api.createOrder({
-                    customerName: fullName,
-                    phone: document.getElementById('phoneNumber')?.value || document.getElementById('digital-phone')?.value || '',
-                    address: document.getElementById('ship-address')?.value || '',
-                    governorate: document.getElementById('governorate')?.value || '',
-                    paymentMethod,
-                    items: bookItems.map(item => ({
-                        product: item.id,
-                        qty: item.qty || 1,
-                    })),
-                    expectedCurrency: getCartCurrency(cart),
-                    promoCode: (typeof getStoredPromoFor === 'function' && getStoredPromoFor(getCartCurrency(cart))) ? getStoredPromoFor(getCartCurrency(cart)).code : undefined,
-                });
-
-                createdOrderId = orderRes?.data?.order?._id || null;
-            } catch (err) {
-                if (typeof showToast === 'function') {
-                    showToast(err.message || tr('checkout.orderFailed', 'Order failed'), 'error');
-                } else {
-                    alert(err.message || tr('checkout.orderFailed', 'Order failed'));
-                }
-                if (confirmBtn) {
-                    confirmBtn.innerText = tr('checkout.payNowComplete', 'Pay Now & Complete Order');
-                    confirmBtn.disabled = false;
-                }
-                if (typeof refreshPaymentOptions === 'function') refreshPaymentOptions();
-                return;
+            await api.createOrder({
+                customerName: fullName,
+                phone: document.getElementById('phoneNumber')?.value || '',
+                address: document.getElementById('ship-address')?.value || '',
+                governorate: document.getElementById('governorate')?.value || '',
+                paymentMethod: 'cod',
+                items: cart.map(item => ({ product: item.id, qty: item.qty || 1 })),
+                expectedCurrency: getCartCurrency(cart),
+                promoCode: (typeof getStoredPromoFor === 'function' && getStoredPromoFor(getCartCurrency(cart))) ? getStoredPromoFor(getCartCurrency(cart)).code : undefined,
+            });
+        } catch (err) {
+            if (typeof showToast === 'function') {
+                showToast(err.message || tr('checkout.orderFailed', 'Order failed'), 'error');
+            } else {
+                alert(err.message || tr('checkout.orderFailed', 'Order failed'));
             }
+            resetPayBtn();
+            return;
         }
 
-        // ─── كل اللي تحت ده بيتنفذ بس بعد تأكيد الدفع (أو فورًا لو كاش عند الاستلام) ───
-        const finishCheckout = async () => {
-        pendingCheckout = null;
         const newOrder = {
             id: Math.floor(Math.random() * 9000) + 1000,
             itemsCount: cart.reduce((sum, item) => sum + item.qty, 0),
             total: finalTotal.toFixed(2),
             date: new Date().toLocaleDateString('en-GB'),
-            types: { digital: digitalBooks.length, physical: physicalBooks.length, booking: bookingItems.length }
+            types: { digital: 0, physical: cart.length, booking: 0 }
         };
         let orders = JSON.parse(localStorage.getItem('sunbook_orders')) || [];
         orders.push(newOrder);
         localStorage.setItem('sunbook_orders', JSON.stringify(orders));
 
-        // عرض نافذة النجاح
+        // عرض نافذة نجاح الطلب
         const modal = document.getElementById('successModal');
         const successMsg = document.getElementById('success-message');
         const dlContainer = document.getElementById('reader-links-container');
-
         if (modal) modal.classList.add('active');
 
         const orderRefChip = document.getElementById('orderRefChip');
@@ -389,109 +299,19 @@
             orderRefNumber.innerText = '#' + newOrder.id;
             orderRefChip.style.display = 'inline-flex';
         }
+        if (dlContainer) dlContainer.style.display = 'none';
 
-        if (digitalBooks.length > 0) {
-            // بنعرض كارت المكتبة لكل حاجة اشتراها: لو عرض (Bundle) بيفتح القارئ بكل كتبه في تابات
-            let readableBooks = digitalBooks.map(book => ({
-                title: book.title,
-                href: `reader.html?book=${encodeURIComponent(book.id)}`
-            }));
-            try {
-                const { data: library } = await api.getLibrary();
-                const purchasedIds = new Set(digitalBooks.map(book => String(book.id)));
-                const fromLibrary = library
-                    .filter(entry => purchasedIds.has(String(entry.productId)))
-                    .map(entry => ({
-                        title: entry.title,
-                        href: entry.isBundle
-                            ? `reader.html?entry=${encodeURIComponent(entry.productId)}`
-                            : `reader.html?book=${encodeURIComponent(entry.books[0].productId)}`
-                    }));
-                if (fromLibrary.length) readableBooks = fromLibrary;
-            } catch (error) {
-                console.error('Could not load the digital library after payment:', error);
-            }
-
-            if (dlContainer) {
-                dlContainer.style.display = 'block';
-                dlContainer.replaceChildren();
-                const heading = document.createElement('div');
-                heading.className = 'download-section-title';
-                heading.textContent = tr('checkout.yourDigitalLibrary', 'Your Digital Library');
-                dlContainer.appendChild(heading);
-                readableBooks.forEach(book => {
-                    const link = document.createElement('a');
-                    link.className = 'download-btn';
-                    link.href = book.href;
-                    const title = document.createElement('span');
-                    title.className = 'dl-title';
-                    title.textContent = book.title;
-                    const action = document.createElement('span');
-                    action.textContent = tr('reader.readNow', 'Read now');
-                    link.append(title, action);
-                    dlContainer.appendChild(link);
-                });
-            }
-
-            if (successMsg) {
-                if (physicalBooks.length > 0 || bookingItems.length > 0) {
-                    let msg = tr('checkout.digitalReadyPrefix', 'Your digital books are ready to read online. ');
-                    if (bookingItems.length > 0) msg += tr('checkout.sessionConfirmedFragment', 'Your session has been confirmed. ');
-                    if (physicalBooks.length > 0) msg += tr('checkout.physicalShippedFragment', 'Physical items will be shipped to your address.');
-                    successMsg.innerText = msg;
-                } else {
-                    successMsg.innerText = tr('checkout.digitalReadyOnly', 'Your digital books are ready to read online.');
-                }
-            }
-        } else if (bookingItems.length > 0) {
-            if (dlContainer) dlContainer.style.display = 'none';
-            if (successMsg) {
-                if (physicalBooks.length > 0) {
-                    successMsg.innerText = tr('checkout.sessionBookedPhysical', 'Your session has been booked successfully! Physical items will be shipped to your address.');
-                } else {
-                    successMsg.innerText = tr('checkout.sessionBookedOnly', 'Your session has been booked successfully! Check your profile for details.');
-                }
-            }
-        } else {
-            if (dlContainer) dlContainer.style.display = 'none';
-            if (successMsg) successMsg.innerText = tr('checkout.orderPlacedGeneric', 'Your order has been placed securely. A receipt has been sent to your email.');
+        const titleEl = document.querySelector('#successModal .success-title');
+        if (titleEl) {
+            titleEl.setAttribute('data-i18n', 'checkout.orderPlacedTitle');
+            titleEl.innerText = tr('checkout.orderPlacedTitle', 'Order Placed!');
         }
-
-        // كاش عند الاستلام: لسه مدفعش، فمينفعش نقوله "Payment Successful"
-        if (paymentMethod === 'cod') {
-            const titleEl = document.querySelector('#successModal .success-title');
-            if (titleEl) {
-                titleEl.setAttribute('data-i18n', 'checkout.orderPlacedTitle');
-                titleEl.innerText = tr('checkout.orderPlacedTitle', 'Order Placed!');
-            }
-            if (successMsg) successMsg.innerText = tr('checkout.codOrderPlaced', 'Your order has been placed. Please have the cash ready when it arrives - we will contact you on your phone to arrange delivery.');
-        }
+        if (successMsg) successMsg.innerText = tr('checkout.codOrderPlaced', 'Your order has been placed. Please have the cash ready when it arrives - we will contact you on your phone to arrange delivery.');
 
         localStorage.removeItem('sunbook_cart');
         if (typeof setStoredPromo === 'function') setStoredPromo(null);
         if (typeof updateCartBadge === 'function') updateCartBadge();
-        };
-
-        // كاش عند الاستلام: مفيش دفع أونلاين، الطلب اتسجّل كـ pending
-        if (paymentMethod === 'cod') {
-            await finishCheckout();
-            return;
-        }
-
-        // أونلاين: لازم يكون فيه طلب أو حجز اتسجّل، وإلا مفيش حاجة تتدفع (منعرضش "نجاح" أبدًا من غير دفع)
-        if (!createdOrderId && createdBookingIds.length === 0) {
-            if (typeof showToast === 'function') showToast(tr('checkout.orderFailed', 'Order failed'), 'error');
-            resetPayBtn();
-            return;
-        }
-        pendingCheckout = { sig: cartSig, orderId: createdOrderId, bookingIds: createdBookingIds };
-
-        await api.payWithGeidea(
-            { orderId: createdOrderId, bookingIds: createdBookingIds },
-            { onPaid: finishCheckout, onAbort: resetPayBtn }
-        );
     }
-
     // ====== نسخ رقم الطلب ======
     function copyOrderRef() {
         const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
@@ -528,6 +348,11 @@
         }
 
         let cart = JSON.parse(localStorage.getItem('sunbook_cart')) || [];
+        // أي سلة محتاجة دفع إلكتروني (ديجيتال/جلسة) مينفعش تكمل، والدفع الإلكتروني متوقف
+        if (!isCodAvailable(cart)) {
+            if (typeof showPaymentUnavailable === 'function') showPaymentUnavailable();
+            return false;
+        }
         const hasPhysical = cart.some(item => item.type === 'physical' || item.type === 'both');
 
         let isValid = true;
@@ -598,43 +423,6 @@
                 const dPhoneCheck = window.SunBookPhone ? window.SunBookPhone.validate(dPhone) : { valid: true };
                 if (!dPhoneCheck.valid) showError(dPhone, window.SunBookPhone.errorMessage(dPhoneCheck), dPhone.parentNode);
             }
-        }
-
-        // 2. حقول الدفع
-        const cardForm = document.getElementById('card-form');
-        if (cardForm && cardForm.classList.contains('active')) {
-            const cardInputs = cardForm.querySelectorAll('input');
-            cardInputs.forEach(field => {
-                if (!field.value.trim()) {
-                    isValid = false;
-                    field.style.borderColor = 'rgba(255, 77, 77, 0.6)';
-                    const errorMsg = document.createElement('div');
-                    errorMsg.className = 'field-error show';
-                    errorMsg.textContent = tr('checkout.fieldRequired', 'This field is required');
-                    field.parentNode.appendChild(errorMsg);
-                    if (!firstError) firstError = field;
-                } else {
-                    field.style.borderColor = '';
-                }
-            });
-        }
-
-        const walletForm = document.getElementById('wallet-form');
-        if (walletForm && walletForm.classList.contains('active')) {
-            const walletInputs = walletForm.querySelectorAll('input');
-            walletInputs.forEach(field => {
-                if (!field.value.trim()) {
-                    isValid = false;
-                    field.style.borderColor = 'rgba(255, 77, 77, 0.6)';
-                    const errorMsg = document.createElement('div');
-                    errorMsg.className = 'field-error show';
-                    errorMsg.textContent = tr('checkout.fieldRequired', 'This field is required');
-                    field.parentNode.appendChild(errorMsg);
-                    if (!firstError) firstError = field;
-                } else {
-                    field.style.borderColor = '';
-                }
-            });
         }
 
         if (!isValid) {
@@ -816,59 +604,35 @@ function isCodAvailable(cart) {
     return cart.length > 0 && cart.every(item => item.type === 'physical');
 }
 
-function getSelectedPaymentMethod() {
-    const checked = document.querySelector('input[name="paymentMethod"]:checked');
-    return checked ? checked.value : 'card';
-}
-
 function refreshPaymentOptions() {
     const cart = JSON.parse(localStorage.getItem('sunbook_cart')) || [];
     const tr = (key, fallback) => (window.SunBookI18n ? window.SunBookI18n.t(key) : fallback);
     const codOption = document.getElementById('codOption');
     const unavailableNote = document.getElementById('cod-unavailable-note');
-    const hasPhysical = cart.some(item => item.type === 'physical' || item.type === 'both');
     const codOk = isCodAvailable(cart);
 
-    // الكاش بيظهر بس لو السلة كلها فيزيكال؛ ولو فيها فيزيكال مع حاجة رقمية نوضّح ليه مش متاح
+    // الكاش بيظهر بس لو السلة كلها فيزيكال؛ ولو محتاجة دفع إلكتروني نوضّح إنه متوقف
     if (codOption) codOption.style.display = codOk ? '' : 'none';
-    if (unavailableNote) unavailableNote.style.display = (!codOk && hasPhysical) ? 'block' : 'none';
-
-    // لو الكاش كان مختار والسلة اتغيّرت، نرجع للكارت
-    if (!codOk) {
-        const codRadio = document.querySelector('input[name="paymentMethod"][value="cod"]');
-        if (codRadio && codRadio.checked) {
-            const cardRadio = document.querySelector('input[name="paymentMethod"][value="card"]');
-            if (cardRadio) cardRadio.checked = true;
-        }
-    }
-
-    const method = getSelectedPaymentMethod();
-    document.querySelectorAll('.pay-method-option').forEach(opt => {
-        opt.classList.toggle('active', opt.dataset.method === method);
-    });
+    if (unavailableNote) unavailableNote.style.display = codOk ? 'none' : 'block';
 
     const note = document.getElementById('pay-method-note');
     if (note) {
-        if (method === 'cod') {
+        if (codOk) {
             note.setAttribute('data-i18n', 'checkout.codNotice');
             note.innerText = tr('checkout.codNotice', 'No payment now. You will pay in cash to the courier when your order arrives.');
+            note.style.display = '';
         } else {
-            note.setAttribute('data-i18n', 'checkout.securePaymentNotice');
-            note.innerText = tr('checkout.securePaymentNotice', "You'll be redirected to our secure payment page to enter your card or mobile wallet details safely.");
+            note.style.display = 'none';
         }
     }
 
     const confirmBtn = document.getElementById('confirmPaymentBtn');
     if (confirmBtn && !confirmBtn.disabled) {
-        confirmBtn.innerText = method === 'cod'
+        confirmBtn.innerText = codOk
             ? tr('checkout.confirmCodOrder', 'Confirm Order (Pay on Delivery)')
-            : tr('checkout.payNowComplete', 'Pay Now & Complete Order');
+            : tr('checkout.onlinePaymentUnavailableBtn', 'Online Payment Unavailable');
     }
 }
-
-document.addEventListener('change', (e) => {
-    if (e.target && e.target.name === 'paymentMethod') refreshPaymentOptions();
-});
 
 function initSmartCheckout() {
     const loggedInUser = localStorage.getItem('sunbook_username');

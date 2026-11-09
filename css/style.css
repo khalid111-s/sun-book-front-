@@ -4464,32 +4464,7 @@ html[dir="rtl"] .remove-btn {
     display: none; /* مخفية لحد ما الـ JS يحدد هتظهر ولا لأ */
 }
 
-/* تابات الدفع (محفظة ولا فيزا) */
-.payment-tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-.pay-tab {
-    flex: 1;
-    text-align: center;
-    padding: 12px;
-    border: 1px solid rgba(216, 176, 86, 0.3);
-    border-radius: 8px;
-    color: var(--text-gray);
-    cursor: pointer;
-    transition: all 0.3s;
-}
-.pay-tab.active {
-    background: rgba(216, 176, 86, 0.15);
-    border-color: var(--gold-color);
-    color: var(--gold-color);
-    font-weight: bold;
-}
-.pay-form { display: none; }
-.pay-form.active { display: block; }
-
-/* اختيارات طريقة الدفع (فيزا / محفظة / كاش عند الاستلام) */
+/* اختيارات طريقة الدفع (كاش عند الاستلام) */
 .payment-methods { display: flex; flex-direction: column; gap: 10px; }
 .pay-method-option {
     display: flex;
@@ -5950,19 +5925,6 @@ html {
         display: block;
     }
 
-    #card-form .input-grid,
-    #wallet-form .input-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        margin-top: 15px;
-    }
-
-    #card-form input,
-    #wallet-form input {
-        margin-bottom: 0;
-    }
-
     input:-webkit-autofill,
     input:-webkit-autofill:hover,
     input:-webkit-autofill:focus {
@@ -5973,9 +5935,7 @@ html {
 
     @media (max-width: 768px) {
         .checkout-box .input-grid.two-cols,
-        .checkout-box .input-grid.three-cols,
-        #card-form .input-grid,
-        #wallet-form .input-grid {
+        .checkout-box .input-grid.three-cols {
             grid-template-columns: repeat(2, 1fr);
         }
 
@@ -6604,64 +6564,6 @@ html[dir="rtl"] .select-arrow {
    عن اتجاه الصفحة - فكود الدولة "+20" يفضل قبل الرقم مش بعده */
 html[dir="rtl"] .phone-input-wrapper {
     direction: ltr;
-}
-
-/* ═══════════ نافذة الدفع (Geidea Drop-in) - مربع في النص بشكل الموقع ═══════════ */
-body.pay-open { overflow: hidden; }
-.pay-overlay {
-    position: fixed; inset: 0; z-index: 10000;
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px 16px;
-    background: rgba(3, 4, 6, 0.82);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    animation: payFade 0.2s ease;
-}
-.pay-wrap {
-    position: relative;
-    width: min(400px, 100%);
-    height: min(700px, calc(100vh - 32px));
-    height: min(700px, calc(100dvh - 32px));
-    animation: payRise 0.25s cubic-bezier(.2,.8,.2,1);
-}
-.pay-box {
-    width: 100%; height: 100%;
-    background: #0b0d12;
-    border: 1px solid rgba(216, 176, 86, 0.55);
-    border-radius: 16px;
-    overflow: hidden;
-}
-.pay-dropin { position: relative; width: 100%; height: 100%; background: #0b0d12; overflow: hidden; }
-.pay-dropin div { height: 100% !important; max-height: 100% !important; }
-.pay-dropin iframe {
-    position: absolute !important; top: 0 !important; left: 0 !important;
-    width: 100% !important; height: 100% !important; max-height: none !important;
-    border: 0 !important; display: block;
-    /* بيحوّل أبيض Geidea لغامق زي الموقع */
-    filter: invert(1) hue-rotate(180deg);
-    color-scheme: dark;
-}
-.pay-close {
-    position: absolute; top: 10px; right: 10px; z-index: 5;
-    width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%;
-    background: rgba(11, 13, 18, 0.88); color: #fff;
-    font-size: 22px; line-height: 1;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: 0.2s;
-}
-.pay-close:hover { background: #ff4d4d; }
-.pay-status {
-    height: 100%; display: flex; align-items: center; justify-content: center;
-    text-align: center; padding: 0 20px;
-    color: var(--gold-color); font-size: 1.05rem;
-}
-.pay-status[hidden] { display: none; }
-@keyframes payFade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes payRise { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }
-@media (max-width: 480px) {
-    .pay-overlay { padding: 12px; }
-    .pay-wrap { width: 100%; height: calc(100vh - 24px); height: calc(100dvh - 24px); }
-    .pay-box { border-radius: 14px; }
 }
 
 /* زرار تطبيق كود الخصم وهو مقفول (لحد ما المستخدم يكتب كود) */

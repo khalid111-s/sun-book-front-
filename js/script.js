@@ -872,6 +872,20 @@ function showToast(message, type = 'success') {
     }, 3200);
 }
 
+// رسالة موحدة بتظهر في إشعار الموقع لما حد يحاول يدفع أو يشتري حاجة
+// والدفع الإلكتروني متوقف (بوابات الدفع اتشالت مؤقتًا).
+function paymentUnavailableMessage() {
+    return window.SunBookI18n
+        ? window.SunBookI18n.t('payment.onlineUnavailable')
+        : "We're sorry — online payment is currently paused and unavailable. Please try again later.";
+}
+
+function showPaymentUnavailable() {
+    const msg = paymentUnavailableMessage();
+    if (typeof showToast === 'function') showToast(msg, 'error');
+    else alert(msg);
+}
+
 function addToCart(id, qty = 1) {
     const product = productsData.find(item => item.id == id);
     if (!product) return;
@@ -1301,6 +1315,8 @@ if (modal) {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             if (bookingsPaused) { notifyBookingsPaused(); return; }
+            // حجز الجلسات محتاج دفع إلكتروني، وهو متوقف حاليًا
+            if (typeof showPaymentUnavailable === 'function') { showPaymentUnavailable(); return; }
             modal.classList.add('active');
             renderCalendar();
         });
@@ -1685,6 +1701,13 @@ function attachCheckoutEvent(finalAmount) {
             return;
         }
 
+        // الكتب الرقمية والجلسات بتحتاج دفع إلكتروني (متوقف حاليًا)، والكاش متاح للكتب الفيزيكال بس
+        if (cartItems.some(item => item.type !== 'physical')) {
+            e.preventDefault();
+            if (typeof showPaymentUnavailable === 'function') showPaymentUnavailable();
+            return;
+        }
+
         const loggedInUser = localStorage.getItem('sunbook_username');
         if (!loggedInUser) {
             e.preventDefault();
@@ -1702,7 +1725,9 @@ function attachCheckoutEvent(finalAmount) {
 const confirmBookingBtn = document.querySelector('.confirm-booking-btn');
 if (confirmBookingBtn && !document.body.classList.contains('use-api-booking')) {
     confirmBookingBtn.addEventListener('click', async () => {
-        
+        // حجز الجلسات محتاج دفع إلكتروني، وهو متوقف حاليًا
+        if (typeof showPaymentUnavailable === 'function') { showPaymentUnavailable(); return; }
+
         // 1. هل اختار وقت؟
         const selectedTimeBtn = document.querySelector('.time-slot-btn.selected');
         if (!selectedTimeBtn) {
