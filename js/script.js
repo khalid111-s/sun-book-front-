@@ -876,11 +876,11 @@ function showToast(message, type = 'success') {
     }, 3200);
 }
 
-// رسالة موحدة بتظهر لو محتاجين نوضح إن الدفع الإلكتروني لسه بيتفعّل من بوابة الدفع.
+// رسالة موحدة بتظهر لو العميل حاول يستخدم الدفع الإلكتروني وهو مقفول حاليًا.
 function paymentUnavailableMessage() {
     return window.SunBookI18n
         ? window.SunBookI18n.t('payment.onlineUnavailable')
-        : "Online card and mobile-wallet payments are being activated through our secure payment partner. For digital books and sessions, please contact us on WhatsApp or by email to complete your order.";
+        : "Online card and mobile-wallet payments are temporarily unavailable. Physical book orders can still be paid cash on delivery. Please check back soon.";
 }
 
 function showPaymentUnavailable() {

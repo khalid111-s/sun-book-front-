@@ -13,14 +13,6 @@ window.sunbookComponents.footer = `
             </div>
         </div>
 
-        <div class="footer-center">
-            <h4 class="footer-title" data-i18n="footer.newsletter">Newsletter</h4>
-            <form class="newsletter-form">
-                <input type="email" placeholder="Enter your email" required data-i18n-placeholder="footer.emailPlaceholder">
-                <button type="submit" data-i18n="footer.subscribe">Subscribe</button>
-            </form>
-        </div>
-
         <div class="footer-right">
             <div class="social-wrapper">
                 <h4 class="footer-title" data-i18n="footer.followUs">Follow Us</h4>
@@ -55,16 +47,10 @@ window.sunbookComponents.footer = `
     </div>
 
     <div class="footer-bottom-modern">
-        <div style="display:flex; flex-wrap:wrap; gap:10px 24px; justify-content:center; align-items:center; margin-bottom:14px; color:var(--text-gray); font-size:0.9rem;">
-            <span>📍 El Agamy, Alexandria, Egypt</span>
-            <span>✉️ <a href="mailto:thesunbook7@gmail.com" style="color:inherit; text-decoration:underline;">thesunbook7@gmail.com</a></span>
-            <span>📞 <a href="https://wa.me/201287607124" target="_blank" rel="noopener" style="color:inherit; text-decoration:underline;">+20 128 760 7124</a></span>
-        </div>
         <ul class="policy-row">
             <li><a href="policies.html#privacy" data-i18n="footer.privacy">Privacy Policy</a></li>
-            <li><a href="policies.html#refund">Refund &amp; Cancellation Policy</a></li>
-            <li><a href="policies.html#shipping">Delivery &amp; Shipping Policy</a></li>
             <li><a href="policies.html#terms" data-i18n="footer.terms">Terms of Service</a></li>
+            <li><a href="policies.html#refund" data-i18n="footer.refund">Refund Policy</a></li>
         </ul>
         <p class="copyright">© 2026 The Sun Book. All rights reserved. All prices are in Egyptian Pounds (EGP).</p>
     </div>

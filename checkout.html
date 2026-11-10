@@ -25,16 +25,6 @@
 
                 <div id="smart-notice" class="smart-notice"></div>
 
-                <!-- رسالة توضيحية تظهر جوه الـ Checkout نفسه لأي سلة محتاجة دفع إلكتروني -->
-                <div id="online-payment-notice" class="smart-notice" style="display:none; margin-bottom: 20px;">
-                    <strong data-i18n="checkout.onlineNoticeTitle">Secure Online Payment</strong><br>
-                    <span data-i18n="checkout.onlineNoticeText">Online card and mobile-wallet payments are being activated through our secure payment partner. You can review your complete order below. To complete a digital book or session order today, contact us and our team will assist you.</span>
-                    <div style="margin-top: 12px; display: flex; gap: 14px; flex-wrap: wrap;">
-                        <a href="contact.html" class="btn-shop" style="padding: 8px 18px; font-size: 0.85rem;" data-i18n="checkout.contactToOrder">Contact Us to Complete Order</a>
-                        <a href="https://wa.me/201287607124" target="_blank" rel="noopener" style="color: var(--gold-color); font-weight: 700; align-self: center;">WhatsApp: +20 128 760 7124</a>
-                    </div>
-                </div>
-
                 <!-- بنر الديجيتال فقط -->
                 <div id="digital-banner" class="digital-only-banner" style="display: none;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -134,14 +124,11 @@
                             </span>
                         </label>
                     </div>
-                    <p id="online-payment-method-note" style="display:none; color: var(--text-gray); font-size: 0.9rem; margin-top: 14px;">
-                        <strong style="color: var(--gold-color);">Secure online payment:</strong> our team will send you a secure payment link to complete this order.
-                    </p>
                     <p id="pay-method-note" style="color: var(--text-gray); font-size: 0.9rem; margin-top: 14px;" data-i18n="checkout.codNotice">
                         No payment now. You will pay in cash to the courier when your order arrives.
                     </p>
                     <p id="cod-unavailable-note" style="display:none; color: var(--text-gray); font-size: 0.82rem; margin-top: 8px;" data-i18n="payment.onlineUnavailable">
-                        Our team will send you a secure payment link to complete this order.
+                        Online card and mobile-wallet payments are temporarily unavailable. Physical book orders can still be paid cash on delivery.
                     </p>
                 </div>
 
@@ -621,11 +608,9 @@ function refreshPaymentOptions() {
 
     // الكاش بيظهر بس لو السلة كلها فيزيكال؛ ولو محتاجة دفع إلكتروني نوضّح إنه متوقف
     if (codOption) codOption.style.display = codOk ? '' : 'none';
-    if (unavailableNote) unavailableNote.style.display = 'none';
+    if (unavailableNote) unavailableNote.style.display = codOk ? 'none' : 'block';
 
     const note = document.getElementById('pay-method-note');
-    const onlineMethodNote = document.getElementById('online-payment-method-note');
-    if (onlineMethodNote) onlineMethodNote.style.display = codOk ? 'none' : 'block';
     if (note) {
         if (codOk) {
             note.setAttribute('data-i18n', 'checkout.codNotice');
@@ -645,13 +630,12 @@ function refreshPaymentOptions() {
             confirmBtn.style.cursor = '';
             confirmBtn.innerText = tr('checkout.confirmCodOrder', 'Confirm Order (Pay on Delivery)');
         } else {
-            // الدفع الإلكتروني لسه بيتفعّل من بوابة الدفع. الزائر يقدر يشوف
-            // صفحة الـ Checkout كاملة، لكن تأكيد الطلب بيتطلب تواصل مباشر معانا.
+            // الدفع الإلكتروني مقفول حاليًا، والزائر يقدر يشوف صفحة الـ Checkout كاملة.
             confirmBtn.disabled = true;
             confirmBtn.setAttribute('aria-disabled', 'true');
             confirmBtn.style.opacity = '0.6';
             confirmBtn.style.cursor = 'not-allowed';
-            confirmBtn.innerText = tr('checkout.onlinePaymentUnavailableBtn', 'Online Payment Coming Soon');
+            confirmBtn.innerText = tr('checkout.onlinePaymentUnavailableBtn', 'Online Payment Unavailable');
         }
     }
 }
@@ -771,13 +755,6 @@ function initSmartCheckout() {
         }
         confirmBtn.innerText = tr('checkout.payNowComplete', 'Pay Now & Complete Order');
     }
-
-    // ====== رسالة الدفع الإلكتروني جوه صفحة الـ Checkout ======
-    // الكاش عند الاستلام متاح للكتب الفيزيكال فقط. لو السلة فيها أي عنصر
-    // ديجيتال أو جلسة، بنوضح الحالة هنا جوه الصفحة نفسها بدل منع العميل من الدخول.
-    const onlineNote = document.getElementById('online-payment-notice');
-    const allPhysical = cart.every(item => item.type === 'physical');
-    if (onlineNote) onlineNote.style.display = allPhysical ? 'none' : 'block';
 
     // بيانات الاسم والتليفون للكتب الديجيتال: بتظهر لو فيه ديجيتال ومفيش فيزيكال (الفيزيكال عنده الاسم والتليفون في قسم الشحن)
     const digitalContactSection = document.getElementById('digital-contact-section');
