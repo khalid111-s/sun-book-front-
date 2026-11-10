@@ -25,6 +25,16 @@
 
                 <div id="smart-notice" class="smart-notice"></div>
 
+                <!-- رسالة توضيحية تظهر جوه الـ Checkout نفسه لأي سلة محتاجة دفع إلكتروني -->
+                <div id="online-payment-notice" class="smart-notice" style="display:none; margin-bottom: 20px;">
+                    <strong data-i18n="checkout.onlineNoticeTitle">Secure Online Payment</strong><br>
+                    <span data-i18n="checkout.onlineNoticeText">Online card and mobile-wallet payments are being activated through our secure payment partner. You can review your complete order below. To complete a digital book or session order today, contact us and our team will assist you.</span>
+                    <div style="margin-top: 12px; display: flex; gap: 14px; flex-wrap: wrap;">
+                        <a href="contact.html" class="btn-shop" style="padding: 8px 18px; font-size: 0.85rem;" data-i18n="checkout.contactToOrder">Contact Us to Complete Order</a>
+                        <a href="https://wa.me/201287607124" target="_blank" rel="noopener" style="color: var(--gold-color); font-weight: 700; align-self: center;">WhatsApp: +20 128 760 7124</a>
+                    </div>
+                </div>
+
                 <!-- بنر الديجيتال فقط -->
                 <div id="digital-banner" class="digital-only-banner" style="display: none;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -124,11 +134,14 @@
                             </span>
                         </label>
                     </div>
+                    <p id="online-payment-method-note" style="display:none; color: var(--text-gray); font-size: 0.9rem; margin-top: 14px;">
+                        <strong style="color: var(--gold-color);">Secure online payment:</strong> our team will send you a secure payment link to complete this order.
+                    </p>
                     <p id="pay-method-note" style="color: var(--text-gray); font-size: 0.9rem; margin-top: 14px;" data-i18n="checkout.codNotice">
                         No payment now. You will pay in cash to the courier when your order arrives.
                     </p>
                     <p id="cod-unavailable-note" style="display:none; color: var(--text-gray); font-size: 0.82rem; margin-top: 8px;" data-i18n="payment.onlineUnavailable">
-                        We're sorry — online payment is currently paused and unavailable. Please try again later.
+                        Our team will send you a secure payment link to complete this order.
                     </p>
                 </div>
 
@@ -145,11 +158,11 @@
 
                     <div class="summary-row" id="promoDiscountRow" style="display:none; color:#34A853;">
                         <span id="promoDiscountLabel">Discount</span>
-                        <span id="promoDiscountAmount">- LE 0.00</span>
+                        <span id="promoDiscountAmount">- EGP 0.00</span>
                     </div>
                     <div class="summary-row total-row">
                         <span data-i18n="checkout.totalToPay">Total to pay</span>
-                        <span id="checkout-total-price">LE 0.00</span>
+                        <span id="checkout-total-price">EGP 0.00</span>
                     </div>
                 </div>
             </div>
@@ -202,16 +215,11 @@
 <script src="js/script.js"></script>
 <script src="js/phone.js"></script>
 <script>
-    // ====== حماية: لو مش مسجل دخول، يرجع لصفحة تسجيل الدخول فوراً ======
+    // صفحة الـ Checkout متاحة للعرض للجميع (حتى قبل تسجيل الدخول) عشان أي زائر
+    // أو مراجع يقدر يشوف كل خطوات الشراء. تسجيل الدخول مطلوب فقط لحظة تأكيد الطلب.
     (function() {
-        const token = localStorage.getItem('sunbook_token');
-        const loggedInUser = localStorage.getItem('sunbook_username');
-        if (!loggedInUser || !token || token === 'social_dummy_token') {
-            localStorage.setItem('sunbook_redirect_after_login', 'checkout.html');
-            window.location.href = 'login.html';
-        }
+        localStorage.setItem('sunbook_redirect_after_login', 'checkout.html');
     })();
-
 </script>
 <script>
     async function processPayment() {
@@ -613,9 +621,11 @@ function refreshPaymentOptions() {
 
     // الكاش بيظهر بس لو السلة كلها فيزيكال؛ ولو محتاجة دفع إلكتروني نوضّح إنه متوقف
     if (codOption) codOption.style.display = codOk ? '' : 'none';
-    if (unavailableNote) unavailableNote.style.display = codOk ? 'none' : 'block';
+    if (unavailableNote) unavailableNote.style.display = 'none';
 
     const note = document.getElementById('pay-method-note');
+    const onlineMethodNote = document.getElementById('online-payment-method-note');
+    if (onlineMethodNote) onlineMethodNote.style.display = codOk ? 'none' : 'block';
     if (note) {
         if (codOk) {
             note.setAttribute('data-i18n', 'checkout.codNotice');
@@ -627,16 +637,27 @@ function refreshPaymentOptions() {
     }
 
     const confirmBtn = document.getElementById('confirmPaymentBtn');
-    if (confirmBtn && !confirmBtn.disabled) {
-        confirmBtn.innerText = codOk
-            ? tr('checkout.confirmCodOrder', 'Confirm Order (Pay on Delivery)')
-            : tr('checkout.onlinePaymentUnavailableBtn', 'Online Payment Unavailable');
+    if (confirmBtn) {
+        if (codOk) {
+            confirmBtn.disabled = false;
+            confirmBtn.removeAttribute('aria-disabled');
+            confirmBtn.style.opacity = '';
+            confirmBtn.style.cursor = '';
+            confirmBtn.innerText = tr('checkout.confirmCodOrder', 'Confirm Order (Pay on Delivery)');
+        } else {
+            // الدفع الإلكتروني لسه بيتفعّل من بوابة الدفع. الزائر يقدر يشوف
+            // صفحة الـ Checkout كاملة، لكن تأكيد الطلب بيتطلب تواصل مباشر معانا.
+            confirmBtn.disabled = true;
+            confirmBtn.setAttribute('aria-disabled', 'true');
+            confirmBtn.style.opacity = '0.6';
+            confirmBtn.style.cursor = 'not-allowed';
+            confirmBtn.innerText = tr('checkout.onlinePaymentUnavailableBtn', 'Online Payment Coming Soon');
+        }
     }
 }
 
 function initSmartCheckout() {
     const loggedInUser = localStorage.getItem('sunbook_username');
-    if (!loggedInUser) return;
 
     const confirmBtn = document.getElementById('confirmPaymentBtn');
     if (!confirmBtn) return;
@@ -750,6 +771,13 @@ function initSmartCheckout() {
         }
         confirmBtn.innerText = tr('checkout.payNowComplete', 'Pay Now & Complete Order');
     }
+
+    // ====== رسالة الدفع الإلكتروني جوه صفحة الـ Checkout ======
+    // الكاش عند الاستلام متاح للكتب الفيزيكال فقط. لو السلة فيها أي عنصر
+    // ديجيتال أو جلسة، بنوضح الحالة هنا جوه الصفحة نفسها بدل منع العميل من الدخول.
+    const onlineNote = document.getElementById('online-payment-notice');
+    const allPhysical = cart.every(item => item.type === 'physical');
+    if (onlineNote) onlineNote.style.display = allPhysical ? 'none' : 'block';
 
     // بيانات الاسم والتليفون للكتب الديجيتال: بتظهر لو فيه ديجيتال ومفيش فيزيكال (الفيزيكال عنده الاسم والتليفون في قسم الشحن)
     const digitalContactSection = document.getElementById('digital-contact-section');

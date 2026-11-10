@@ -77,6 +77,7 @@
         <div class="section-header">
             <h2 class="section-title" data-i18n="index.allProducts">All Products</h2>
             <p class="section-subtitle" data-i18n="index.allProductsSub">Explore our complete collection of ancient mysteries and wisdom</p>
+            <p style="color: var(--gold-color); font-size: 0.9rem; margin-top: 8px; letter-spacing: 0.4px;">All prices are in Egyptian Pounds (EGP) — free delivery inside Egypt.</p>
         </div>
 
         <div class="products-grid three-columns" id="all-products-grid">
@@ -225,17 +226,6 @@
 <script src="js/api.js"></script>
 <script src="js/script.js"></script>
 <script src="js/reminder.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const confirmBtn = document.querySelector('.confirm-booking-btn');
-  if (!confirmBtn) return;
-
-  confirmBtn.addEventListener('click', async () => {
-    // حجز الجلسات محتاج دفع إلكتروني، وهو متوقف حاليًا
-    if (typeof showPaymentUnavailable === 'function') { showPaymentUnavailable(); return; }
-  });
-});
-</script>
     <script src="js/pwa.js"></script>
 </body>
 </html>

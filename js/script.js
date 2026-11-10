@@ -66,36 +66,23 @@ let productsData = [];
 // (بتتحدد مرة واحدة وقت تحميل الصفحة، وبتتخزن لباقي الصفحات في نفس الجلسة)
 let visitorCurrency = 'EGP';
 
+// كل الأسعار على الموقع بتتعرض بالجنيه المصري (EGP) فقط، زي ما بوابات الدفع بتطلب.
 async function detectVisitorCurrency() {
-    const cached = sessionStorage.getItem('sunbook_currency');
-    if (cached === 'EGP' || cached === 'EUR') {
-        visitorCurrency = cached;
-        return visitorCurrency;
-    }
-    if (typeof api === 'undefined') return visitorCurrency;
-    try {
-        const { data } = await api.getMyCountry();
-        visitorCurrency = data.country === 'EG' ? 'EGP' : 'EUR';
-    } catch (e) {
-        visitorCurrency = 'EGP'; // افتراضي آمن لو فشل الكشف (زي وقت التطوير المحلي)
-    }
-    sessionStorage.setItem('sunbook_currency', visitorCurrency);
+    visitorCurrency = 'EGP';
+    sessionStorage.setItem('sunbook_currency', 'EGP');
     return visitorCurrency;
 }
 
 function formatPrice(n) {
-    return `LE ${Number(n).toFixed(2)}`;
+    return `EGP ${Number(n).toFixed(2)}`;
 }
 
 function formatPriceEUR(n) {
     return `€${Number(n).toFixed(2)}`;
 }
 
-// بيختار السعر المناسب حسب عملة الزائر - لو مفيش سعر يورو متسجل، بيرجع للجنيه كافتراضي آمن
+// كل الأسعار بتتعرض بالجنيه المصري (EGP) بغض النظر عن بلد الزائر
 function displayPriceFor(priceEGP, priceEUR) {
-    if (visitorCurrency === 'EUR' && priceEUR != null && priceEUR > 0) {
-        return formatPriceEUR(priceEUR);
-    }
     return formatPrice(priceEGP);
 }
 
@@ -889,12 +876,11 @@ function showToast(message, type = 'success') {
     }, 3200);
 }
 
-// رسالة موحدة بتظهر في إشعار الموقع لما حد يحاول يدفع أو يشتري حاجة
-// والدفع الإلكتروني متوقف (بوابات الدفع اتشالت مؤقتًا).
+// رسالة موحدة بتظهر لو محتاجين نوضح إن الدفع الإلكتروني لسه بيتفعّل من بوابة الدفع.
 function paymentUnavailableMessage() {
     return window.SunBookI18n
         ? window.SunBookI18n.t('payment.onlineUnavailable')
-        : "We're sorry — online payment is currently paused and unavailable. Please try again later.";
+        : "Online card and mobile-wallet payments are being activated through our secure payment partner. For digital books and sessions, please contact us on WhatsApp or by email to complete your order.";
 }
 
 function showPaymentUnavailable() {
@@ -1333,8 +1319,6 @@ if (modal) {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             if (bookingsPaused) { notifyBookingsPaused(); return; }
-            // حجز الجلسات محتاج دفع إلكتروني، وهو متوقف حاليًا
-            if (typeof showPaymentUnavailable === 'function') { showPaymentUnavailable(); return; }
             modal.classList.add('active');
             renderCalendar();
         });
@@ -1713,21 +1697,9 @@ function attachCheckoutEvent(finalAmount) {
             return;
         }
 
-        // الكتب الرقمية والجلسات بتحتاج دفع إلكتروني (متوقف حاليًا)، والكاش متاح للكتب الفيزيكال بس
-        if (cartItems.some(item => item.type !== 'physical')) {
-            e.preventDefault();
-            if (typeof showPaymentUnavailable === 'function') showPaymentUnavailable();
-            return;
-        }
-
-        const loggedInUser = localStorage.getItem('sunbook_username');
-        if (!loggedInUser) {
-            e.preventDefault();
-            if (typeof showToast === 'function') showToast(tr('cart.signInToCheckout', 'Please sign in to complete your order!'), 'error');
-            localStorage.setItem('sunbook_redirect_after_login', 'checkout.html');
-            setTimeout(() => { window.location.href = 'login.html'; }, 2000);
-            return;
-        }
+        // ملحوظة: مفيش منع للوصول لصفحة الدفع هنا. أي عميل يقدر يشوف صفحة
+        // الـ Checkout كاملة؛ لو السلة فيها كتب ديجيتال/جلسات بتظهر رسالة
+        // توضيحية جوه صفحة الـ Checkout نفسها بدل ما نمنعه من الدخول.
     });
 }
 
@@ -1737,9 +1709,6 @@ function attachCheckoutEvent(finalAmount) {
 const confirmBookingBtn = document.querySelector('.confirm-booking-btn');
 if (confirmBookingBtn && !document.body.classList.contains('use-api-booking')) {
     confirmBookingBtn.addEventListener('click', async () => {
-        // حجز الجلسات محتاج دفع إلكتروني، وهو متوقف حاليًا
-        if (typeof showPaymentUnavailable === 'function') { showPaymentUnavailable(); return; }
-
         // 1. هل اختار وقت؟
         const selectedTimeBtn = document.querySelector('.time-slot-btn.selected');
         if (!selectedTimeBtn) {
